@@ -14,8 +14,9 @@ import { formatDateTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle, Clock, MessageSquare, UserPlus, RotateCcw,
-  XCircle, Send, AlertTriangle, Database, BookOpen
+  XCircle, Send, AlertTriangle, Database, BookOpen,
 } from 'lucide-react'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 
 const EVENT_ICONS: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   created: { icon: AlertTriangle, color: 'text-blue-600', bg: 'bg-blue-100' },
@@ -163,7 +164,7 @@ export function IssueDetail() {
                 <div className="flex gap-2"><span className="text-gray-500 w-36 shrink-0">Mức độ:</span><StatusBadge status={issue.severity} /></div>
               </div>
               <div className="border-t pt-3">
-                <p className="text-sm text-gray-500 mb-1 font-medium">Mô tả vấn đề:</p>
+                <p className="text-sm text-gray-500 mb-1 font-medium inline-flex items-center gap-1">Mô tả vấn đề: <InfoTooltip text="Được tự động sinh khi rule fail. Mô tả chi tiết vi phạm: bảng nào, cột nào, bao nhiêu % bản ghi vi phạm. Không cần nhập tay." /></p>
                 <p className="text-sm text-gray-700">{issue.description}</p>
               </div>
             </CardContent>

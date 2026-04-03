@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   Play, Edit, Layers, CheckSquare, Link2, Fingerprint, Target, Clock, RefreshCw,
+  AlertTriangle as AlertTriangleIcon, CheckCircle,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -17,9 +18,10 @@ import { Select } from '@/components/ui/select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { PageHeader } from '@/components/common/PageHeader'
 import { StatusBadge } from '@/components/common/StatusBadge'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { DimensionBadge, DIMENSION_CONFIG } from '@/components/common/DimensionBadge'
 import { getScoreColor, formatDate, formatDateTime } from '@/lib/utils'
-import { mockDataSources, mockRules, mockProfilingResults, mockUsers } from '@/data/mockData'
+import { mockDataSources, mockRules, mockProfilingResults, mockUsers, mockIssues, getDownstreamJobs, getUpstreamJobs } from '@/data/mockData'
 import type { QualityDimension, DataSource, ProfilingResult } from '@/types'
 
 const DIMENSION_ICONS: Record<QualityDimension, React.ReactNode> = {
@@ -48,6 +50,7 @@ export function DataSourceDetail() {
   const [ds, setDs] = useState<DataSource | null>(baseDs ?? null)
   const [localProfilings, setLocalProfilings] = useState<ProfilingResult[]>([...mockProfilingResults])
   const [scanning, setScanning] = useState(false)
+  const [scanSuccess, setScanSuccess] = useState(false)
 
   // Edit dialog state
   const [editOpen, setEditOpen] = useState(false)
@@ -79,20 +82,12 @@ export function DataSourceDetail() {
   const rules = mockRules.filter(r => r.tableId === ds.id)
   const activeRules = rules.filter(r => r.status === 'active')
 
-  // Compute dimension scores from active rules
-  const dimScores: Record<QualityDimension, number | null> = {} as Record<QualityDimension, number | null>
-  for (const dim of DIMENSIONS) {
-    const dimRules = activeRules.filter(r => r.dimension === dim && r.lastScore != null)
-    dimScores[dim] = dimRules.length > 0
-      ? Math.round(dimRules.reduce((sum, r) => sum + (r.lastScore ?? 0), 0) / dimRules.length)
-      : null
-  }
+  // Use overallScore and dimensionScores directly from datasource (consistent with list view)
+  const overallScore = ds.overallScore
+  const dimScores: Record<QualityDimension, number> = ds.dimensionScores
 
-  // Overall score = avg of non-null dimension scores
-  const scoredDims = DIMENSIONS.map(d => dimScores[d]).filter((s): s is number => s != null)
-  const overallScore = scoredDims.length > 0
-    ? Math.round(scoredDims.reduce((a, b) => a + b, 0) / scoredDims.length)
-    : null
+  // Check which dimensions have active rules (for labeling)
+  const dimsWithRules = new Set(activeRules.map(r => r.dimension))
 
   function handleScanNow() {
     setScanning(true)
@@ -116,6 +111,8 @@ export function DataSourceDetail() {
       setLocalProfilings(prev => [...prev, newResult])
       setDs(prev => prev ? { ...prev, lastProfiled: now } : prev)
       setScanning(false)
+      setScanSuccess(true)
+      setTimeout(() => setScanSuccess(false), 3000)
     }, 2000)
   }
 
@@ -168,6 +165,11 @@ export function DataSourceDetail() {
                 : <Play className="h-4 w-4" />}
               {scanning ? 'Đang phân tích...' : 'Chạy phân tích ngay'}
             </Button>
+            {scanSuccess && (
+              <span className="inline-flex items-center gap-1 text-sm text-green-600 font-medium animate-pulse">
+                <CheckCircle className="h-4 w-4" /> Phân tích hoàn tất!
+              </span>
+            )}
             <Button variant="outline" className="flex items-center gap-2" onClick={openEditDialog}>
               <Edit className="h-4 w-4" />
               Chỉnh sửa
@@ -177,20 +179,19 @@ export function DataSourceDetail() {
       />
 
       {/* Overall Score banner */}
-      {overallScore != null && (
-        <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-2.5 shadow-sm">
-          <span className="text-sm text-gray-500">Điểm chất lượng tổng:</span>
-          <span className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>{overallScore}</span>
-          <span className="text-sm text-gray-400">/ 100</span>
-          <span className="text-xs text-gray-400 ml-1">(tính từ trung bình {scoredDims.length} chiều có rule)</span>
-        </div>
-      )}
+      <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-2.5 shadow-sm">
+        <span className="text-sm text-gray-500">Điểm chất lượng tổng:</span>
+        <span className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>{overallScore}</span>
+        <span className="text-sm text-gray-400">/ 100</span>
+        <span className="text-xs text-gray-400 ml-1">(trung bình 6 chiều dữ liệu)</span>
+      </div>
 
       {/* Row 1 - 6 dimension cards */}
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
         {DIMENSIONS.map(dim => {
           const cfg = DIMENSION_CONFIG[dim]
           const score = dimScores[dim]
+          const hasRule = dimsWithRules.has(dim)
           return (
             <Card key={dim} className="border-l-4 overflow-hidden" style={{ borderLeftColor: cfg.hex }}>
               <CardContent className="pt-4 pb-4">
@@ -198,21 +199,18 @@ export function DataSourceDetail() {
                   <span style={{ color: cfg.hex }}>{DIMENSION_ICONS[dim]}</span>
                   <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
                 </div>
-                {score != null ? (
-                  <>
-                    <div className="flex items-baseline gap-0.5">
-                      <span className="text-2xl font-bold" style={{ color: cfg.hex }}>{score}</span>
-                      <span className="text-xs text-gray-400">/ 100</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-gray-100 rounded-full mt-2 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${score}%`, backgroundColor: cfg.hex }}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-xs text-gray-400 italic mt-1">Chưa có rule</div>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-2xl font-bold" style={{ color: cfg.hex }}>{score}</span>
+                  <span className="text-xs text-gray-400">/ 100</span>
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${score}%`, backgroundColor: cfg.hex }}
+                  />
+                </div>
+                {!hasRule && (
+                  <div className="text-[10px] text-gray-400 italic mt-1.5">(chưa có rule)</div>
                 )}
               </CardContent>
             </Card>
@@ -291,13 +289,13 @@ export function DataSourceDetail() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12 text-center sticky top-0 bg-white">#</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Tên cột</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Kiểu dữ liệu</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Null%</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Phân biệt%</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Min</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Max</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Vấn đề</TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Tên cột <InfoTooltip text="Tên cột vật lý trong bảng dữ liệu" /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Kiểu dữ liệu <InfoTooltip text="Kiểu dữ liệu phát hiện tự động bởi profiling engine (string, integer, date, float, boolean)" /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Null% <InfoTooltip text="Tỷ lệ phần trăm giá trị NULL trong cột. Càng cao = càng nhiều dữ liệu bị thiếu." /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Phân biệt% <InfoTooltip text="Tỷ lệ giá trị duy nhất (distinct) so với tổng số bản ghi. 100% = mỗi giá trị là duy nhất." /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Min <InfoTooltip text="Giá trị nhỏ nhất trong cột (số hoặc ngày)" /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Max <InfoTooltip text="Giá trị lớn nhất trong cột (số hoặc ngày)" /></span></TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Vấn đề <InfoTooltip text="Các nhận xét kỹ thuật tự động từ profiling engine: null rate cao, sai định dạng, outlier... Đây KHÔNG phải Issue từ Rules." /></span></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -369,7 +367,9 @@ export function DataSourceDetail() {
                       <TableHead className="sticky top-0 bg-white">Tên quy tắc</TableHead>
                       <TableHead className="sticky top-0 bg-white">Chiều DL</TableHead>
                       <TableHead className="sticky top-0 bg-white">Cột</TableHead>
-                      <TableHead className="sticky top-0 bg-white" title="W = Ngưỡng cảnh báo, C = Ngưỡng không đạt">Ngưỡng W / C ℹ</TableHead>
+                      <TableHead className="sticky top-0 bg-white"><span className="inline-flex items-center gap-1">Ngưỡng W / C <InfoTooltip text="W = Warning (Cảnh báo): điểm dưới ngưỡng này sẽ cảnh báo.
+C = Critical (Không đạt): điểm dưới ngưỡng này sẽ báo lỗi nghiêm trọng.
+VD: W:90/C:80 nghĩa là dưới 90 cảnh báo, dưới 80 không đạt." /></span></TableHead>
                       <TableHead className="sticky top-0 bg-white">Kết quả cuối</TableHead>
                       <TableHead className="sticky top-0 bg-white">Chạy lần cuối</TableHead>
                       <TableHead className="sticky top-0 bg-white">Trạng thái</TableHead>
@@ -414,6 +414,99 @@ export function DataSourceDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Luồng dữ liệu */}
+      {(() => {
+        const upstream = getUpstreamJobs(ds.id)
+        const downstream = getDownstreamJobs(ds.id)
+        const hasActiveIssue = mockIssues.some(i => i.tableId === ds.id && i.status !== 'resolved' && i.status !== 'closed')
+        return (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Luồng dữ liệu</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Upstream */}
+              <div>
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Upstream — Job tạo ra bảng này ({upstream.length})
+                </div>
+                {upstream.length === 0 ? (
+                  <p className="text-sm text-slate-400 italic">Không có job nào ghi dữ liệu vào bảng này</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-slate-100">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100">
+                          {['#', 'Tên Job', 'Chủ sở hữu', 'Lịch chạy', 'Trạng thái'].map(h => (
+                            <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-slate-500">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {upstream.map((job, i) => (
+                          <tr key={job.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60">
+                            <td className="px-3 py-2 text-slate-400 text-xs">{i + 1}</td>
+                            <td className="px-3 py-2 font-semibold text-slate-800">{job.name}</td>
+                            <td className="px-3 py-2 text-slate-600">{job.owner}</td>
+                            <td className="px-3 py-2 text-slate-500 text-xs whitespace-nowrap">{job.schedule}</td>
+                            <td className="px-3 py-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${job.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                                {job.status === 'active' ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Downstream */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Downstream — Job/Báo cáo sử dụng bảng này ({downstream.length})
+                  </div>
+                  {downstream.length > 0 && hasActiveIssue && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                      <AlertTriangleIcon className="h-3 w-3" />
+                      {downstream.length} job có thể bị ảnh hưởng
+                    </span>
+                  )}
+                </div>
+                {downstream.length === 0 ? (
+                  <p className="text-sm text-slate-400 italic">Không có job nào sử dụng bảng này làm đầu vào</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-slate-100">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100">
+                          {['#', 'Tên Job', 'Chủ sở hữu', 'Email', 'Lịch chạy'].map(h => (
+                            <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-slate-500">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {downstream.map((job, i) => (
+                          <tr key={job.id} className={`border-b border-slate-50 last:border-0 hover:bg-slate-50/60 ${hasActiveIssue ? 'bg-amber-50/30' : ''}`}>
+                            <td className="px-3 py-2 text-slate-400 text-xs">{i + 1}</td>
+                            <td className="px-3 py-2 font-semibold text-slate-800">{job.name}</td>
+                            <td className="px-3 py-2 text-slate-600">{job.owner}</td>
+                            <td className="px-3 py-2 text-slate-500 text-xs">{job.ownerEmail}</td>
+                            <td className="px-3 py-2 text-slate-500 text-xs whitespace-nowrap">{job.schedule}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Edit Dialog */}
       {editOpen && (

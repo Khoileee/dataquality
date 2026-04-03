@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
 import { mockDataSources, mockUsers } from '@/data/mockData'
 import type { DataSource } from '@/types'
@@ -259,9 +260,11 @@ export function DataCatalog() {
                   <TableHead>Loại</TableHead>
                   <TableHead>Danh mục</TableHead>
                   <TableHead>Chủ sở hữu</TableHead>
-                  <TableHead>Điểm tổng</TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Điểm tổng <InfoTooltip text="Điểm tổng hợp chất lượng dữ liệu của bảng, tính trung bình từ 6 chiều: Completeness, Validity, Consistency, Uniqueness, Accuracy, Timeliness. Thang điểm 0-100." /></span></TableHead>
                   <TableHead>Lần phân tích cuối</TableHead>
-                  <TableHead>Trạng thái</TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của bảng trong hệ thống DQ. Cấu hình trong form Thêm/Sửa bảng dữ liệu.
+'Hoạt động' = đang được giám sát chất lượng.
+'Không HĐ' = tạm dừng giám sát." /></span></TableHead>
                   <TableHead className="w-28">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>

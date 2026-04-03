@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   BookOpen, LayoutGrid, Search, Plus, Edit, Trash2, X, Play,
   ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2,
-  History, FileSearch,
+  History,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import { Tabs } from '@/components/ui/tabs'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { DimensionBadge, getDimensionLabel, DIMENSION_CONFIG } from '@/components/common/DimensionBadge'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { cn, formatDateTime } from '@/lib/utils'
 import { mockRules, mockRuleTemplates, mockDataSources } from '@/data/mockData'
 import { getGlobalThreshold, getTableThreshold } from '@/pages/Thresholds'
@@ -986,7 +987,14 @@ function RuleDialog({ open, editRule, initialForm, onClose, onSave }: RuleDialog
 
         {/* Dimension */}
         <div className="space-y-1.5">
-          <Label>Chiều dữ liệu (Dimension) <span className="text-red-500">*</span></Label>
+          <Label className="inline-flex items-center gap-1">Chiều dữ liệu (Dimension) <span className="text-red-500">*</span> <InfoTooltip text="6 chiều đo lường chất lượng dữ liệu:
+• Completeness (đầy đủ)
+• Validity (hợp lệ)
+• Consistency (nhất quán)
+• Uniqueness (duy nhất)
+• Accuracy (chính xác)
+• Timeliness (kịp thời)
+Mỗi rule thuộc 1 chiều." /></Label>
           <div className="grid grid-cols-3 gap-2">
             {DIMENSIONS.map(d => {
               const cfg = DIMENSION_CONFIG[d]
@@ -1012,7 +1020,7 @@ function RuleDialog({ open, editRule, initialForm, onClose, onSave }: RuleDialog
         {/* Metric type — only shown after dimension is picked */}
         {form.dimension && (
           <div className="space-y-1.5">
-            <Label>Chỉ số kiểm tra (Metric) <span className="text-red-500">*</span></Label>
+            <Label className="inline-flex items-center gap-1">Chỉ số kiểm tra (Metric) <span className="text-red-500">*</span> <InfoTooltip text="Chỉ số cụ thể để kiểm tra rule. Mỗi chiều có các metric riêng. VD: Completeness có not_null, fill_rate; Validity có format_regex, value_range, allowed_values..." /></Label>
             <Select value={form.metricType} onChange={e => setForm(prev => ({ ...prev, metricType: e.target.value as MetricType }))}>
               <option value="">-- Chọn loại kiểm tra --</option>
               {metricsForDim.map(m => (
@@ -1110,7 +1118,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
   const [editRule, setEditRule] = useState<QualityRule | null>(null)
   const [deleteRule, setDeleteRule] = useState<QualityRule | null>(null)
   const [historyRule, setHistoryRule] = useState<QualityRule | null>(null)
-  const [resultDetailRule, setResultDetailRule] = useState<QualityRule | null>(null)
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
   const [runningIds, setRunningIds] = useState<Record<string, boolean>>({})
   const [switchStates, setSwitchStates] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(rules.map(r => [r.id, r.status === 'active']))
@@ -1262,7 +1270,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                 <TableHead className="w-28">Phạm vi</TableHead>
                 <TableHead className="w-32">Ngưỡng</TableHead>
                 <TableHead className="w-36">Chạy lần cuối</TableHead>
-                <TableHead className="w-32">Kết quả</TableHead>
+                <TableHead className="w-32"><span className="inline-flex items-center gap-1">Kết quả <InfoTooltip text="Điểm của lần chạy rule gần nhất. Tính bằng % bản ghi vượt qua kiểm tra. 100 = tất cả bản ghi đạt, 0 = không bản ghi nào đạt." /></span></TableHead>
                 <TableHead className="w-24 text-center">Kích hoạt</TableHead>
                 <TableHead className="w-36 text-right">Hành động</TableHead>
               </TableRow>
@@ -1348,14 +1356,6 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                             <History className="h-3.5 w-3.5" />
                           </button>
                           <button
-                            onClick={() => setResultDetailRule(rule)}
-                            className="p-1.5 rounded hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors"
-                            title="Xem kết quả chi tiết"
-                            disabled={!rule.lastResult}
-                          >
-                            <FileSearch className="h-3.5 w-3.5" />
-                          </button>
-                          <button
                             onClick={() => { setEditRule(rule); setShowAdd(false) }}
                             className="p-1.5 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
                             title="Chỉnh sửa"
@@ -1425,11 +1425,11 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
       {/* Delete confirm */}
       <DeleteConfirm rule={deleteRule} onConfirm={handleDelete} onCancel={() => setDeleteRule(null)} />
 
-      {/* Run History Dialog */}
+      {/* Run History Dialog (with expandable detail rows) */}
       {historyRule && (
-        <Dialog open={!!historyRule} onClose={() => setHistoryRule(null)} title={`Lịch sử chạy — ${historyRule.name}`}>
+        <Dialog open={!!historyRule} onClose={() => { setHistoryRule(null); setExpandedRunId(null) }} title={`Lịch sử chạy — ${historyRule.name}`}>
           <div className="space-y-3">
-            <p className="text-xs text-gray-500">7 lần chạy gần nhất (mới nhất trên đầu)</p>
+            <p className="text-xs text-gray-500">7 lần chạy gần nhất · Nhấn vào dòng để xem chi tiết</p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -1445,98 +1445,71 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                 <tbody>
                   {(() => { seedRunHistory(historyRule.id); return null })()}
                   {(_runHistory[historyRule.id] ?? []).slice(0, 7).map((entry, i) => (
-                    <tr key={entry.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="py-2 pr-3 text-gray-400">{i + 1}</td>
-                      <td className="py-2 pr-3 text-gray-600 whitespace-nowrap">{formatDateTime(entry.runAt)}</td>
-                      <td className="py-2 pr-3">
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${entry.trigger === 'Chạy thủ công' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
-                          {entry.trigger}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <StatusBadge status={entry.result} />
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className={`font-medium ${entry.score >= 90 ? 'text-green-600' : entry.score >= 75 ? 'text-amber-600' : 'text-red-600'}`}>
-                          {entry.score.toFixed(1)}
-                        </span>
-                      </td>
-                      <td className="py-2">
-                        {entry.issueId
-                          ? <span className="text-xs font-mono text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{entry.issueId.toUpperCase()}</span>
-                          : <span className="text-xs text-gray-300">—</span>}
-                      </td>
-                    </tr>
+                    <>
+                      <tr key={entry.id}
+                        className={`border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${expandedRunId === entry.id ? 'bg-blue-50/50' : ''}`}
+                        onClick={() => setExpandedRunId(prev => prev === entry.id ? null : entry.id)}
+                      >
+                        <td className="py-2 pr-3 text-gray-400">{i + 1}</td>
+                        <td className="py-2 pr-3 text-gray-600 whitespace-nowrap">{formatDateTime(entry.runAt)}</td>
+                        <td className="py-2 pr-3">
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${entry.trigger === 'Chạy thủ công' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {entry.trigger}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <StatusBadge status={entry.result} />
+                        </td>
+                        <td className="py-2 pr-3">
+                          <span className={`font-medium ${entry.score >= 90 ? 'text-green-600' : entry.score >= 75 ? 'text-amber-600' : 'text-red-600'}`}>
+                            {entry.score.toFixed(1)}
+                          </span>
+                        </td>
+                        <td className="py-2">
+                          {entry.issueId
+                            ? <span className="text-xs font-mono text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{entry.issueId.toUpperCase()}</span>
+                            : <span className="text-xs text-gray-300">—</span>}
+                        </td>
+                      </tr>
+                      {expandedRunId === entry.id && (
+                        <tr key={`${entry.id}-detail`}>
+                          <td colSpan={6} className="px-3 py-3 bg-gray-50/80 border-b border-gray-100">
+                            <div className="space-y-2.5">
+                              <p className="text-xs text-gray-500 italic mb-1">Điểm = % bản ghi vượt qua kiểm tra. VD: 95 điểm = 95% bản ghi đạt yêu cầu rule này.</p>
+                              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Ngưỡng đánh giá</p>
+                              <div className="space-y-1 text-sm">
+                                <div className={`flex items-center gap-2 ${entry.score >= historyRule.threshold.warning ? 'text-green-700' : 'text-amber-700'}`}>
+                                  <span>{entry.score >= historyRule.threshold.warning ? '✅' : '⚠️'}</span>
+                                  <span>Cảnh báo khi &lt; <strong>{historyRule.threshold.warning}%</strong> →
+                                    {entry.score >= historyRule.threshold.warning ? ' Đạt' : ` Vi phạm (${entry.score.toFixed(1)} < ${historyRule.threshold.warning})`}
+                                  </span>
+                                </div>
+                                <div className={`flex items-center gap-2 ${entry.score >= historyRule.threshold.critical ? 'text-green-700' : 'text-red-700'}`}>
+                                  <span>{entry.score >= historyRule.threshold.critical ? '✅' : '❌'}</span>
+                                  <span>Không đạt khi &lt; <strong>{historyRule.threshold.critical}%</strong> →
+                                    {entry.score >= historyRule.threshold.critical ? ' Chưa tới mức không đạt' : ` Vi phạm (${entry.score.toFixed(1)} < ${historyRule.threshold.critical})`}
+                                  </span>
+                                </div>
+                              </div>
+                              {entry.score < historyRule.threshold.warning && (
+                                <div className="bg-red-50 border border-red-100 rounded p-2.5 text-sm text-red-800">
+                                  <p>{(100 - entry.score).toFixed(1)}% bản ghi vi phạm quy tắc này</p>
+                                  {historyRule.metricConfig?.pattern && (
+                                    <p className="text-xs mt-1 font-mono text-red-600">Pattern yêu cầu: {historyRule.metricConfig.pattern}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
             </div>
             <div className="flex justify-end pt-1">
-              <Button variant="outline" size="sm" onClick={() => setHistoryRule(null)}>Đóng</Button>
-            </div>
-          </div>
-        </Dialog>
-      )}
-
-      {/* Result Detail Dialog */}
-      {resultDetailRule && resultDetailRule.lastResult && (
-        <Dialog open={!!resultDetailRule} onClose={() => setResultDetailRule(null)} title="Chi tiết kết quả kiểm tra">
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-gray-800">{resultDetailRule.name}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{resultDetailRule.tableName}{resultDetailRule.columnName ? ` · Cột: ${resultDetailRule.columnName}` : ''}</p>
-            </div>
-
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-              <StatusBadge status={resultDetailRule.lastResult} />
-              <span className="text-2xl font-bold text-gray-800">{resultDetailRule.lastScore?.toFixed(1)}</span>
-              <span className="text-sm text-gray-400">/ 100</span>
-              {resultDetailRule.lastRunAt && (
-                <span className="text-xs text-gray-400 ml-auto">Chạy lúc {formatDateTime(resultDetailRule.lastRunAt)}</span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Ngưỡng đánh giá</p>
-              <div className="space-y-1.5 text-sm">
-                <div className={`flex items-center gap-2 ${(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.warning ? 'text-green-700' : 'text-amber-700'}`}>
-                  <span>{(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.warning ? '✅' : '⚠️'}</span>
-                  <span>Cảnh báo khi điểm &lt; <strong>{resultDetailRule.threshold.warning}%</strong> →
-                    {(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.warning ? ' Đạt ngưỡng' : ` Vi phạm (${resultDetailRule.lastScore?.toFixed(1)} < ${resultDetailRule.threshold.warning})`}
-                  </span>
-                </div>
-                <div className={`flex items-center gap-2 ${(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.critical ? 'text-green-700' : 'text-red-700'}`}>
-                  <span>{(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.critical ? '✅' : '❌'}</span>
-                  <span>Không đạt khi điểm &lt; <strong>{resultDetailRule.threshold.critical}%</strong> →
-                    {(resultDetailRule.lastScore ?? 0) >= resultDetailRule.threshold.critical ? ' Chưa tới mức không đạt' : ` Vi phạm (${resultDetailRule.lastScore?.toFixed(1)} < ${resultDetailRule.threshold.critical})`}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {resultDetailRule.lastScore != null && resultDetailRule.lastScore < resultDetailRule.threshold.warning && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Chi tiết vi phạm</p>
-                <div className="bg-red-50 border border-red-100 rounded p-3 text-sm text-red-800">
-                  <p>{(100 - (resultDetailRule.lastScore ?? 0)).toFixed(1)}% bản ghi vi phạm quy tắc này</p>
-                  {resultDetailRule.metricConfig?.pattern && (
-                    <p className="text-xs mt-1 font-mono text-red-600">Pattern yêu cầu: {resultDetailRule.metricConfig.pattern}</p>
-                  )}
-                  {resultDetailRule.metricConfig?.expression && (
-                    <p className="text-xs mt-1 font-mono text-red-600">Biểu thức: {resultDetailRule.metricConfig.expression}</p>
-                  )}
-                </div>
-                <div className="bg-amber-50 border border-amber-100 rounded p-3 text-xs text-amber-700">
-                  <p className="font-medium mb-1">Mẫu vi phạm (demo):</p>
-                  <p className="font-mono">— nguyenvana@ (thiếu domain)</p>
-                  <p className="font-mono">— test.email (không có @)</p>
-                  <p className="font-mono">— user@.com (domain trống)</p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-1">
-              <Button variant="outline" size="sm" onClick={() => setResultDetailRule(null)}>Đóng</Button>
+              <Button variant="outline" size="sm" onClick={() => { setHistoryRule(null); setExpandedRunId(null) }}>Đóng</Button>
             </div>
           </div>
         </Dialog>

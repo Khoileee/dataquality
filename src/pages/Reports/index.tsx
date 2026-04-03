@@ -35,8 +35,10 @@ const DIMENSION_LABELS = [
   { value: 'timeliness', label: 'Kịp thời' },
 ]
 
-function fakeTrendUp(id: string) {
-  return id.charCodeAt(id.length - 1) % 2 === 0
+function getTrend(score: number): 'up' | 'stable' | 'down' {
+  if (score >= 85) return 'up'
+  if (score < 70) return 'down'
+  return 'stable'
 }
 
 export function Reports() {
@@ -257,7 +259,7 @@ export function Reports() {
             </TableHeader>
             <TableBody>
               {mockDataSources.map((ds) => {
-                const isUp = fakeTrendUp(ds.id)
+                const trend = getTrend(ds.overallScore)
                 const { grade, color } = getGrade(ds.overallScore)
                 const issueCount = ds.overallScore < 70 ? 3 : ds.overallScore < 80 ? 2 : ds.overallScore < 90 ? 1 : 0
 
@@ -265,13 +267,17 @@ export function Reports() {
                   <TableRow key={ds.id}>
                     <TableCell className="font-medium text-gray-900">{ds.name}</TableCell>
                     <TableCell className="text-center">
-                      {isUp ? (
+                      {trend === 'up' ? (
                         <span className="inline-flex items-center justify-center gap-1 text-green-600 text-sm font-semibold">
                           <TrendingUp className="w-3.5 h-3.5" />↑
                         </span>
-                      ) : (
+                      ) : trend === 'down' ? (
                         <span className="inline-flex items-center justify-center gap-1 text-red-500 text-sm font-semibold">
                           <TrendingDown className="w-3.5 h-3.5" />↓
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center justify-center gap-1 text-amber-500 text-sm font-semibold">
+                          →
                         </span>
                       )}
                     </TableCell>

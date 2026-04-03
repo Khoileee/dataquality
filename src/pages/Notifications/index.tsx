@@ -10,7 +10,7 @@ import { Dialog } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
-import { mockNotifications, mockDataSources } from '@/data/mockData'
+import { mockNotifications, mockDataSources, getDownstreamJobs } from '@/data/mockData'
 import type { NotificationConfig } from '@/types'
 import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle } from 'lucide-react'
 
@@ -35,13 +35,14 @@ export function Notifications() {
     recipients: '', webhookUrl: '',
     triggerWarning: true, triggerCritical: true, triggerResolved: false,
     allTables: true, selectedTables: [] as string[],
-    isActive: true,
+    isActive: true, notifyDownstream: false,
+    emailSubject: '', emailBody: '',
   })
   const [testSent, setTestSent] = useState<string | null>(null)
 
   const openAdd = () => {
     setEditingId(null)
-    setForm({ name: '', type: 'email', recipients: '', webhookUrl: '', triggerWarning: true, triggerCritical: true, triggerResolved: false, allTables: true, selectedTables: [], isActive: true })
+    setForm({ name: '', type: 'email', recipients: '', webhookUrl: '', triggerWarning: true, triggerCritical: true, triggerResolved: false, allTables: true, selectedTables: [], isActive: true, notifyDownstream: false, emailSubject: '', emailBody: '' })
     setShowDialog(true)
   }
 
@@ -57,6 +58,9 @@ export function Notifications() {
       allTables: item.tables.length === 0,
       selectedTables: item.tables,
       isActive: item.isActive,
+      notifyDownstream: item.notifyDownstream ?? false,
+      emailSubject: item.emailSubject ?? '',
+      emailBody: item.emailBody ?? '',
     })
     setShowDialog(true)
   }
@@ -68,10 +72,13 @@ export function Notifications() {
     if (form.triggerResolved) triggerOn.push('resolved')
     const recipients = form.type === 'webhook' ? [form.webhookUrl] : form.recipients.split('\n').map(s => s.trim()).filter(Boolean)
     const tables = form.allTables ? [] : form.selectedTables
+    const emailFields = form.type === 'email'
+      ? { emailSubject: form.emailSubject || undefined, emailBody: form.emailBody || undefined }
+      : { emailSubject: undefined, emailBody: undefined }
     if (editingId) {
-      setItems(prev => prev.map(i => i.id === editingId ? { ...i, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive } : i))
+      setItems(prev => prev.map(i => i.id === editingId ? { ...i, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields } : i))
     } else {
-      setItems(prev => [...prev, { id: `notif-${Date.now()}`, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive }])
+      setItems(prev => [...prev, { id: `notif-${Date.now()}`, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields }])
     }
     setShowDialog(false)
   }
@@ -213,6 +220,34 @@ export function Notifications() {
             </div>
           )}
 
+          {form.type === 'email' && (
+            <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="h-4 w-4 text-blue-500" />
+                <span className="text-sm font-semibold text-slate-700">Nội dung email</span>
+              </div>
+              <div>
+                <Label>Tiêu đề email</Label>
+                <Input className="mt-1" placeholder="[DQ ALERT] {{severity}} - Bảng {{table}} cần xử lý ngay"
+                  value={form.emailSubject} onChange={e => setForm(f => ({ ...f, emailSubject: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Nội dung email</Label>
+                <Textarea className="mt-1 text-xs font-mono" rows={5}
+                  placeholder={'Kính gửi,\n\nPhát hiện vấn đề:\n• Bảng: {{table}}\n• Mức độ: {{severity}}\n• Điểm: {{score}}/100\n• Phát hiện: {{detected_at}}'}
+                  value={form.emailBody} onChange={e => setForm(f => ({ ...f, emailBody: e.target.value }))} />
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Biến hỗ trợ: <code className="bg-white px-1 rounded border border-slate-200">{'{{table}}'}</code>{' '}
+                <code className="bg-white px-1 rounded border border-slate-200">{'{{dimension}}'}</code>{' '}
+                <code className="bg-white px-1 rounded border border-slate-200">{'{{severity}}'}</code>{' '}
+                <code className="bg-white px-1 rounded border border-slate-200">{'{{score}}'}</code>{' '}
+                <code className="bg-white px-1 rounded border border-slate-200">{'{{threshold}}'}</code>{' '}
+                <code className="bg-white px-1 rounded border border-slate-200">{'{{detected_at}}'}</code>
+              </p>
+            </div>
+          )}
+
           <div>
             <Label>Kích hoạt khi</Label>
             <div className="flex gap-4 mt-2">
@@ -248,6 +283,41 @@ export function Notifications() {
                   </label>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Downstream notification */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 space-y-2">
+            <div className="flex items-center gap-3">
+              <Switch checked={form.notifyDownstream} onCheckedChange={v => setForm(f => ({ ...f, notifyDownstream: v }))} />
+              <div>
+                <div className="text-sm font-medium text-slate-800">Tự động thông báo đến chủ sở hữu job phụ thuộc</div>
+                <div className="text-xs text-slate-500 mt-0.5">Khi bảng được chọn có issue, sẽ gửi thêm đến owner của các downstream jobs</div>
+              </div>
+            </div>
+            {form.notifyDownstream && !form.allTables && form.selectedTables.length > 0 && (() => {
+              const tableIds = form.selectedTables
+              const allDownstream = tableIds.flatMap(tid => getDownstreamJobs(tid))
+              const unique = Array.from(new Map(allDownstream.map(j => [j.id, j])).values())
+              if (unique.length === 0) return (
+                <p className="text-xs text-slate-500 italic pl-1">Không có job downstream nào cho bảng đã chọn.</p>
+              )
+              return (
+                <div className="bg-white rounded-lg border border-amber-200 p-3 space-y-1.5">
+                  <div className="text-xs font-semibold text-slate-600 mb-1">Sẽ gửi thêm đến:</div>
+                  {unique.map(job => (
+                    <div key={job.id} className="flex items-center gap-2 text-xs text-slate-700">
+                      <span className="text-amber-500">⚡</span>
+                      <span className="font-medium">{job.owner}</span>
+                      <span className="text-slate-400">&lt;{job.ownerEmail}&gt;</span>
+                      <span className="text-slate-400">({job.name})</span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+            {form.notifyDownstream && form.allTables && (
+              <p className="text-xs text-slate-500 italic pl-1">Chọn bảng cụ thể để xem preview danh sách người nhận downstream.</p>
             )}
           </div>
 

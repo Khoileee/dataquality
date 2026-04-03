@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
+import { Dialog } from '@/components/ui/dialog'
 import { getScoreColor, formatDateTime } from '@/lib/utils'
 import { mockDataSources, mockProfilingResults } from '@/data/mockData'
 import type { ProfilingResult } from '@/types'
@@ -29,6 +31,8 @@ export function Profiling() {
   const [activeStatus, setActiveStatus] = useState('')
   const [activeFrom, setActiveFrom] = useState('')
   const [activeTo, setActiveTo] = useState('')
+  const [showNewScan, setShowNewScan] = useState(false)
+  const [newScanTable, setNewScanTable] = useState('')
 
   function handleSearch() {
     setActiveTable(filterTable)
@@ -76,6 +80,43 @@ export function Profiling() {
     }, 2000)
   }
 
+  const handleNewScan = () => {
+    if (!newScanTable) return
+    const ds = mockDataSources.find(d => d.id === newScanTable)
+    if (!ds) return
+    const existing = results.find(r => r.tableId === newScanTable)
+    const newId = `prof-new-${Date.now()}`
+    const runningEntry: ProfilingResult = {
+      id: newId,
+      tableId: ds.id,
+      tableName: ds.tableName,
+      runAt: new Date().toISOString(),
+      status: 'running',
+      totalRows: 0,
+      totalColumns: existing?.totalColumns ?? 5,
+      overallScore: 0,
+      dimensionScores: ds.dimensionScores,
+      durationSeconds: 0,
+      columnProfiles: [],
+    }
+    setResults(prev => [runningEntry, ...prev])
+    setRunningIds(prev => ({ ...prev, [newId]: true }))
+    setShowNewScan(false)
+    setNewScanTable('')
+    setTimeout(() => {
+      const score = 70 + Math.floor(Math.random() * 28)
+      setResults(prev => prev.map(r => r.id === newId ? {
+        ...r,
+        status: 'completed',
+        totalRows: ds.rowCount || 10000,
+        overallScore: score,
+        durationSeconds: Math.floor(Math.random() * 60) + 10,
+        columnProfiles: existing?.columnProfiles ?? [],
+      } : r))
+      setRunningIds(prev => ({ ...prev, [newId]: false }))
+    }, 2000)
+  }
+
   const filtered = results.filter(r => {
     if (activeTable && r.tableId !== activeTable) return false
     if (activeStatus && r.status !== activeStatus) return false
@@ -110,7 +151,7 @@ export function Profiling() {
         description="Lịch sử các lần quét thống kê cột dữ liệu · Mỗi hàng = 1 snapshot tại thời điểm quét, độc lập với điểm tổng hợp từ Rules"
         breadcrumbs={[{ label: 'Phân tích dữ liệu' }]}
         actions={
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+          <Button onClick={() => setShowNewScan(true)} className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
             <Play className="h-4 w-4" />
             Chạy phân tích mới
           </Button>
@@ -194,8 +235,8 @@ export function Profiling() {
                     <TableHead>Trạng thái</TableHead>
                     <TableHead>Tổng dòng</TableHead>
                     <TableHead>Tổng cột</TableHead>
-                    <TableHead title="Tính từ tỷ lệ cột có vấn đề trong lần quét này (null rate, format…)">Điểm chất lượng ℹ</TableHead>
-                    <TableHead title="Thời gian thực hiện quét (giây)">Thời lượng ℹ</TableHead>
+                    <TableHead><span className="inline-flex items-center gap-1">Điểm chất lượng <InfoTooltip text="Tính từ tỷ lệ cột có vấn đề trong lần quét này (null rate vượt ngưỡng, sai định dạng...). Thang điểm 0-100. Đây là điểm profiling kỹ thuật, KHÁC với điểm từ Rules." /></span></TableHead>
+                    <TableHead><span className="inline-flex items-center gap-1">Thời lượng <InfoTooltip text="Thời gian thực hiện quét profiling cho bảng này (tính bằng giây). Phụ thuộc vào số cột và số bản ghi." /></span></TableHead>
                     <TableHead className="w-20">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -259,6 +300,25 @@ export function Profiling() {
           )}
         </CardContent>
       </Card>
+      {/* New scan dialog */}
+      <Dialog open={showNewScan} onClose={() => { setShowNewScan(false); setNewScanTable('') }} title="Chạy phân tích mới" size="sm">
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Chọn bảng dữ liệu <span className="text-red-500">*</span></Label>
+            <Select value={newScanTable} onChange={e => setNewScanTable(e.target.value)}>
+              <option value="">-- Chọn bảng --</option>
+              {mockDataSources.map(ds => (
+                <option key={ds.id} value={ds.id}>{ds.name}</option>
+              ))}
+            </Select>
+          </div>
+          <p className="text-xs text-gray-500">Hệ thống sẽ quét thống kê tất cả các cột trong bảng: null%, distinct%, kiểu dữ liệu, min/max.</p>
+        </div>
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100">
+          <Button variant="outline" onClick={() => { setShowNewScan(false); setNewScanTable('') }}>Hủy</Button>
+          <Button onClick={handleNewScan} disabled={!newScanTable}>Chạy phân tích</Button>
+        </div>
+      </Dialog>
     </div>
   )
 }

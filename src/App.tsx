@@ -12,6 +12,7 @@ import { Issues } from '@/pages/Issues'
 import { IssueDetail } from '@/pages/Issues/IssueDetail'
 import { Reports } from '@/pages/Reports'
 import { Notifications } from '@/pages/Notifications'
+import { PipelinePage } from '@/pages/Pipeline'
 import { DefaultRules } from '@/pages/Settings/DefaultRules'
 import { DefaultSchedules } from '@/pages/Settings/DefaultSchedules'
 import { UserManagement } from '@/pages/Settings/UserManagement'
@@ -33,6 +34,7 @@ function App() {
           <Route path="/issues/:id" element={<IssueDetail />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/settings" element={<Navigate to="/settings/default-rules" replace />} />
           <Route path="/settings/default-rules" element={<DefaultRules />} />
           <Route path="/settings/default-schedules" element={<DefaultSchedules />} />

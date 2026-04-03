@@ -13,8 +13,9 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { DimensionBadge } from '@/components/common/DimensionBadge'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { formatDateTime } from '@/lib/utils'
-import { mockIssues, mockDataSources } from '@/data/mockData'
+import { mockIssues, mockDataSources, getDownstreamJobs } from '@/data/mockData'
 import { _ruleGeneratedIssues } from '@/pages/Rules'
 import type { Issue } from '@/types'
 
@@ -41,6 +42,41 @@ function exportCSV(issues: Issue[]) {
   a.download = `issues_${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function DownstreamImpactBadge({ tableId }: { tableId: string }) {
+  const [open, setOpen] = useState(false)
+  const jobs = getDownstreamJobs(tableId)
+  if (jobs.length === 0) return <span className="text-gray-400 text-xs">—</span>
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+      >
+        ⚡ {jobs.length} job{jobs.length > 1 ? 's' : ''}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-7 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 min-w-[220px] max-w-[280px]">
+            <div className="text-xs font-semibold text-slate-600 mb-2">Job phụ thuộc:</div>
+            <div className="space-y-1.5">
+              {jobs.map(job => (
+                <div key={job.id} className="flex items-start gap-2 text-xs">
+                  <span className="text-amber-500 mt-0.5">⚡</span>
+                  <div>
+                    <div className="font-semibold text-slate-800">{job.name}</div>
+                    <div className="text-slate-500">{job.owner}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 export function Issues() {
@@ -86,7 +122,7 @@ export function Issues() {
     <div className="space-y-6">
       <PageHeader
         title="Vấn đề & Sự cố"
-        description="Theo dõi và xử lý các vấn đề chất lượng dữ liệu được phát hiện"
+        description="Vấn đề được TỰ ĐỘNG tạo khi rule kiểm tra thất bại qua Lịch chạy. Mỗi rule fail = 1 Issue mới (trạng thái 'Mới'). Gán cho người xử lý → Đang xử lý → Đã giải quyết → Đóng."
         breadcrumbs={[{ label: 'Vấn đề & Sự cố' }]}
       />
 
@@ -242,20 +278,21 @@ export function Issues() {
               <TableRow>
                 <TableHead className="w-12 text-center">STT</TableHead>
                 <TableHead className="w-24">ID</TableHead>
-                <TableHead>Tiêu đề</TableHead>
-                <TableHead className="w-32">Mức độ</TableHead>
+                <TableHead><span className="inline-flex items-center gap-1">Tiêu đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
+                <TableHead className="w-32"><span className="inline-flex items-center gap-1">Mức độ <InfoTooltip text="Mức độ nghiêm trọng: Critical (khẩn cấp, SLA 24h), High (cao), Medium (trung bình), Low (thấp)" /></span></TableHead>
                 <TableHead className="w-36">Bảng dữ liệu</TableHead>
                 <TableHead className="w-28">Chiều DL</TableHead>
+                <TableHead className="w-28"><span className="inline-flex items-center gap-1">⚡ Tác động <InfoTooltip text="Số job downstream đọc từ bảng bị lỗi — có thể bị ảnh hưởng bởi vấn đề này" /></span></TableHead>
                 <TableHead className="w-36">Phát hiện lúc</TableHead>
-                <TableHead className="w-36">Gán cho</TableHead>
-                <TableHead className="w-28">Trạng thái</TableHead>
+                <TableHead className="w-36"><span className="inline-flex items-center gap-1">Gán cho <InfoTooltip text="Người được phân công xử lý. Cập nhật trong trang chi tiết vấn đề." /></span></TableHead>
+                <TableHead className="w-28"><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Vòng đời: Mới → Đã gán → Đang xử lý → Chờ xét duyệt → Đã giải quyết → Đóng" /></span></TableHead>
                 <TableHead className="w-16 text-center">Xem</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paged.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-12 text-gray-400">
+                  <TableCell colSpan={11} className="text-center py-12 text-gray-400">
                     Không tìm thấy vấn đề nào
                   </TableCell>
                 </TableRow>
@@ -294,6 +331,9 @@ export function Issues() {
                     </TableCell>
                     <TableCell>
                       <DimensionBadge dimension={issue.dimension} />
+                    </TableCell>
+                    <TableCell>
+                      <DownstreamImpactBadge tableId={issue.tableId} />
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-gray-600">{formatDateTime(issue.detectedAt)}</span>

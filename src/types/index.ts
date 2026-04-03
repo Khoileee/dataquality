@@ -198,6 +198,30 @@ export interface NotificationConfig {
   triggerOn: ('warning' | 'critical' | 'resolved')[]
   tables: string[]
   isActive: boolean
+  notifyDownstream?: boolean
+  emailSubject?: string
+  emailBody?: string
+}
+
+export type JobType = 'etl'
+export type JobTechnology = 'Spark' | 'Airflow' | 'Python' | 'SSIS' | 'Kafka' | 'Custom'
+export type JobRunStatus = 'success' | 'failed' | 'partial'
+
+export interface PipelineJob {
+  id: string
+  name: string
+  description: string
+  jobType: JobType
+  technology: JobTechnology
+  owner: string
+  ownerEmail: string
+  team: string
+  inputTableIds: string[]
+  outputTableIds: string[]
+  status: 'active' | 'inactive'
+  schedule: string
+  lastRunAt: string
+  lastRunStatus: JobRunStatus
 }
 
 export interface ThresholdConfig {

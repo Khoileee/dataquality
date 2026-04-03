@@ -1,6 +1,6 @@
 import type {
   DataSource, QualityRule, RuleTemplate, Schedule, Issue,
-  NotificationConfig, ThresholdConfig, User, ProfilingResult, DashboardStats
+  NotificationConfig, ThresholdConfig, User, ProfilingResult, DashboardStats, PipelineJob
 } from '../types'
 
 export const mockDataSources: DataSource[] = [
@@ -308,12 +308,12 @@ export const mockIssues: Issue[] = [
 ]
 
 export const mockNotifications: NotificationConfig[] = [
-  { id: 'notif-001', name: 'Cảnh báo nghiêm trọng - Nhóm DBA', type: 'email', recipients: ['dba@vietbank.vn', 'team-dba@vietbank.vn'], triggerOn: ['critical'], tables: ['ds-001', 'ds-002', 'ds-003'], isActive: true },
-  { id: 'notif-002', name: 'Cảnh báo chất lượng - Quản lý', type: 'email', recipients: ['manager@vietbank.vn', 'director-data@vietbank.vn'], triggerOn: ['critical', 'warning'], tables: ['ds-006', 'ds-015'], isActive: true },
+  { id: 'notif-001', name: 'Cảnh báo nghiêm trọng - Nhóm DBA', type: 'email', recipients: ['dba@vietbank.vn', 'team-dba@vietbank.vn'], triggerOn: ['critical'], tables: ['ds-001', 'ds-002', 'ds-003'], isActive: true, emailSubject: '[DQ ALERT] {{severity}} - Bảng {{table}} cần xử lý ngay', emailBody: 'Kính gửi DBA Team,\n\nHệ thống DQ phát hiện vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Chiều dữ liệu: {{dimension}}\n• Mức độ: {{severity}}\n• Điểm chất lượng: {{score}}/100 (ngưỡng: {{threshold}})\n• Phát hiện lúc: {{detected_at}}\n\nVui lòng truy cập hệ thống DQ để xem chi tiết và xử lý kịp thời.\n\nTrân trọng,\nHệ thống Data Quality' },
+  { id: 'notif-002', name: 'Cảnh báo chất lượng - Quản lý', type: 'email', recipients: ['manager@vietbank.vn', 'director-data@vietbank.vn'], triggerOn: ['critical', 'warning'], tables: ['ds-006', 'ds-015'], isActive: true, emailSubject: '[DQ] Cảnh báo chất lượng dữ liệu - {{table}}', emailBody: 'Kính gửi Ban Quản lý,\n\nBáo cáo vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Mức độ: {{severity}}\n• Điểm hiện tại: {{score}}/100\n• Phát hiện: {{detected_at}}\n\nĐội ngũ kỹ thuật đang xử lý.\n\nTrân trọng,\nHệ thống Data Quality' },
   { id: 'notif-003', name: 'SMS cảnh báo - On-call team', type: 'sms', recipients: ['+84901234567', '+84901234568'], triggerOn: ['critical'], tables: ['ds-002', 'ds-011'], isActive: true },
   { id: 'notif-004', name: 'Webhook tích hợp Jira', type: 'webhook', recipients: ['https://jira.vietbank.vn/webhook/dq'], triggerOn: ['critical', 'warning', 'resolved'], tables: [], isActive: false },
-  { id: 'notif-005', name: 'Báo cáo hàng ngày - Data Steward', type: 'email', recipients: ['data-steward@vietbank.vn'], triggerOn: ['warning', 'resolved'], tables: [], isActive: true },
-  { id: 'notif-006', name: 'Cảnh báo rủi ro - Nhóm Risk', type: 'email', recipients: ['risk@vietbank.vn'], triggerOn: ['critical', 'warning'], tables: ['ds-012'], isActive: true },
+  { id: 'notif-005', name: 'Báo cáo hàng ngày - Data Steward', type: 'email', recipients: ['data-steward@vietbank.vn'], triggerOn: ['warning', 'resolved'], tables: [], isActive: true, emailSubject: '[DQ Daily] Tổng hợp vấn đề chất lượng - {{detected_at}}', emailBody: 'Kính gửi Data Steward,\n\nTóm tắt vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Chiều: {{dimension}}\n• Mức độ: {{severity}}\n• Trạng thái: {{status}}\n\nVui lòng xem chi tiết tại hệ thống DQ.\n\nTrân trọng' },
+  { id: 'notif-006', name: 'Cảnh báo rủi ro - Nhóm Risk', type: 'email', recipients: ['risk@vietbank.vn'], triggerOn: ['critical', 'warning'], tables: ['ds-012'], isActive: true, emailSubject: '[RISK ALERT] Dữ liệu rủi ro có vấn đề - {{table}}', emailBody: 'Kính gửi Risk Team,\n\nPhát hiện vấn đề trên dữ liệu quản lý rủi ro:\n\n• Bảng: {{table}}\n• Chiều: {{dimension}}\n• Mức độ: {{severity}}\n• Điểm: {{score}}/100\n• Phát hiện: {{detected_at}}\n\nCần xem xét tác động đến mô hình đánh giá rủi ro.\n\nTrân trọng,\nHệ thống Data Quality' },
 ]
 
 export const mockThresholds: ThresholdConfig[] = [
@@ -402,3 +402,86 @@ export const mockDimensionTrend = Array.from({ length: 12 }, (_, i) => {
     timeliness: Math.round(65 + Math.sin(i * 0.7) * 12),
   }
 })
+
+export const mockPipelineJobs: PipelineJob[] = [
+  {
+    id: 'pj-001', name: 'ETL_KH_DAILY', description: 'Đồng bộ dữ liệu khách hàng từ hệ thống core banking',
+    jobType: 'etl', technology: 'Airflow', owner: 'Nguyễn Thị Lan', ownerEmail: 'lan@company.com',
+    team: 'Nhóm Khách hàng', inputTableIds: [], outputTableIds: ['ds-001'],
+    status: 'active', schedule: 'Hàng ngày 05:00', lastRunAt: '2026-04-01T05:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-002', name: 'ETL_GD_DAILY', description: 'Tổng hợp giao dịch hàng ngày vào bảng GD_GIAODICH',
+    jobType: 'etl', technology: 'Kafka', owner: 'Trần Văn Minh', ownerEmail: 'minh@company.com',
+    team: 'Nhóm Giao dịch', inputTableIds: ['ds-011'], outputTableIds: ['ds-002'],
+    status: 'active', schedule: 'Hàng ngày 02:00', lastRunAt: '2026-04-01T02:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-003', name: 'ETL_TK_SYNC', description: 'Đồng bộ thông tin tài khoản từ hệ thống lõi qua SSIS',
+    jobType: 'etl', technology: 'SSIS', owner: 'Lê Thị Hoa', ownerEmail: 'hoa@company.com',
+    team: 'Nhóm Sản phẩm', inputTableIds: [], outputTableIds: ['ds-003'],
+    status: 'active', schedule: 'Hàng ngày 04:30', lastRunAt: '2026-04-01T04:30:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-004', name: 'ETL_HOPDONG', description: 'Tổng hợp dữ liệu hợp đồng từ TK_TAIKHOAN và KH_KHACHHANG',
+    jobType: 'etl', technology: 'Spark', owner: 'Nguyễn Thị Lan', ownerEmail: 'lan@company.com',
+    team: 'Nhóm Tín dụng', inputTableIds: ['ds-003', 'ds-001'], outputTableIds: ['ds-005'],
+    status: 'active', schedule: 'Hàng ngày 06:00', lastRunAt: '2026-04-01T06:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-005', name: 'RPT_BAO_CAO_NGAY', description: 'Tổng hợp báo cáo kinh doanh hàng ngày từ GD và KH',
+    jobType: 'etl', technology: 'Python', owner: 'Trần Văn Minh', ownerEmail: 'minh@company.com',
+    team: 'Nhóm Báo cáo', inputTableIds: ['ds-002', 'ds-001'], outputTableIds: ['ds-006'],
+    status: 'active', schedule: 'Hàng ngày 07:00', lastRunAt: '2026-04-01T07:00:00', lastRunStatus: 'failed',
+  },
+  {
+    id: 'pj-006', name: 'ETL_KPI', description: 'Tính toán KPI kinh doanh từ GD, HĐ và báo cáo ngày',
+    jobType: 'etl', technology: 'Spark', owner: 'Lê Thị Hoa', ownerEmail: 'hoa@company.com',
+    team: 'Nhóm Báo cáo', inputTableIds: ['ds-002', 'ds-005', 'ds-006'], outputTableIds: ['ds-015'],
+    status: 'active', schedule: 'Hàng ngày 08:00', lastRunAt: '2026-04-01T08:00:00', lastRunStatus: 'failed',
+  },
+  {
+    id: 'pj-007', name: 'ETL_RISKDATA', description: 'Tổng hợp dữ liệu rủi ro từ GD và KH để phân tích tín dụng',
+    jobType: 'etl', technology: 'Spark', owner: 'Phạm Quốc Hùng', ownerEmail: 'hung@company.com',
+    team: 'Nhóm Rủi ro', inputTableIds: ['ds-002', 'ds-001'], outputTableIds: ['ds-012'],
+    status: 'active', schedule: 'Hàng ngày 06:30', lastRunAt: '2026-04-01T06:30:00', lastRunStatus: 'failed',
+  },
+  {
+    id: 'pj-008', name: 'ETL_LOG_ARCHIVE', description: 'Lưu trữ log giao dịch tổng hợp vào bảng archive tháng',
+    jobType: 'etl', technology: 'Python', owner: 'Trần Văn Minh', ownerEmail: 'minh@company.com',
+    team: 'Nhóm Lưu trữ', inputTableIds: ['ds-011'], outputTableIds: ['ds-014'],
+    status: 'active', schedule: 'Cuối tháng 23:00', lastRunAt: '2026-03-31T23:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-009', name: 'ETL_BIEUPHI', description: 'Cập nhật biểu phí dịch vụ từ dữ liệu tài khoản',
+    jobType: 'etl', technology: 'SSIS', owner: 'Lê Thị Hoa', ownerEmail: 'hoa@company.com',
+    team: 'Nhóm Sản phẩm', inputTableIds: ['ds-003'], outputTableIds: ['ds-010'],
+    status: 'active', schedule: 'Hàng tuần T2 06:00', lastRunAt: '2026-03-30T06:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-010', name: 'ETL_PHANQUYEN', description: 'Đồng bộ phân quyền dựa trên nhóm khách hàng',
+    jobType: 'etl', technology: 'Python', owner: 'Nguyễn Thị Lan', ownerEmail: 'lan@company.com',
+    team: 'Nhóm Bảo mật', inputTableIds: ['ds-001'], outputTableIds: ['ds-013'],
+    status: 'inactive', schedule: 'Hàng ngày 03:00', lastRunAt: '2026-03-31T03:00:00', lastRunStatus: 'success',
+  },
+  {
+    id: 'pj-011', name: 'ETL_TONG_HOP_TUAN', description: 'Tổng hợp toàn diện dữ liệu kinh doanh cuối tuần: giao dịch, khách hàng, hợp đồng, báo cáo ngày',
+    jobType: 'etl', technology: 'Spark', owner: 'Lê Thị Hoa', ownerEmail: 'hoa@company.com',
+    team: 'Nhóm Báo cáo', inputTableIds: ['ds-002', 'ds-001', 'ds-005', 'ds-006'], outputTableIds: ['ds-015'],
+    status: 'active', schedule: 'Hàng tuần T7 22:00', lastRunAt: '2026-03-29T22:00:00', lastRunStatus: 'failed',
+  },
+  {
+    id: 'pj-012', name: 'ETL_DM_DANHMUC', description: 'Làm mới danh mục tiền tệ và chi nhánh, cập nhật vào bảng sản phẩm',
+    jobType: 'etl', technology: 'Python', owner: 'Phạm Quốc Hùng', ownerEmail: 'hung@company.com',
+    team: 'Nhóm Quản trị DL', inputTableIds: ['ds-007', 'ds-008'], outputTableIds: ['ds-004'],
+    status: 'active', schedule: 'Hàng tháng ngày 1 01:00', lastRunAt: '2026-04-01T01:00:00', lastRunStatus: 'success',
+  },
+]
+
+export function getDownstreamJobs(tableId: string): PipelineJob[] {
+  return mockPipelineJobs.filter(job => job.inputTableIds.includes(tableId))
+}
+
+export function getUpstreamJobs(tableId: string): PipelineJob[] {
+  return mockPipelineJobs.filter(job => job.outputTableIds.includes(tableId))
+}
