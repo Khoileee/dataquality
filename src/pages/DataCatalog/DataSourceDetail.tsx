@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   Play, Edit, Layers, CheckSquare, Link2, Fingerprint, Target, Clock, RefreshCw,
-  AlertTriangle as AlertTriangleIcon, CheckCircle,
+  AlertTriangle as AlertTriangleIcon, CheckCircle, Database, FileBarChart,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -44,6 +44,7 @@ const trendData = Array.from({ length: 30 }, (_, i) => ({
 
 export function DataSourceDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const baseDs = mockDataSources.find(ds => ds.id === id)
 
   // Local mutable state
@@ -151,6 +152,7 @@ export function DataSourceDetail() {
         description={ds.description}
         breadcrumbs={[
           { label: 'Danh mục dữ liệu', href: '/data-catalog' },
+          { label: ds.moduleType === 'source' ? 'Bảng nguồn' : ds.moduleType === 'report' ? 'Báo cáo' : 'Chỉ tiêu' },
           { label: ds.name },
         ]}
         actions={
@@ -227,6 +229,11 @@ export function DataSourceDetail() {
           <CardContent>
             <div className="grid grid-cols-2 gap-x-8 gap-y-3">
               {[
+                { label: 'Loại đối tượng', value: (
+                  <Badge variant="secondary" className={`text-xs ${ds.moduleType === 'source' ? 'bg-blue-50 text-blue-700' : ds.moduleType === 'report' ? 'bg-purple-50 text-purple-700' : 'bg-orange-50 text-orange-700'}`}>
+                    {ds.moduleType === 'source' ? '📋 Bảng nguồn' : ds.moduleType === 'report' ? '📊 Báo cáo' : '🎯 Chỉ tiêu KPI'}
+                  </Badge>
+                )},
                 { label: 'Schema', value: ds.schema },
                 { label: 'Loại kết nối', value: <StatusBadge status={ds.type} /> },
                 { label: 'Danh mục', value: <Badge variant="secondary">{ds.category}</Badge> },
@@ -239,6 +246,8 @@ export function DataSourceDetail() {
                 },
                 { label: 'Trạng thái', value: <StatusBadge status={ds.status} /> },
                 { label: 'Ngày tạo', value: formatDate(ds.createdAt) },
+                ...(ds.moduleType === 'kpi' && ds.periodType ? [{ label: 'Chu kỳ tính', value: ds.periodType === 'daily' ? 'Ngày' : ds.periodType === 'weekly' ? 'Tuần' : ds.periodType === 'monthly' ? 'Tháng' : ds.periodType === 'quarterly' ? 'Quý' : 'Năm' }] : []),
+                ...(ds.moduleType === 'kpi' && ds.kpiFormula ? [{ label: 'Công thức tính', value: <span className="font-mono text-xs bg-gray-50 px-2 py-0.5 rounded">{ds.kpiFormula}</span> }] : []),
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col gap-0.5">
                   <span className="text-xs text-gray-400 font-medium">{label}</span>
@@ -271,7 +280,65 @@ export function DataSourceDetail() {
         </Card>
       </div>
 
-      {/* Row 3 - Column profiling */}
+      {/* Row 3 - Source Tables (for report & kpi) */}
+      {ds.moduleType !== 'source' && ds.sourceTableIds && ds.sourceTableIds.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              {ds.moduleType === 'report' ? <FileBarChart className="h-4 w-4 text-purple-500" /> : <Target className="h-4 w-4 text-orange-500" />}
+              {ds.moduleType === 'report' ? 'Bảng nguồn liên kết' : 'Nguồn dữ liệu'}
+            </CardTitle>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {ds.moduleType === 'report'
+                ? 'Các bảng nguồn được sử dụng để tổng hợp báo cáo này. Chất lượng bảng nguồn ảnh hưởng trực tiếp đến chất lượng báo cáo.'
+                : 'Các nguồn dữ liệu (báo cáo/bảng) được sử dụng để tính toán chỉ tiêu KPI này.'}
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12 text-center">#</TableHead>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Loại</TableHead>
+                    <TableHead>Schema</TableHead>
+                    <TableHead>Điểm tổng</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ds.sourceTableIds.map((stId, idx) => {
+                    const st = mockDataSources.find(s => s.id === stId)
+                    if (!st) return null
+                    return (
+                      <TableRow key={stId} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/data-catalog/${st.id}`)}>
+                        <TableCell className="text-center text-sm text-gray-400">{idx + 1}</TableCell>
+                        <TableCell>
+                          <span className="font-semibold text-blue-600 hover:underline">{st.name}</span>
+                          <span className="text-xs text-gray-400 block">{st.description}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-xs">
+                            {st.moduleType === 'source' ? 'Bảng nguồn' : st.moduleType === 'report' ? 'Báo cáo' : 'Chỉ tiêu'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">{st.schema}</TableCell>
+                        <TableCell>
+                          <span className={`text-lg font-bold ${getScoreColor(st.overallScore)}`}>{st.overallScore}</span>
+                        </TableCell>
+                        <TableCell><StatusBadge status={st.status} /></TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Row 4 - Column profiling */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Phân tích cột dữ liệu</CardTitle>

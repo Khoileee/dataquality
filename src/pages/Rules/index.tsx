@@ -22,7 +22,7 @@ import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { cn, formatDateTime } from '@/lib/utils'
 import { mockRules, mockRuleTemplates, mockDataSources } from '@/data/mockData'
 import { getGlobalThreshold, getTableThreshold } from '@/pages/Thresholds'
-import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRule, RuleTemplate, IssueSeverity, Issue } from '@/types'
+import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRule, RuleTemplate, IssueSeverity, Issue, ModuleType } from '@/types'
 
 const DIMENSIONS: QualityDimension[] = ['completeness', 'validity', 'consistency', 'uniqueness', 'accuracy', 'timeliness']
 const PAGE_SIZE = 10
@@ -112,6 +112,8 @@ const METRICS_BY_DIMENSION: Record<QualityDimension, MetricDef[]> = {
     { value: 'row_count', label: 'Số dòng trong khoảng [Bảng]', hint: 'Số bản ghi trong bảng phải nằm trong [min, max] — phát hiện bảng bị truncate hoặc tăng đột biến' },
     { value: 'time_coverage', label: 'Phủ thời gian (Time Coverage) [Bảng]', hint: 'Kiểm tra chuỗi thời gian không bị thiếu khoảng — phát hiện ngày/tuần/tháng bị missing data' },
     { value: 'volume_change', label: 'Thay đổi khối lượng (Volume Change) [Bảng]', hint: 'Số dòng không được thay đổi quá X% so với lần chạy trước trong N ngày — phát hiện mất/thêm dữ liệu bất thường' },
+    { value: 'report_row_count_match', label: 'Khớp số dòng BC vs Nguồn [Bảng]', hint: 'Số dòng báo cáo phải khớp với bảng nguồn liên kết — phát hiện mất dữ liệu khi tổng hợp' },
+    { value: 'period_completeness', label: 'Đủ kỳ dữ liệu KPI [Bảng]', hint: 'KPI phải có đủ dữ liệu theo chu kỳ (ngày/tuần/tháng) — phát hiện thiếu kỳ báo cáo' },
   ],
   validity: [
     { value: 'format_regex', label: 'Đúng định dạng — Whitelist Regex [Cột]', hint: 'Giá trị PHẢI khớp biểu thức chính quy. VD: số điện thoại ^0[0-9]{9}$' },
@@ -125,6 +127,8 @@ const METRICS_BY_DIMENSION: Record<QualityDimension, MetricDef[]> = {
     { value: 'mode_check', label: 'Giá trị phổ biến nhất (Mode) [Cột]', hint: 'Giá trị xuất hiện nhiều nhất phải chiếm ≥ X% — phát hiện dữ liệu bị "pha tạp" bởi nguồn lạ' },
     { value: 'cross_column', label: 'Nhất quán chéo cột [Bảng]', hint: 'Biểu thức logic giữa 2+ cột. VD: NGAY_KET_THUC > NGAY_HIEU_LUC' },
     { value: 'referential_integrity', label: 'Toàn vẹn tham chiếu (FK) [Cột]', hint: 'Giá trị cột phải tồn tại trong bảng tham chiếu' },
+    { value: 'cross_source_sum', label: 'Tổng chéo nguồn (Cross-Source) [Bảng]', hint: 'So sánh tổng giá trị giữa báo cáo và bảng nguồn — phát hiện chênh lệch khi tổng hợp' },
+    { value: 'parent_child_match', label: 'Khớp KPI cha-con [Bảng]', hint: 'Tổng KPI con phải bằng KPI cha — phát hiện sai lệch cây chỉ tiêu' },
   ],
   uniqueness: [
     { value: 'duplicate_single', label: 'Không trùng lặp (1 cột) [Cột]', hint: 'Kiểm tra giá trị trong cột là duy nhất' },
@@ -136,6 +140,8 @@ const METRICS_BY_DIMENSION: Record<QualityDimension, MetricDef[]> = {
     { value: 'sum_range', label: 'Tổng cột trong khoảng (Sum Range) [Cột]', hint: 'SUM của cột phải nằm trong [min, max] — phát hiện bảng bị zero-out hoặc tổng doanh thu bất thường' },
     { value: 'expression_pct', label: 'Biểu thức cross-column có % pass [Cột]', hint: 'Biểu thức SparkSQL phải đúng cho ≥ X% số dòng. VD: total = price * qty đúng cho ≥ 99% dòng' },
     { value: 'table_size', label: 'Kích thước bảng trong khoảng [Bảng]', hint: 'Dung lượng bảng/partition phải trong khoảng [min, max] MB hoặc GB — phát hiện partition size bất thường' },
+    { value: 'aggregate_reconciliation', label: 'Đối soát tổng hợp BC [Bảng]', hint: 'So sánh giá trị cột tổng hợp trên báo cáo với SUM từ bảng nguồn — phát hiện sai lệch' },
+    { value: 'kpi_variance', label: 'Biến động KPI so kỳ trước [Bảng]', hint: 'Giá trị KPI không được thay đổi quá X% so với kỳ trước — phát hiện bất thường KPI' },
   ],
   timeliness: [
     { value: 'on_time', label: 'Đúng hạn (SLA) [Cột]', hint: 'Dữ liệu phải có mặt trước thời hạn SLA' },
@@ -150,6 +156,8 @@ function getMetricLabel(dim: QualityDimension, mt: MetricType): string {
 const TABLE_LEVEL_METRICS: MetricType[] = [
   'cross_column', 'custom_expression', 'duplicate_composite',
   'row_count', 'time_coverage', 'volume_change', 'table_size',
+  'aggregate_reconciliation', 'cross_source_sum', 'report_row_count_match',
+  'kpi_variance', 'period_completeness', 'parent_child_match',
 ]
 
 function getScopeLabel(rule: QualityRule): string {
@@ -187,6 +195,13 @@ function metricSummary(cfg: MetricConfig, dim: QualityDimension): string {
     case 'time_coverage': return `Phủ ${cfg.minCoveragePct ?? '?'}%/${cfg.granularity ?? '?'} (${cfg.coverageDays ?? '?'} ngày) : ${cfg.timeColumn ?? '—'}`
     case 'volume_change': return `Thay đổi ≤ ${cfg.maxChangePct ?? '?'}% (lookback ${cfg.lookbackPeriod ?? '?'} ngày)`
     case 'table_size': return `Size ∈ [${cfg.tableSizeMin ?? '?'}, ${cfg.tableSizeMax ?? '?'}] ${cfg.tableSizeUnit ?? 'MB'}`
+    // Report/KPI metrics
+    case 'aggregate_reconciliation': return `Đối soát: ${cfg.reportColumn ?? '—'} vs SUM nguồn (±${cfg.tolerancePct ?? '?'}%)`
+    case 'cross_source_sum': return `Tổng chéo nguồn (±${cfg.tolerancePct ?? '?'}%)`
+    case 'report_row_count_match': return `Khớp số dòng BC vs Nguồn`
+    case 'kpi_variance': return `Biến động KPI ≤ ${cfg.maxVariancePct ?? '?'}%`
+    case 'period_completeness': return `Đủ kỳ ${cfg.granularity ?? '?'} (${cfg.coverageDays ?? '?'} ngày)`
+    case 'parent_child_match': return `KPI cha ${cfg.parentKpiColumn ?? '—'} = ∑ con (±${cfg.tolerancePct ?? '?'}%)`
     default: return getMetricLabel(dim, cfg.metricType)
   }
 }
@@ -252,6 +267,13 @@ interface RuleForm {
   tableSizeMin: string
   tableSizeMax: string
   tableSizeUnit: 'MB' | 'GB'
+  // Report/KPI fields
+  sourceTableId: string
+  reportColumn: string
+  tolerancePct: string
+  maxVariancePct: string
+  parentKpiColumn: string
+  childSumExpression: string
   warningThreshold: string
   criticalThreshold: string
   status: RuleStatus
@@ -275,6 +297,8 @@ const EMPTY_FORM: RuleForm = {
   minRows: '', maxRows: '',
   lookbackPeriod: '7', maxChangePct: '30',
   tableSizeMin: '', tableSizeMax: '', tableSizeUnit: 'MB',
+  sourceTableId: '', reportColumn: '', tolerancePct: '5',
+  maxVariancePct: '30', parentKpiColumn: '', childSumExpression: '',
   warningThreshold: '85', criticalThreshold: '70',
   status: 'active',
 }
@@ -736,6 +760,123 @@ function MetricConfigFields({
           </div>
         </>
       )}
+
+      {/* Aggregate reconciliation (report) */}
+      {mt === 'aggregate_reconciliation' && (
+        <>
+          <div className="space-y-1">
+            <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
+            <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
+              <option value="">-- Chọn bảng nguồn --</option>
+              {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-sm">Cột tổng hợp trên BC <span className="text-red-500">*</span></Label>
+              {tableColumns.length > 0 ? (
+                <Select value={form.reportColumn} onChange={set('reportColumn')}>
+                  <option value="">-- Chọn cột --</option>
+                  {tableColumns.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
+              ) : (
+                <Input value={form.reportColumn} onChange={set('reportColumn')} placeholder="THUC_TE" />
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm">Sai lệch tối đa (%)</Label>
+              <Input type="number" min={0} max={100} value={form.tolerancePct} onChange={set('tolerancePct')} placeholder="5" />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Cross source sum (report/consistency) */}
+      {mt === 'cross_source_sum' && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
+            <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
+              <option value="">-- Chọn bảng nguồn --</option>
+              {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-sm">Sai lệch tối đa (%)</Label>
+            <Input type="number" min={0} max={100} value={form.tolerancePct} onChange={set('tolerancePct')} placeholder="5" />
+          </div>
+        </div>
+      )}
+
+      {/* Report row count match */}
+      {mt === 'report_row_count_match' && (
+        <div className="space-y-1">
+          <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
+          <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
+            <option value="">-- Chọn bảng nguồn --</option>
+            {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
+          </Select>
+          <p className="text-xs text-gray-500">So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn</p>
+        </div>
+      )}
+
+      {/* KPI variance */}
+      {mt === 'kpi_variance' && (
+        <div className="space-y-1">
+          <Label className="text-sm">Biến động tối đa so kỳ trước (%) <span className="text-red-500">*</span></Label>
+          <Input type="number" min={0} max={100} value={form.maxVariancePct} onChange={set('maxVariancePct')} placeholder="30" />
+          <p className="text-xs text-gray-500">KPI thay đổi vượt ngưỡng này sẽ bị cảnh báo</p>
+        </div>
+      )}
+
+      {/* Period completeness (KPI) */}
+      {mt === 'period_completeness' && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Label className="text-sm">Chu kỳ</Label>
+            <Select value={form.granularity} onChange={set('granularity')}>
+              <option value="day">Ngày</option>
+              <option value="week">Tuần</option>
+              <option value="month">Tháng</option>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-sm">Khoảng kiểm (ngày)</Label>
+            <Input type="number" min={1} value={form.coverageDays} onChange={set('coverageDays')} placeholder="30" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-sm">% kỳ phải có <span className="text-red-500">*</span></Label>
+            <Input type="number" min={1} max={100} value={form.minCoveragePct} onChange={set('minCoveragePct')} placeholder="95" />
+          </div>
+        </div>
+      )}
+
+      {/* Parent-child match (KPI) */}
+      {mt === 'parent_child_match' && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-sm">Cột KPI cha <span className="text-red-500">*</span></Label>
+              {tableColumns.length > 0 ? (
+                <Select value={form.parentKpiColumn} onChange={set('parentKpiColumn')}>
+                  <option value="">-- Chọn cột --</option>
+                  {tableColumns.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
+              ) : (
+                <Input value={form.parentKpiColumn} onChange={set('parentKpiColumn')} placeholder="TONG_GD" />
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm">Sai lệch tối đa (%)</Label>
+              <Input type="number" min={0} max={100} value={form.tolerancePct} onChange={set('tolerancePct')} placeholder="5" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-sm">Biểu thức tổng KPI con</Label>
+            <Input value={form.childSumExpression} onChange={set('childSumExpression')} placeholder="SUM(sub_kpi_value)" className="font-mono text-sm" />
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -773,6 +914,13 @@ function formToMetricConfig(form: RuleForm): MetricConfig | undefined {
     case 'time_coverage': return { ...base, timeColumn: form.timeColumn, granularity: form.granularity, coverageDays: Number(form.coverageDays), minCoveragePct: Number(form.minCoveragePct) }
     case 'volume_change': return { ...base, lookbackPeriod: Number(form.lookbackPeriod), maxChangePct: Number(form.maxChangePct) }
     case 'table_size': return { ...base, tableSizeMin: form.tableSizeMin ? Number(form.tableSizeMin) : undefined, tableSizeMax: form.tableSizeMax ? Number(form.tableSizeMax) : undefined, tableSizeUnit: form.tableSizeUnit }
+    // Report/KPI metrics
+    case 'aggregate_reconciliation': return { ...base, sourceTableId: form.sourceTableId, reportColumn: form.reportColumn, tolerancePct: Number(form.tolerancePct) }
+    case 'cross_source_sum': return { ...base, sourceTableId: form.sourceTableId, tolerancePct: Number(form.tolerancePct) }
+    case 'report_row_count_match': return { ...base, sourceTableId: form.sourceTableId }
+    case 'kpi_variance': return { ...base, maxVariancePct: Number(form.maxVariancePct) }
+    case 'period_completeness': return { ...base, granularity: form.granularity, coverageDays: Number(form.coverageDays), minCoveragePct: Number(form.minCoveragePct) }
+    case 'parent_child_match': return { ...base, parentKpiColumn: form.parentKpiColumn, childSumExpression: form.childSumExpression || undefined, tolerancePct: Number(form.tolerancePct) }
     default: return base
   }
 }
@@ -819,6 +967,12 @@ function ruleToForm(rule: QualityRule): RuleForm {
     tableSizeMin: String(cfg?.tableSizeMin ?? ''),
     tableSizeMax: String(cfg?.tableSizeMax ?? ''),
     tableSizeUnit: cfg?.tableSizeUnit ?? 'MB',
+    sourceTableId: cfg?.sourceTableId ?? '',
+    reportColumn: cfg?.reportColumn ?? '',
+    tolerancePct: String(cfg?.tolerancePct ?? '5'),
+    maxVariancePct: String(cfg?.maxVariancePct ?? '30'),
+    parentKpiColumn: cfg?.parentKpiColumn ?? '',
+    childSumExpression: cfg?.childSumExpression ?? '',
     warningThreshold: String(rule.threshold.warning),
     criticalThreshold: String(rule.threshold.critical),
     status: rule.status,
@@ -866,6 +1020,12 @@ function templateToForm(tmpl: RuleTemplate): Partial<RuleForm> {
     tableSizeMin: String(cfg?.tableSizeMin ?? ''),
     tableSizeMax: String(cfg?.tableSizeMax ?? ''),
     tableSizeUnit: cfg?.tableSizeUnit ?? 'MB',
+    sourceTableId: cfg?.sourceTableId ?? '',
+    reportColumn: cfg?.reportColumn ?? '',
+    tolerancePct: String(cfg?.tolerancePct ?? '5'),
+    maxVariancePct: String(cfg?.maxVariancePct ?? '30'),
+    parentKpiColumn: cfg?.parentKpiColumn ?? '',
+    childSumExpression: cfg?.childSumExpression ?? '',
   }
 }
 
@@ -1112,7 +1272,8 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
   const [dimFilter, setDimFilter] = useState('all')
   const [tableFilter, setTableFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [appliedFilter, setAppliedFilter] = useState<{ search: string; dim: string; table: string; status: string } | null>(null)
+  const [moduleFilter, setModuleFilter] = useState<ModuleType | 'all'>('all')
+  const [appliedFilter, setAppliedFilter] = useState<{ search: string; dim: string; table: string; status: string; module: string } | null>(null)
   const [page, setPage] = useState(1)
   const [showAdd, setShowAdd] = useState(false)
   const [editRule, setEditRule] = useState<QualityRule | null>(null)
@@ -1134,15 +1295,19 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
     }
   }, [pendingTemplate])
 
-  const handleSearch = () => { setAppliedFilter({ search, dim: dimFilter, table: tableFilter, status: statusFilter }); setPage(1) }
-  const handleClear = () => { setSearch(''); setDimFilter('all'); setTableFilter('all'); setStatusFilter('all'); setAppliedFilter(null); setPage(1) }
+  const handleSearch = () => { setAppliedFilter({ search, dim: dimFilter, table: tableFilter, status: statusFilter, module: moduleFilter }); setPage(1) }
+  const handleClear = () => { setSearch(''); setDimFilter('all'); setTableFilter('all'); setStatusFilter('all'); setModuleFilter('all'); setAppliedFilter(null); setPage(1) }
 
   const filtered = rules.filter(r => {
-    const f = appliedFilter ?? { search: '', dim: 'all', table: 'all', status: 'all' }
+    const f = appliedFilter ?? { search: '', dim: 'all', table: 'all', status: 'all', module: 'all' }
     if (f.search && !r.name.toLowerCase().includes(f.search.toLowerCase())) return false
     if (f.dim !== 'all' && r.dimension !== f.dim) return false
     if (f.table !== 'all' && r.tableId !== f.table) return false
     if (f.status !== 'all' && r.status !== f.status) return false
+    if (f.module !== 'all') {
+      const ds = mockDataSources.find(d => d.id === r.tableId)
+      if (ds && ds.moduleType !== f.module) return false
+    }
     return true
   })
 
@@ -1221,7 +1386,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
       {/* Filter card */}
       <Card className="mb-4">
         <CardContent className="pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
               <Input className="pl-8" placeholder="Tên quy tắc..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
@@ -1233,6 +1398,12 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
             <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
               <option value="all">Bảng: Tất cả</option>
               {mockDataSources.map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
+            </Select>
+            <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | 'all')}>
+              <option value="all">Loại: Tất cả</option>
+              <option value="source">Bảng nguồn</option>
+              <option value="report">Báo cáo</option>
+              <option value="kpi">Chỉ tiêu</option>
             </Select>
             <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="all">Trạng thái: Tất cả</option>
@@ -1263,7 +1434,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 text-center">STT</TableHead>
+                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Tên quy tắc</TableHead>
                 <TableHead className="w-32">Chiều DL</TableHead>
                 <TableHead>Bảng · Chỉ số</TableHead>
@@ -1272,7 +1443,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                 <TableHead className="w-36">Chạy lần cuối</TableHead>
                 <TableHead className="w-32"><span className="inline-flex items-center gap-1">Kết quả <InfoTooltip text="Điểm của lần chạy rule gần nhất. Tính bằng % bản ghi vượt qua kiểm tra. 100 = tất cả bản ghi đạt, 0 = không bản ghi nào đạt." /></span></TableHead>
                 <TableHead className="w-24 text-center">Kích hoạt</TableHead>
-                <TableHead className="w-36 text-right">Hành động</TableHead>
+                <TableHead className="w-36 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1285,11 +1456,11 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                   const isRunning = runningIds[rule.id]
                   return (
                     <TableRow key={rule.id} className="hover:bg-gray-50">
-                      <TableCell className="text-center text-sm text-gray-500 font-medium">
+                      <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
                         {(page - 1) * PAGE_SIZE + idx + 1}
                       </TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="font-medium text-gray-900 text-sm">{rule.name}</div>
+                      <TableCell className="max-w-[320px]">
+                        <div className="font-medium text-gray-900 text-sm" title={`${rule.name}${rule.description ? ' — ' + rule.description : ''}`}>{rule.name}</div>
                         {rule.description && (
                           <div className="text-xs text-gray-400 mt-0.5 truncate">{rule.description.slice(0, 55)}</div>
                         )}
@@ -1338,8 +1509,8 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-0.5">
+                      <TableCell className="text-center sticky right-0 z-10 sticky-right">
+                        <div className="flex items-center justify-center gap-0.5">
                           <button
                             onClick={() => !isRunning && handleRunNow(rule.id)}
                             disabled={isRunning}

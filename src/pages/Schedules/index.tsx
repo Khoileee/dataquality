@@ -379,7 +379,7 @@ export function Schedules() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 text-center">STT</TableHead>
+                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Tên lịch</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
                 <TableHead className="w-28">Tần suất</TableHead>
@@ -389,7 +389,7 @@ export function Schedules() {
                 <TableHead className="w-24">Số QT</TableHead>
                 <TableHead className="w-20">Kích hoạt</TableHead>
                 <TableHead className="w-24 text-center">Xem Issues</TableHead>
-                <TableHead className="w-28 text-right">Hành động</TableHead>
+                <TableHead className="w-28 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -405,11 +405,11 @@ export function Schedules() {
                   const isActive = schedule.status === 'active'
                   return (
                     <TableRow key={schedule.id} className="hover:bg-gray-50">
-                      <TableCell className="text-center text-sm text-gray-500 font-medium">
+                      <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
                         {(page - 1) * PAGE_SIZE + idx + 1}
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium text-sm text-gray-900">{schedule.name}</div>
+                        <div className="font-medium text-sm text-gray-900" title={schedule.name}>{schedule.name}</div>
                         <div className="text-xs text-gray-400">{schedule.owner}</div>
                       </TableCell>
                       <TableCell>
@@ -474,8 +474,8 @@ export function Schedules() {
                           <ExternalLink className="h-3.5 w-3.5" />
                         </button>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-0.5">
+                      <TableCell className="text-center sticky right-0 z-10 sticky-right">
+                        <div className="flex items-center justify-center gap-0.5">
                           <button
                             onClick={() => !isRunning && handleRunNow(schedule.id)}
                             disabled={isRunning}

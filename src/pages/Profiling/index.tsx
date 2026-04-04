@@ -15,7 +15,16 @@ import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { Dialog } from '@/components/ui/dialog'
 import { getScoreColor, formatDateTime } from '@/lib/utils'
 import { mockDataSources, mockProfilingResults } from '@/data/mockData'
-import type { ProfilingResult } from '@/types'
+import type { ProfilingResult, ModuleType } from '@/types'
+
+const MODULE_LABELS: Record<ModuleType, string> = {
+  source: 'Bảng nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu',
+}
+const MODULE_COLORS: Record<ModuleType, string> = {
+  source: 'bg-blue-50 text-blue-700 border-blue-200',
+  report: 'bg-amber-50 text-amber-700 border-amber-200',
+  kpi: 'bg-purple-50 text-purple-700 border-purple-200',
+}
 
 export function Profiling() {
   const navigate = useNavigate()
@@ -23,11 +32,13 @@ export function Profiling() {
   const [results, setResults] = useState<ProfilingResult[]>([...mockProfilingResults])
   const [runningIds, setRunningIds] = useState<Record<string, boolean>>({})
   const [filterTable, setFilterTable] = useState('')
+  const [filterModule, setFilterModule] = useState<ModuleType | ''>('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterFrom, setFilterFrom] = useState('')
   const [filterTo, setFilterTo] = useState('')
 
   const [activeTable, setActiveTable] = useState('')
+  const [activeModule, setActiveModule] = useState<ModuleType | ''>('')
   const [activeStatus, setActiveStatus] = useState('')
   const [activeFrom, setActiveFrom] = useState('')
   const [activeTo, setActiveTo] = useState('')
@@ -36,6 +47,7 @@ export function Profiling() {
 
   function handleSearch() {
     setActiveTable(filterTable)
+    setActiveModule(filterModule)
     setActiveStatus(filterStatus)
     setActiveFrom(filterFrom)
     setActiveTo(filterTo)
@@ -43,10 +55,12 @@ export function Profiling() {
 
   function handleReset() {
     setFilterTable('')
+    setFilterModule('')
     setFilterStatus('')
     setFilterFrom('')
     setFilterTo('')
     setActiveTable('')
+    setActiveModule('')
     setActiveStatus('')
     setActiveFrom('')
     setActiveTo('')
@@ -119,6 +133,10 @@ export function Profiling() {
 
   const filtered = results.filter(r => {
     if (activeTable && r.tableId !== activeTable) return false
+    if (activeModule) {
+      const ds = mockDataSources.find(d => d.id === r.tableId)
+      if (ds && ds.moduleType !== activeModule) return false
+    }
     if (activeStatus && r.status !== activeStatus) return false
     if (activeFrom) {
       const runDate = new Date(r.runAt)
@@ -161,7 +179,7 @@ export function Profiling() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">Tên bảng</Label>
               <Select value={filterTable} onChange={e => setFilterTable(e.target.value)}>
@@ -169,6 +187,16 @@ export function Profiling() {
                 {mockDataSources.map(ds => (
                   <option key={ds.id} value={ds.id}>{ds.name}</option>
                 ))}
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Loại</Label>
+              <Select value={filterModule} onChange={e => setFilterModule(e.target.value as ModuleType | '')}>
+                <option value="">Tất cả</option>
+                <option value="source">Bảng nguồn</option>
+                <option value="report">Báo cáo</option>
+                <option value="kpi">Chỉ tiêu</option>
               </Select>
             </div>
 
@@ -230,21 +258,37 @@ export function Profiling() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                     <TableHead>Tên bảng</TableHead>
+                    <TableHead>Loại</TableHead>
                     <TableHead>Thời gian chạy</TableHead>
                     <TableHead>Trạng thái</TableHead>
                     <TableHead>Tổng dòng</TableHead>
                     <TableHead>Tổng cột</TableHead>
                     <TableHead><span className="inline-flex items-center gap-1">Điểm chất lượng <InfoTooltip text="Tính từ tỷ lệ cột có vấn đề trong lần quét này (null rate vượt ngưỡng, sai định dạng...). Thang điểm 0-100. Đây là điểm profiling kỹ thuật, KHÁC với điểm từ Rules." /></span></TableHead>
                     <TableHead><span className="inline-flex items-center gap-1">Thời lượng <InfoTooltip text="Thời gian thực hiện quét profiling cho bảng này (tính bằng giây). Phụ thuộc vào số cột và số bản ghi." /></span></TableHead>
-                    <TableHead className="w-20">Thao tác</TableHead>
+                    <TableHead className="w-20 sticky right-0 z-10 sticky-right">Hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map(result => (
+                  {filtered.map((result, idx) => (
                     <TableRow key={result.id} className="hover:bg-gray-50">
+                      <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
+                        {idx + 1}
+                      </TableCell>
                       <TableCell>
                         <span className="font-semibold text-gray-800">{result.tableName}</span>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const ds = mockDataSources.find(d => d.id === result.tableId)
+                          if (!ds) return null
+                          return (
+                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                              {MODULE_LABELS[ds.moduleType]}
+                            </span>
+                          )
+                        })()}
                       </TableCell>
                       <TableCell className="text-sm text-gray-500 whitespace-nowrap">
                         {formatDateTime(result.runAt)}
@@ -273,8 +317,8 @@ export function Profiling() {
                       <TableCell className="text-sm text-gray-600">
                         {result.durationSeconds}s
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
+                      <TableCell className="sticky right-0 z-10 sticky-right">
+                        <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => navigate(`/profiling/${result.id}`)}
                             className="p-1 rounded hover:bg-blue-50 hover:text-blue-600 text-gray-400 transition-colors"

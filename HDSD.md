@@ -1,6 +1,6 @@
 # Hướng Dẫn Sử Dụng — Data Quality System
 
-> **Phiên bản:** 1.1 | **Ngày:** 2026-04-01
+> **Phiên bản:** 1.2 | **Ngày:** 2026-04-03
 > Tài liệu này hướng dẫn toàn bộ quy trình sử dụng hệ thống giám sát chất lượng dữ liệu — từ người chưa từng dùng DQ tool đến quản trị viên nâng cao.
 
 ---
@@ -13,10 +13,10 @@
 4. [Bảng INPUT → OUTPUT giữa các menu](#4-bảng-input--output-giữa-các-menu)
    - [Cách tính điểm chất lượng (Score)](#cách-tính-điểm-chất-lượng-score)
 5. [Rule DQ: Quy tắc cho Cột hay Bảng?](#5-rule-dq-quy-tắc-cho-cột-hay-bảng)
-6. [25 Loại Metric Chi Tiết](#6-25-loại-metric-chi-tiết)
-   - 6.1 [Cấp Bảng — 7 metrics](#61-cấp-bảng-table-level--7-metrics)
+6. [31 Loại Metric Chi Tiết](#6-31-loại-metric-chi-tiết)
+   - 6.1 [Cấp Bảng — 13 metrics](#61-cấp-bảng-table-level--13-metrics)
    - 6.2 [Cấp Cột — 18 metrics](#62-cấp-cột-column-level--18-metrics)
-   - 6.3 [Hướng dẫn chi tiết tất cả 25 Metric](#63-hướng-dẫn-chi-tiết-tất-cả-25-metric)
+   - 6.3 [Hướng dẫn chi tiết tất cả 31 Metric](#63-hướng-dẫn-chi-tiết-tất-cả-31-metric)
 7. [Hướng dẫn từng menu](#7-hướng-dẫn-từng-menu)
    - 7.1 [Dashboard](#71-dashboard)
    - 7.2 [Danh mục dữ liệu](#72-danh-mục-dữ-liệu)
@@ -279,13 +279,13 @@ Overall Score = avg(dimensionScore của các chiều có rule)
 
 > **Câu hỏi hay!** Rule DQ **KHÔNG** chỉ dành cho cột. Có 2 loại phạm vi:
 
-### Loại 1: Quy tắc cấp Cột (Column-level) — 18/25 metric
+### Loại 1: Quy tắc cấp Cột (Column-level) — 18/31 metric
 
 Áp dụng cho **1 cột cụ thể** trong bảng. Cột "Phạm vi" trong danh sách Rule hiển thị `Cột: TÊN_CỘT`.
 
 **Khi nào dùng?** Khi bạn muốn kiểm tra một cột riêng lẻ: `EMAIL` có đúng format không? `SO_CMND` có NULL không? `SO_TIEN` có nằm trong khoảng hợp lệ không?
 
-### Loại 2: Quy tắc cấp Bảng (Table-level) — 7/25 metric
+### Loại 2: Quy tắc cấp Bảng (Table-level) — 13/31 metric
 
 **Không gắn với cột cụ thể** — kiểm tra đặc tính của toàn bảng hoặc ràng buộc giữa nhiều cột. Cột "Phạm vi" hiển thị `Bảng`.
 
@@ -294,20 +294,28 @@ Overall Score = avg(dimensionScore của các chiều có rule)
 | `row_count` | Completeness | Số dòng trong bảng nằm trong [min, max] | `GD_GIAODICH` có 1K–5M dòng — phát hiện truncate/explode |
 | `time_coverage` | Completeness | Chuỗi thời gian không bị gián đoạn | `NGAY_GD` có dữ liệu liên tục 30 ngày ≥ 95% |
 | `volume_change` | Completeness | % thay đổi số dòng so với N ngày trước | Số dòng không thay đổi quá 30% vs. tuần trước |
+| `report_row_count_match` | Completeness | Số dòng BC phải khớp bảng nguồn | `BAO_CAO_NGAY` vs `GD_GIAODICH` — phát hiện mất dòng khi tổng hợp |
+| `period_completeness` | Completeness | KPI phải có đủ kỳ dữ liệu | `KPI_KINHDOANH` phải có đủ 12 tháng gần nhất ≥ 95% |
 | `table_size` | Accuracy | Kích thước bảng trong khoảng [min, max] MB/GB | Partition `GD_GIAODICH` 1–500 GB |
+| `aggregate_reconciliation` | Accuracy | Đối soát cột tổng hợp BC vs SUM từ nguồn | `THUC_TE` trên BC khớp SUM(`SO_TIEN`) từ GD ± 1% |
+| `kpi_variance` | Accuracy | Biến động KPI so kỳ trước ≤ X% | KPI doanh thu tháng thay đổi ≤ 30% |
 | `custom_expression` | Validity | Điều kiện SQL WHERE tùy chỉnh | `LOAI_GD IN ('DC', 'CK', 'TM') AND SO_TIEN > 0` |
 | `cross_column` | Consistency | Ràng buộc logic giữa 2+ cột | `NGAY_KET_THUC > NGAY_HIEU_LUC` |
+| `cross_source_sum` | Consistency | Tổng chéo nguồn BC vs bảng gốc | Tổng `QUAN_LY_RR` khớp SUM từ `KH_KHACHHANG` ± 5% |
+| `parent_child_match` | Consistency | Tổng KPI con bằng KPI cha | `TONG_GD` = SUM(sub_kpi_value) ± 5% |
 | `duplicate_composite` | Uniqueness | Khóa duy nhất trên tổ hợp nhiều cột | Combo `(MA_KH, THANG)` trong bảng sao kê phải unique |
 
 ---
 
-## 6. 25 Loại Metric Chi Tiết
+## 6. 31 Loại Metric Chi Tiết
 
-Hệ thống hỗ trợ **25 metric type** chia thành 2 nhóm: **cấp cột** (18 metric) và **cấp bảng** (7 metric).
+Hệ thống hỗ trợ **31 metric type** chia thành 2 nhóm: **cấp cột** (18 metric) và **cấp bảng** (13 metric).
 
-### Bảng tổng hợp 25 Metric — Mô tả chi tiết, cấu hình & ví dụ
+> **Phiên bản 1.2:** Bổ sung 6 metric mới dành cho **Báo cáo** và **Chỉ tiêu (KPI)** — hỗ trợ đối soát, kiểm tra chéo nguồn, biến động KPI và khớp cây chỉ tiêu.
 
-> Bảng dưới đây tổng hợp toàn bộ 25 metric trong hệ thống. Mỗi dòng ghi rõ: tên hiển thị trên dropdown, chiều dữ liệu, cấp áp dụng, mô tả chi tiết cách cấu hình từng trường, và ví dụ thực tế. Kéo ngang để xem đầy đủ.
+### Bảng tổng hợp 31 Metric — Mô tả chi tiết, cấu hình & ví dụ
+
+> Bảng dưới đây tổng hợp toàn bộ 31 metric trong hệ thống. Mỗi dòng ghi rõ: tên hiển thị trên dropdown, chiều dữ liệu, cấp áp dụng, mô tả chi tiết cách cấu hình từng trường, và ví dụ thực tế. Kéo ngang để xem đầy đủ.
 
 | Metric (tên trên dropdown) | Chiều | Cấp | Mô tả chi tiết — mục đích & các trường cấu hình | Ví dụ thực tế — bài toán & cách cấu hình |
 |---|---|---|---|---|
@@ -336,18 +344,30 @@ Hệ thống hỗ trợ **25 metric type** chia thành 2 nhóm: **cấp cột** 
 | **Kích thước bảng trong khoảng** | Chính xác | Bảng | Kiểm tra dung lượng bảng/partition phải trong khoảng cho phép. Phát hiện partition size bất thường.<br>**Trường cấu hình:**<br>- **Kích thước tối thiểu**: giới hạn dưới<br>- **Kích thước tối đa**: giới hạn trên<br>- **Đơn vị**: chọn MB hoặc GB | **Bài toán:** Partition hàng ngày GD_GIAODICH phải từ 100MB đến 50GB.<br>**Cấu hình:**<br>- Min = `100`<br>- Max = `50000`<br>- Đơn vị = `MB`<br>→ Partition hôm nay chỉ 1MB → thiếu dữ liệu. |
 | **Đúng hạn (SLA)** | Kịp thời | Cột | Dữ liệu phải có mặt trước thời hạn SLA.<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp ghi nhận thời gian load/tạo<br>- **Thời hạn SLA (HH:MM)**: giờ deadline mỗi ngày<br>- **Cửa sổ cảnh báo (phút)**: cảnh báo sớm bao nhiêu phút trước deadline | **Bài toán:** Dữ liệu GD ngày hôm trước phải có trước 06:00 sáng.<br>**Cấu hình:**<br>- Cột = `NGAY_LOAD`<br>- SLA = `06:00`<br>- Cửa sổ cảnh báo = `30`<br>→ Cảnh báo lúc 05:30 nếu chưa có dữ liệu. |
 | **Tươi mới (Freshness)** | Kịp thời | Cột | Dữ liệu phải được cập nhật trong khoảng thời gian quy định — phát hiện bảng "chết".<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp cập nhật cuối<br>- **Dữ liệu tươi trong**: số lượng<br>- **Đơn vị thời gian**: Phút / Giờ / Ngày | **Bài toán:** Bảng KH phải được cập nhật trong 24 giờ gần nhất.<br>**Cấu hình:**<br>- Cột = `UPDATED_AT`<br>- Tươi trong = `24`<br>- Đơn vị = `Giờ`<br>→ Dòng gần nhất cập nhật 3 ngày trước → vi phạm. |
+| **Khớp số dòng BC vs Nguồn** 🆕 | Đầy đủ | Bảng | So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn liên kết — phát hiện mất dữ liệu trong quá trình tổng hợp báo cáo.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: chọn bảng nguồn (chỉ hiển thị bảng loại "Bảng nguồn") | **Bài toán:** Báo cáo ngày phải có đủ dòng so với bảng giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>→ BC có 900 dòng, nguồn 1.000 dòng → thiếu 10% → cảnh báo. |
+| **Đủ kỳ dữ liệu KPI** 🆕 | Đầy đủ | Bảng | Kiểm tra KPI phải có đủ dữ liệu theo chu kỳ — phát hiện thiếu kỳ báo cáo chỉ tiêu.<br>**Trường cấu hình:**<br>- **Chu kỳ**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% kỳ phải có dữ liệu**: VD 95% = trong 12 tháng phải có ít nhất 11 tháng | **Bài toán:** KPI kinh doanh phải có đủ 12 tháng gần nhất.<br>**Cấu hình:**<br>- Chu kỳ = `Tháng`<br>- Khoảng kiểm = `365`<br>- % kỳ phải có = `95`<br>→ Thiếu 2 tháng trong 12 tháng (83%) → không đạt. |
+| **Tổng chéo nguồn (Cross-Source)** 🆕 | Nhất quán | Bảng | So sánh tổng giá trị giữa báo cáo/KPI và bảng nguồn — phát hiện sai lệch khi tổng hợp dữ liệu từ nhiều bảng.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: chọn bảng nguồn để so sánh<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép | **Bài toán:** Tổng rủi ro trên báo cáo phải khớp với tổng từ bảng nguồn.<br>**Cấu hình:**<br>- Bảng BC = `QUAN_LY_RUI_RO`<br>- Bảng nguồn = `KH_KHACHHANG`<br>- Sai lệch tối đa = `5`<br>→ BC tổng = 100, nguồn = 110 → lệch 9.1% → vi phạm. |
+| **Khớp KPI cha-con** 🆕 | Nhất quán | Bảng | Tổng giá trị các KPI con phải bằng KPI cha — phát hiện sai lệch trong cây chỉ tiêu kinh doanh.<br>**Trường cấu hình:**<br>- **Cột KPI cha**: cột chứa giá trị KPI tổng<br>- **Biểu thức tổng KPI con**: biểu thức tính tổng các KPI con<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép | **Bài toán:** KPI doanh thu tổng = tổng doanh thu các chi nhánh.<br>**Cấu hình:**<br>- Cột KPI cha = `TONG_GD`<br>- Tổng KPI con = `SUM(sub_kpi_value)`<br>- Sai lệch tối đa = `5`<br>→ KPI cha = 100, tổng con = 108 → lệch 8% → vi phạm. |
+| **Đối soát tổng hợp BC** 🆕 | Chính xác | Bảng | So sánh giá trị cột tổng hợp trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: bảng gốc chứa dữ liệu chi tiết<br>- **Cột tổng hợp trên BC**: cột trên bảng BC chứa giá trị đã tổng hợp<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép giữa SUM nguồn và giá trị BC | **Bài toán:** Cột THUC_TE trên báo cáo phải khớp SUM(SO_TIEN) từ giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>- Cột BC = `THUC_TE`<br>- Sai lệch tối đa = `1`<br>→ BC THUC_TE = 100M, SUM giao dịch = 102M → lệch 2% → vi phạm. |
+| **Biến động KPI so kỳ trước** 🆕 | Chính xác | Bảng | Giá trị KPI không được thay đổi quá X% so với kỳ trước — phát hiện bất thường như tăng/giảm đột biến không giải thích được.<br>**Trường cấu hình:**<br>- **Biến động tối đa so kỳ trước (%)**: ngưỡng % thay đổi cho phép | **Bài toán:** KPI doanh thu tháng không được tăng/giảm quá 30%.<br>**Cấu hình:**<br>- Bảng KPI = `KPI_KINHDOANH`<br>- Biến động tối đa = `30`<br>→ Tháng trước 100M, tháng này 55M → giảm 45% → vi phạm. |
 
-### 6.1 Cấp Bảng (Table-level) — 7 metrics
+### 6.1 Cấp Bảng (Table-level) — 13 metrics
 
 | # | Metric | Chiều | Mô tả | Tham số cần nhập | Ví dụ |
 |---|---|---|---|---|---|
 | 1 | `row_count` | Đầy đủ | Số dòng bảng phải nằm trong [min, max] — phát hiện bảng bị truncate hoặc explode | min rows, max rows | `GD_GIAODICH` có 1.000 – 5.000.000 dòng |
 | 2 | `time_coverage` | Đầy đủ | Chuỗi thời gian không bị gián đoạn trong N ngày gần nhất | Cột thời gian, granularity (ngày/tuần/tháng), số ngày, % phủ tối thiểu | `NGAY_GD` liên tục 30 ngày ≥ 95% |
 | 3 | `volume_change` | Đầy đủ | % thay đổi số dòng so với N ngày trước không vượt ngưỡng | Số ngày nhìn lại, % thay đổi tối đa | Số dòng không thay đổi quá 30% so với 7 ngày trước |
-| 4 | `table_size` | Chính xác | Kích thước bảng/partition trong khoảng cho phép | min size, max size, đơn vị (MB/GB) | Bảng chiếm 1–500 GB |
-| 5 | `custom_expression` | Hợp lệ | Điều kiện SQL WHERE tùy chỉnh cho toàn bảng | Biểu thức SQL | `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0` |
-| 6 | `cross_column` | Nhất quán | Ràng buộc logic giữa 2+ cột | Biểu thức SQL boolean | `NGAY_DONG > NGAY_MO` |
-| 7 | `duplicate_composite` | Duy nhất | Tổ hợp nhiều cột phải unique | Danh sách cột | `(MA_KH, THANG)` không trùng |
+| 4 | `report_row_count_match` | Đầy đủ | Số dòng BC phải khớp bảng nguồn — phát hiện mất dữ liệu khi tổng hợp | Bảng nguồn liên kết | `BAO_CAO_NGAY` vs `GD_GIAODICH` |
+| 5 | `period_completeness` | Đầy đủ | KPI phải có đủ dữ liệu theo chu kỳ — phát hiện thiếu kỳ | Chu kỳ, khoảng kiểm (ngày), % kỳ phải có | `KPI_KINHDOANH` đủ 12 tháng ≥ 95% |
+| 6 | `table_size` | Chính xác | Kích thước bảng/partition trong khoảng cho phép | min size, max size, đơn vị (MB/GB) | Bảng chiếm 1–500 GB |
+| 7 | `aggregate_reconciliation` | Chính xác | Đối soát cột tổng hợp BC vs SUM từ bảng nguồn | Bảng nguồn, cột BC, sai lệch tối đa (%) | `THUC_TE` vs SUM(`SO_TIEN`) ± 1% |
+| 8 | `kpi_variance` | Chính xác | Biến động KPI so kỳ trước không quá X% | Biến động tối đa (%) | KPI tháng thay đổi ≤ 30% |
+| 9 | `custom_expression` | Hợp lệ | Điều kiện SQL WHERE tùy chỉnh cho toàn bảng | Biểu thức SQL | `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0` |
+| 10 | `cross_column` | Nhất quán | Ràng buộc logic giữa 2+ cột | Biểu thức SQL boolean | `NGAY_DONG > NGAY_MO` |
+| 11 | `cross_source_sum` | Nhất quán | Tổng chéo nguồn BC vs bảng gốc | Bảng nguồn, sai lệch tối đa (%) | `QUAN_LY_RR` vs `KH_KHACHHANG` ± 5% |
+| 12 | `parent_child_match` | Nhất quán | Tổng KPI con phải bằng KPI cha | Cột KPI cha, biểu thức tổng con, sai lệch (%) | `TONG_GD` = SUM(sub_kpi) ± 5% |
+| 13 | `duplicate_composite` | Duy nhất | Tổ hợp nhiều cột phải unique | Danh sách cột | `(MA_KH, THANG)` không trùng |
 
 ### 6.2 Cấp Cột (Column-level) — 18 metrics
 
@@ -372,7 +392,7 @@ Hệ thống hỗ trợ **25 metric type** chia thành 2 nhóm: **cấp cột** 
 | 17 | `on_time` | Kịp thời | Dữ liệu phải có mặt trước thời hạn SLA | Cột timestamp, giờ SLA, cửa sổ cảnh báo (phút) | `NGAY_TAO` trước 08:00 ± 30 phút |
 | 18 | `freshness` | Kịp thời | Cột timestamp phải được cập nhật trong X thời gian | Cột timestamp, thời gian tối đa, đơn vị | `NGAY_CAP_NHAT` trong vòng 5 phút qua |
 
-### 6.3 Hướng dẫn chi tiết tất cả 25 Metric
+### 6.3 Hướng dẫn chi tiết tất cả 31 Metric
 
 > Ví dụ trong phần này lấy từ hệ sinh thái **fintech / ví điện tử** — bao gồm các bảng: `KH_KHACHHANG`, `GD_GIAODICH`, `TK_VIENPAY`, `CTKM_KHUYENMAI`, `DV_DICH_VU`, `SP_SANPHAM`, `DIEM_TICH_LUY`, `DM_TINH_THANH`.
 
@@ -1154,6 +1174,193 @@ Bảng CHOT_SO_NGAY, cột NGAY_CHOT, maxAge=1, unit=ngày
 
 ---
 
+#### `report_row_count_match` — Khớp số dòng BC vs Nguồn 🆕
+
+**Mục đích:** So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn liên kết — phát hiện **mất dữ liệu** trong quá trình ETL tổng hợp báo cáo. Metric này dành riêng cho bảng thuộc loại **Báo cáo** đã đăng ký bảng nguồn liên kết trong Danh mục dữ liệu.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Bảng nguồn liên kết | ✅ | Bảng gốc (loại "Bảng nguồn") chứa dữ liệu chi tiết — dropdown chỉ hiển thị bảng loại nguồn |
+
+**Ví dụ fintech:**
+```
+Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH
+→ Báo cáo ngày phải có số dòng tương đương bảng giao dịch (sau khi group)
+→ BC có 900 dòng chi nhánh, nguồn có 1.000 group → thiếu 10% → cảnh báo
+→ Nguyên nhân: job ETL bị timeout, một số chi nhánh chưa được tổng hợp
+
+Bảng QUAN_LY_RUI_RO, sourceTable=KH_KHACHHANG
+→ Báo cáo rủi ro phải cover đủ số KH được đánh giá
+→ BC có 8.000 KH, nguồn có 10.000 → thiếu 20% → job đánh giá rủi ro chạy chưa hết
+
+Bảng BAO_CAO_DOI_SOAT, sourceTable=GD_GIAODICH
+→ Bảng đối soát phải khớp 1:1 với giao dịch gốc
+→ Thiếu dòng → tiềm ẩn giao dịch chưa được reconcile
+```
+
+> **Lưu ý:** Metric này so sánh **số lượng dòng**, không so sánh giá trị. Để đối soát giá trị tổng hợp, dùng `aggregate_reconciliation`.
+
+---
+
+#### `period_completeness` — Đủ kỳ dữ liệu KPI 🆕
+
+**Mục đích:** Kiểm tra bảng KPI có **đủ dữ liệu theo chu kỳ** (ngày/tuần/tháng) hay không — phát hiện thiếu kỳ báo cáo chỉ tiêu. Metric này dành cho bảng loại **Chỉ tiêu (KPI)**, đảm bảo chuỗi thời gian KPI liên tục.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Chu kỳ | ✅ | Ngày / Tuần / Tháng — đơn vị chu kỳ của KPI |
+| Khoảng kiểm (số ngày) | ✅ | Quét bao nhiêu ngày gần nhất |
+| % kỳ phải có dữ liệu | ✅ | VD: 95% = trong 12 tháng phải có ít nhất ~11 tháng |
+
+**Ví dụ fintech:**
+```
+Bảng KPI_KINHDOANH, granularity=Tháng, coverageDays=365, minCoveragePct=95
+→ KPI doanh thu hàng tháng phải có đủ 12/12 tháng gần nhất
+→ Thiếu tháng 8 (chỉ có 11/12 = 91.7%) → không đạt 95% → cảnh báo
+→ Nguyên nhân: job tính KPI tháng 8 bị fail, chưa được re-run
+
+Bảng KPI_KINHDOANH, granularity=Ngày, coverageDays=30, minCoveragePct=90
+→ KPI hàng ngày 30 ngày gần nhất phải có ≥ 27 ngày
+→ Thiếu 5 ngày cuối tuần (không có dữ liệu) → cần xem lại logic tính KPI ngày nghỉ
+
+Bảng KPI_CHIEN_LUOC, granularity=Tháng, coverageDays=365, minCoveragePct=100
+→ KPI chiến lược bắt buộc 100% tháng phải có — zero tolerance
+→ Thiếu 1 tháng → dashboard ban lãnh đạo hiển thị gap → ảnh hưởng đánh giá
+```
+
+> **Phân biệt với `time_coverage`:** `time_coverage` dùng cho bảng nguồn (kiểm tra chuỗi thời gian giao dịch liên tục); `period_completeness` dùng cho bảng KPI (kiểm tra đủ kỳ báo cáo chỉ tiêu).
+
+---
+
+#### `cross_source_sum` — Tổng chéo nguồn (Cross-Source) 🆕
+
+**Mục đích:** So sánh **tổng giá trị** giữa bảng báo cáo/KPI với bảng nguồn gốc — phát hiện sai lệch khi tổng hợp dữ liệu từ nhiều bảng. Khác với `report_row_count_match` (so số dòng), metric này so sánh **giá trị aggregate**.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Bảng nguồn liên kết | ✅ | Bảng gốc để cross-check tổng giá trị |
+| Sai lệch tối đa (%) | ✅ | % chênh lệch cho phép giữa hai tổng |
+
+**Ví dụ fintech:**
+```
+Bảng QUAN_LY_RUI_RO, sourceTable=KH_KHACHHANG, tolerancePct=5
+→ Tổng điểm rủi ro trên BC phải khớp SUM(DIEM_RR) từ bảng KH
+→ BC tổng = 45.000, nguồn tổng = 50.000 → lệch 10% → vi phạm (vượt 5%)
+→ Nguyên nhân: filter condition trên BC loại bỏ nhầm một số KH
+
+Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, tolerancePct=1
+→ Tổng THUC_TE trên BC phải khớp SUM(SO_TIEN) giao dịch ± 1%
+→ Lệch > 1% → ETL aggregate sai logic GROUP BY hoặc thiếu partition
+
+Bảng BAO_CAO_TONG_HOP_THANG, sourceTable=BAO_CAO_NGAY, tolerancePct=0.5
+→ BC tháng phải khớp SUM các BC ngày ± 0.5%
+→ Chain verification: nguồn → BC ngày → BC tháng
+```
+
+> **Khi nào dùng `cross_source_sum` thay `aggregate_reconciliation`:** Dùng `cross_source_sum` khi chỉ cần so tổng chung toàn bảng. Dùng `aggregate_reconciliation` khi cần chỉ định cụ thể cột nào trên BC cần đối soát.
+
+---
+
+#### `parent_child_match` — Khớp KPI cha-con 🆕
+
+**Mục đích:** Kiểm tra **tổng giá trị các KPI con phải bằng KPI cha** — phát hiện sai lệch trong cây chỉ tiêu kinh doanh. Đảm bảo tính nhất quán khi drill-down/roll-up KPI.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Cột KPI cha | ✅ | Cột chứa giá trị KPI tổng (level cao hơn trong cây chỉ tiêu) |
+| Biểu thức tổng KPI con | | Biểu thức SQL tính tổng các KPI cấp con (VD: `SUM(sub_kpi_value)`) |
+| Sai lệch tối đa (%) | ✅ | % chênh lệch cho phép giữa cha và tổng con |
+
+**Ví dụ fintech:**
+```
+Bảng KPI_KINHDOANH, parentKpiColumn=TONG_GD, childSumExpression=SUM(sub_kpi_value), tolerancePct=5
+→ KPI tổng giao dịch toàn hệ thống = tổng giao dịch các chi nhánh
+→ TONG_GD = 1.000.000, SUM(chi nhánh) = 1.080.000 → lệch 8% → vi phạm
+→ Nguyên nhân: chi nhánh mới chưa được map vào cây KPI cha
+
+Bảng KPI_KINHDOANH, parentKpiColumn=TONG_TIEN, childSumExpression=SUM(TONG_TIEN_CN), tolerancePct=2
+→ Tổng doanh thu = tổng doanh thu theo kênh (online + offline + partner)
+→ Lệch > 2% → có thể thiếu kênh mới chưa được cấu hình
+
+Bảng KPI_CHIEN_LUOC, parentKpiColumn=CAC_CHI_TIEU, childSumExpression=SUM(CHI_TIEU_CON), tolerancePct=0
+→ KPI chiến lược zero tolerance — tổng con phải khớp 100% với cha
+→ Bất kỳ sai lệch nào → dashboard ban giám đốc hiển thị số sai → rủi ro quyết định
+```
+
+> **Lưu ý:** Metric này kiểm tra tính nhất quán **dọc** (vertical consistency) của cây KPI. Để kiểm tra tính nhất quán **ngang** (horizontal — giữa BC và nguồn), dùng `cross_source_sum` hoặc `aggregate_reconciliation`.
+
+---
+
+#### `aggregate_reconciliation` — Đối soát tổng hợp BC 🆕
+
+**Mục đích:** So sánh **giá trị cột tổng hợp** cụ thể trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate, hoặc chạy trùng. Đây là metric đối soát chi tiết nhất, chỉ định rõ **cột nào** trên BC cần kiểm tra.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Bảng nguồn liên kết | ✅ | Bảng gốc chứa dữ liệu chi tiết (dropdown chỉ hiển thị bảng loại nguồn) |
+| Cột tổng hợp trên BC | ✅ | Cột trên bảng BC chứa giá trị đã tổng hợp (VD: `THUC_TE`, `TONG_DOANH_THU`) |
+| Sai lệch tối đa (%) | ✅ | % chênh lệch cho phép giữa SUM nguồn và giá trị BC |
+
+**Ví dụ fintech:**
+```
+Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, reportColumn=THUC_TE, tolerancePct=1
+→ Cột THUC_TE trên BC phải khớp SUM(SO_TIEN) từ GD_GIAODICH
+→ BC THUC_TE = 100 tỷ, SUM giao dịch = 102 tỷ → lệch 2% → vi phạm (vượt 1%)
+→ Nguyên nhân: job tổng hợp dùng NGAY_GD ≠ NGAY_TAO → lọt giao dịch cuối ngày
+
+Bảng BAO_CAO_NGAY, sourceTable=TK_TAIKHOAN, reportColumn=MUC_TIEU, tolerancePct=5
+→ Cột MUC_TIEU trên BC phải khớp SUM(SO_DU_MUC_TIEU) từ tài khoản
+→ Sai lệch hợp lý ≤ 5% do làm tròn — vượt → xem lại mapping cột
+
+Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, tolerancePct=0
+→ Zero tolerance — tổng số GD trên BC tuần phải khớp chính xác với COUNT(*) nguồn
+→ Sai 1 giao dịch → đối soát fail → cần review ETL pipeline
+```
+
+> **Phân biệt với `cross_source_sum`:** `aggregate_reconciliation` chỉ định **cột cụ thể** trên BC để đối soát (VD: đối soát cột `THUC_TE`). `cross_source_sum` so sánh tổng chéo **toàn bảng** mà không chỉ định cột.
+
+---
+
+#### `kpi_variance` — Biến động KPI so kỳ trước 🆕
+
+**Mục đích:** Kiểm tra giá trị KPI **không thay đổi quá X%** so với kỳ trước — phát hiện tăng/giảm đột biến không giải thích được. Metric này dành cho bảng loại **Chỉ tiêu (KPI)**, giúp cảnh báo sớm khi KPI biến động bất thường.
+
+**Tham số:**
+| Tham số | Bắt buộc | Giải thích |
+|---|---|---|
+| Biến động tối đa so kỳ trước (%) | ✅ | Ngưỡng % thay đổi cho phép. VD: 30 = KPI tăng/giảm ≤ 30% |
+
+**Ví dụ fintech:**
+```
+Bảng KPI_KINHDOANH, maxVariancePct=30
+→ KPI doanh thu tháng không được tăng/giảm quá 30% so với tháng trước
+→ Tháng trước 100 tỷ, tháng này 55 tỷ → giảm 45% → vi phạm
+→ Nguyên nhân: mất dữ liệu 2 tuần cuối tháng, không phải suy giảm thực sự
+
+Bảng KPI_KINHDOANH, maxVariancePct=20
+→ KPI số khách hàng mới biến động ≤ 20%
+→ Tháng trước 500 KH mới, tháng này 650 → tăng 30% → cảnh báo
+→ Cần kiểm tra: tăng thực sự (chiến dịch acquisition) hay trùng import?
+
+Bảng KPI_CHIEN_LUOC, maxVariancePct=50
+→ KPI chiến lược cho phép biến động ≤ 50% (ngưỡng lỏng vì tính theo quý)
+→ Quý này vs quý trước giảm 60% → bất thường → review lại nguồn dữ liệu
+
+Bảng KPI_KINHDOANH, maxVariancePct=10
+→ KPI tỷ lệ giao dịch thành công rất ổn định → set ngưỡng chặt 10%
+→ Tháng trước 99%, tháng này 85% → giảm 14.1% → vi phạm
+→ Nguyên nhân: hệ thống thanh toán gặp sự cố 3 ngày → impact KPI
+```
+
+> **Lưu ý:** Metric này kiểm tra **biến động giữa 2 kỳ liên tiếp**. Để kiểm tra KPI có đủ kỳ dữ liệu hay không, dùng `period_completeness`.
+
+---
+
 ## 7. Hướng dẫn từng menu
 
 ---
@@ -1462,7 +1669,7 @@ Dropdown chỉ hiện các metric phù hợp với dimension đã chọn. Có to
 
 **Bước 4 — Điền tham số kiểm tra** (tùy metric type)
 
-Xem [Phần 6 — 25 Loại Metric](#6-25-loại-metric-chi-tiết) để biết tham số cụ thể.
+Xem [Phần 6 — 31 Loại Metric](#6-31-loại-metric-chi-tiết) để biết tham số cụ thể.
 
 **Bước 5 — Ngưỡng W/C**
 
@@ -2021,4 +2228,4 @@ Vào **Thông báo** (`/notifications`) → Thêm cấu hình:
 
 ---
 
-*Hết tài liệu — Phiên bản 1.1 | Data Quality System | Cập nhật 2026-04-01 — 25 metric types*
+*Hết tài liệu — Phiên bản 1.2 | Data Quality System | Cập nhật 2026-04-03 — 31 metric types*

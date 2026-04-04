@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GitBranch, Plus, Pencil, Trash2, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, ArrowUpDown, Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { mockPipelineJobs, mockDataSources } from '@/data/mockData'
 import type { PipelineJob } from '@/types'
@@ -159,43 +160,43 @@ export function PipelinePage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">STT</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Tên Job <InfoTooltip text="Tên định danh của job xử lý dữ liệu (ETL/SQL/Spark)" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Bảng đầu vào <InfoTooltip text="Các bảng dữ liệu mà job đọc làm input" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Bảng đầu ra <InfoTooltip text="Các bảng dữ liệu mà job ghi kết quả ra" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Lịch chạy <InfoTooltip text="Tần suất job được trigger bởi orchestrator (Rundeck/Airflow)" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Kết quả gần nhất <InfoTooltip text="Trạng thái lần chạy gần nhất: Thành công (load OK), Lỗi (crash/timeout), Một phần (partial data)" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của job: Hoạt động = đang được lập lịch, Bảo trì = tạm dừng" /></span></th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Tên Job <InfoTooltip text="Tên định danh của job xử lý dữ liệu (ETL/SQL/Spark)" /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Bảng đầu vào <InfoTooltip text="Các bảng dữ liệu mà job đọc làm input" /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Bảng đầu ra <InfoTooltip text="Các bảng dữ liệu mà job ghi kết quả ra" /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Lịch chạy <InfoTooltip text="Tần suất job được trigger bởi orchestrator (Rundeck/Airflow)" /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Kết quả gần nhất <InfoTooltip text="Trạng thái lần chạy gần nhất: Thành công (load OK), Lỗi (crash/timeout), Một phần (partial data)" /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của job: Hoạt động = đang được lập lịch, Bảo trì = tạm dừng" /></span></TableHead>
+                  <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {paginated.map((job, idx) => (
-                  <tr key={job.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
-                    <td className="px-4 py-3 text-slate-400 text-xs">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-slate-800">{job.name}</div>
-                      <div className="text-xs text-slate-400 mt-0.5 max-w-[200px] truncate">{job.description}</div>
-                    </td>
-                    <td className="px-4 py-3 max-w-[160px]"><TableChips ids={job.inputTableIds} /></td>
-                    <td className="px-4 py-3 max-w-[160px]"><TableChips ids={job.outputTableIds} /></td>
-                    <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{job.schedule}</td>
-                    <td className="px-4 py-3">
+                  <TableRow key={job.id} className="hover:bg-slate-50/60">
+                    <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">{(page - 1) * PAGE_SIZE + idx + 1}</TableCell>
+                    <TableCell>
+                      <div className="font-semibold text-slate-800" title={`${job.name} — ${job.description}`}>{job.name}</div>
+                      <div className="text-xs text-slate-400 mt-0.5 max-w-[320px] truncate">{job.description}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[160px]"><TableChips ids={job.inputTableIds} /></TableCell>
+                    <TableCell className="max-w-[160px]"><TableChips ids={job.outputTableIds} /></TableCell>
+                    <TableCell className="text-xs text-slate-600 whitespace-nowrap">{job.schedule}</TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-1.5">
                         {runStatusIcon(job.lastRunStatus)}
                         <span className="text-xs text-slate-600">{runStatusLabel[job.lastRunStatus]}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${job.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                         {job.status === 'active' ? 'Hoạt động' : 'Tắt'}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                    </TableCell>
+                    <TableCell className="sticky right-0 z-10 sticky-right">
+                      <div className="flex items-center justify-center gap-1">
                         <button onClick={() => openEdit(job)} className="p-1.5 rounded hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors">
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -203,11 +204,11 @@ export function PipelinePage() {
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           {/* Pagination */}

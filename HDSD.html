@@ -1,0 +1,3823 @@
+<!DOCTYPE html><html><head>
+      <title>HDSD</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\ooOoo\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.22\crossnote\dependencies\katex\katex.min.css">
+      
+      
+      <script type="text/javascript" src="file:///c:\Users\ooOoo\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.22\crossnote\dependencies\mermaid\mermaid.min.js" charset="UTF-8"></script>
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script>
+    </head>
+    <body for="html-export">
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="hướng-dẫn-sử-dụng--data-quality-system">Hướng Dẫn Sử Dụng — Data Quality System </h1>
+<blockquote>
+<p><strong>Phiên bản:</strong> 1.1 | <strong>Ngày:</strong> 2026-04-01<br>
+Tài liệu này hướng dẫn toàn bộ quy trình sử dụng hệ thống giám sát chất lượng dữ liệu — từ người chưa từng dùng DQ tool đến quản trị viên nâng cao.</p>
+</blockquote>
+<hr>
+<h2 id="mục-lục">Mục lục </h2>
+<ol>
+<li><a href="#1-t%E1%BB%95ng-quan-h%E1%BB%87-th%E1%BB%91ng">Tổng quan hệ thống</a></li>
+<li><a href="#2-s%C6%A1-%C4%91%E1%BB%93-module-v%C3%A0-lu%E1%BB%93ng-d%E1%BB%AF-li%E1%BB%87u">Sơ đồ module và luồng dữ liệu</a></li>
+<li><a href="#3-th%E1%BB%A9-t%E1%BB%B1-c%E1%BA%A5u-h%C3%ACnh-setup-l%E1%BA%A7n-%C4%91%E1%BA%A7u">Thứ tự cấu hình (Setup lần đầu)</a></li>
+<li><a href="#4-b%E1%BA%A3ng-input--output-gi%E1%BB%AFa-c%C3%A1c-menu">Bảng INPUT → OUTPUT giữa các menu</a>
+<ul>
+<li><a href="#c%C3%A1ch-t%C3%ADnh-%C4%91i%E1%BB%83m-ch%E1%BA%A5t-l%C6%B0%E1%BB%A3ng-score">Cách tính điểm chất lượng (Score)</a></li>
+</ul>
+</li>
+<li><a href="#5-rule-dq-quy-t%E1%BA%AFc-cho-c%E1%BB%99t-hay-b%E1%BA%A3ng">Rule DQ: Quy tắc cho Cột hay Bảng?</a></li>
+<li><a href="#6-25-lo%E1%BA%A1i-metric-chi-ti%E1%BA%BFt">25 Loại Metric Chi Tiết</a>
+<ul>
+<li>6.1 <a href="#61-c%E1%BA%A5p-b%E1%BA%A3ng-table-level--7-metrics">Cấp Bảng — 7 metrics</a></li>
+<li>6.2 <a href="#62-c%E1%BA%A5p-c%E1%BB%99t-column-level--18-metrics">Cấp Cột — 18 metrics</a></li>
+<li>6.3 <a href="#63-h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-chi-ti%E1%BA%BFt-t%E1%BA%A5t-c%E1%BA%A3-25-metric">Hướng dẫn chi tiết tất cả 25 Metric</a></li>
+</ul>
+</li>
+<li><a href="#7-h%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-t%E1%BB%ABng-menu">Hướng dẫn từng menu</a>
+<ul>
+<li>7.1 <a href="#71-dashboard">Dashboard</a></li>
+<li>7.2 <a href="#72-danh-m%E1%BB%A5c-d%E1%BB%AF-li%E1%BB%87u">Danh mục dữ liệu</a></li>
+<li>7.3 <a href="#73-ph%C3%A2n-t%C3%ADch-d%E1%BB%AF-li%E1%BB%87u-profiling">Phân tích dữ liệu (Profiling)</a></li>
+<li>7.4 <a href="#74-qu%E1%BA%A3n-l%C3%BD-job-pipeline">Quản lý Job (<code>/pipeline</code>)</a></li>
+<li>7.5 <a href="#75-ng%C6%B0%E1%BB%A1ng-c%E1%BA%A3nh-b%C3%A1o-thresholds">Ngưỡng cảnh báo (Thresholds)</a></li>
+<li>7.6 <a href="#76-qu%E1%BA%A3n-l%C3%BD-quy-t%E1%BA%AFc-rules">Quản lý quy tắc (Rules)</a></li>
+<li>7.7 <a href="#77-l%E1%BB%8Bch-ch%E1%BA%A1y-schedules">Lịch chạy (Schedules)</a></li>
+<li>7.8 <a href="#78-v%E1%BA%A5n-%C4%91%E1%BB%81--s%E1%BB%B1-c%E1%BB%91-issues">Vấn đề &amp; Sự cố (Issues)</a></li>
+<li>7.9 <a href="#79-b%C3%A1o-c%C3%A1o-reports">Báo cáo (Reports)</a></li>
+<li>7.10 <a href="#710-th%C3%B4ng-b%C3%A1o-notifications">Thông báo (Notifications)</a></li>
+<li>7.11 <a href="#711-c%C3%A0i-%C4%91%E1%BA%B7t-settings">Cài đặt (Settings)</a></li>
+</ul>
+</li>
+<li><a href="#8-v%C3%AD-d%E1%BB%A5-th%E1%BB%B1c-h%C3%A0nh-end-to-end">Ví dụ thực hành end-to-end</a>
+<ul>
+<li>8.1 <a href="#k%E1%BB%8Bch-b%E1%BA%A3n-thi%E1%BA%BFt-l%E1%BA%ADp-gi%C3%A1m-s%C3%A1t-b%E1%BA%A3ng-kh_khachhang-t%E1%BB%AB-%C4%91%E1%BA%A7u">KH_KHACHHANG — Thiết lập từ đầu</a></li>
+<li>8.2 <a href="#k%E1%BB%8Bch-b%E1%BA%A3n-2-gi%C3%A1m-s%C3%A1t-b%E1%BA%A3ng-gd_giaodich--ph%C3%A1t-hi%E1%BB%87n-v%E1%BA%A5n-%C4%91%E1%BB%81-batch-v%C3%A0-ch%E1%BA%A5t-l%C6%B0%E1%BB%A3ng-s%E1%BB%91-li%E1%BB%87u">GD_GIAODICH — Phát hiện vấn đề batch</a></li>
+</ul>
+</li>
+<li><a href="#9-thu%E1%BA%ADt-ng%E1%BB%AF--c%C3%A2u-h%E1%BB%8Fi-th%C6%B0%E1%BB%9Dng-g%E1%BA%B7p">Thuật ngữ &amp; Câu hỏi thường gặp</a></li>
+</ol>
+<hr>
+<h2 id="1-tổng-quan-hệ-thống">1. Tổng quan hệ thống </h2>
+<h3 id="hệ-thống-này-làm-gì">Hệ thống này làm gì? </h3>
+<p>Data Quality System (DQS) là nền tảng <strong>giám sát chất lượng dữ liệu tự động</strong> cho các bảng dữ liệu trong tổ chức. Hệ thống giúp:</p>
+<ul>
+<li><strong>Phát hiện sớm</strong> các vấn đề dữ liệu: thiếu giá trị, sai định dạng, trùng lặp, lỗi tham chiếu</li>
+<li><strong>Tự động hóa</strong> kiểm tra chất lượng theo lịch (hàng giờ, hàng ngày, hàng tuần...)</li>
+<li><strong>Cảnh báo</strong> khi điểm chất lượng vượt ngưỡng cho phép</li>
+<li><strong>Theo dõi xu hướng</strong> chất lượng dữ liệu theo thời gian</li>
+</ul>
+<h3 id="ai-dùng-hệ-thống-này">Ai dùng hệ thống này? </h3>
+<table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Chức năng chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Engineer / DBA</strong></td>
+<td>Đăng ký bảng, tạo quy tắc kỹ thuật, cấu hình lịch chạy</td>
+</tr>
+<tr>
+<td><strong>Data Steward / BA</strong></td>
+<td>Xem báo cáo chất lượng, theo dõi vấn đề, xác nhận xử lý</td>
+</tr>
+<tr>
+<td><strong>Data Owner</strong></td>
+<td>Nhận thông báo, phê duyệt đóng vấn đề</td>
+</tr>
+<tr>
+<td><strong>IT Operations</strong></td>
+<td>Cấu hình kết nối, quản lý user, cài đặt thông báo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-chiều-chất-lượng-dữ-liệu">6 Chiều chất lượng dữ liệu </h3>
+<p>Hệ thống đánh giá chất lượng theo 6 chiều chuẩn quốc tế:</p>
+<table>
+<thead>
+<tr>
+<th>Chiều</th>
+<th>Tên VN</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Completeness</strong></td>
+<td>Đầy đủ</td>
+<td>Dữ liệu có bị thiếu, NULL hay không?</td>
+</tr>
+<tr>
+<td><strong>Validity</strong></td>
+<td>Hợp lệ</td>
+<td>Dữ liệu có đúng định dạng, khoảng giá trị, danh sách cho phép?</td>
+</tr>
+<tr>
+<td><strong>Consistency</strong></td>
+<td>Nhất quán</td>
+<td>Các cột liên quan có logic với nhau không? Tham chiếu có hợp lệ?</td>
+</tr>
+<tr>
+<td><strong>Uniqueness</strong></td>
+<td>Duy nhất</td>
+<td>Có bị trùng lặp không?</td>
+</tr>
+<tr>
+<td><strong>Accuracy</strong></td>
+<td>Chính xác</td>
+<td>Dữ liệu có khớp với nguồn chuẩn không?</td>
+</tr>
+<tr>
+<td><strong>Timeliness</strong></td>
+<td>Kịp thời</td>
+<td>Dữ liệu có đến đúng hạn, còn mới không?</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-sơ-đồ-module-và-luồng-dữ-liệu">2. Sơ đồ module và luồng dữ liệu </h2>
+<h3 id="21-sơ-đồ-tổng-quan-các-module">2.1 Sơ đồ tổng quan các module </h3>
+<div class="mermaid">flowchart LR
+  subgraph reg ["📁 ĐĂNG KÝ"]
+    DC["📋 Danh mục dữ liệu\n/data-catalog"]
+  end
+
+  subgraph cfg ["⚙️ CẤU HÌNH CHẤT LƯỢNG"]
+    TH["🎯 Ngưỡng cảnh báo\n/thresholds"]
+    RU["📏 Quy tắc\n/rules"]
+    SC["🗓️ Lịch chạy\n/schedules"]
+    TH --&gt;|"pre-fill W/C"| RU
+    DC --&gt;|"chọn bảng"| RU
+    RU --&gt;|"gắn rule vào bảng"| SC
+    DC --&gt;|"chọn bảng"| SC
+  end
+
+  subgraph mon ["📊 THEO DÕI"]
+    IS["🚨 Vấn đề &amp; Sự cố\n/issues"]
+    RP["📈 Báo cáo\n/reports"]
+    DB["🏠 Dashboard\n/"]
+  end
+
+  subgraph sup ["🔧 HỖ TRỢ"]
+    PR["🔬 Phân tích dữ liệu\n/profiling"]
+    NT["🔔 Thông báo\n/notifications"]
+    ST["⚙️ Cài đặt\n/settings"]
+  end
+
+  SC --&gt;|"sinh Issues khi fail"| IS
+  SC --&gt;|"dữ liệu điểm"| RP
+  IS --&gt; DB
+  RP --&gt; DB
+  DC --&gt;|"chạy quét"| PR
+  IS --&gt;|"trigger"| NT
+</div><h3 id="22-luồng-thông-tin-giữa-các-menu">2.2 Luồng thông tin giữa các menu </h3>
+<div class="mermaid">flowchart TD
+  A["🗄️ DataCatalog\nDanh sách bảng DL"] --&gt;|bảng ID, tên cột| B
+  A --&gt;|bảng ID, tên| D
+  A --&gt;|bảng ID| E
+
+  B["🎯 Thresholds\nNgưỡng W/C mặc định"] --&gt;|W%, C% theo chiều| C
+
+  C["📏 Rules\nQuy tắc kiểm tra"] --&gt;|rule gắn với bảng| D
+
+  D["🗓️ Schedules\nLịch chạy tự động"] --&gt;|kết quả chạy| E
+  D --&gt;|điểm theo thời gian| F
+
+  E["🚨 Issues\nVấn đề phát sinh"] --&gt;|số lượng, mức độ| G
+  F["📈 Reports\nXu hướng chất lượng"] --&gt; G
+
+  G["🏠 Dashboard\nTổng quan KPI"]
+
+  E --&gt;|trigger event| H["🔔 Notifications\nGửi email/SMS/webhook"]
+
+  A --&gt;|chạy quét| I["🔬 Profiling\nThống kê cột (snapshot)"]
+</div><hr>
+<h2 id="3-thứ-tự-cấu-hình-setup-lần-đầu">3. Thứ tự cấu hình (Setup lần đầu) </h2>
+<blockquote>
+<p><strong>Quan trọng:</strong> Hãy thực hiện đúng thứ tự này khi thiết lập hệ thống lần đầu. Các bước sau phụ thuộc vào bước trước.</p>
+</blockquote>
+<div class="mermaid">flowchart LR
+  S1["① Đăng ký bảng\nDataCatalog"] --&gt; S2
+  S2["② Đặt ngưỡng\nThresholds"] --&gt; S3
+  S3["③ Tạo quy tắc\nRules"] --&gt; S4
+  S4["④ Lập lịch chạy\nSchedules"] --&gt; S5
+  S5["⑤ Theo dõi vấn đề\nIssues"] --&gt; S6
+  S6["⑥ Xem báo cáo\nReports"]
+
+  style S1 fill:#dbeafe,stroke:#3b82f6
+  style S2 fill:#fef3c7,stroke:#f59e0b
+  style S3 fill:#dcfce7,stroke:#22c55e
+  style S4 fill:#f3e8ff,stroke:#a855f7
+  style S5 fill:#fee2e2,stroke:#ef4444
+  style S6 fill:#e0f2fe,stroke:#0ea5e9
+</div><table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Menu</th>
+<th>URL</th>
+<th>Hành động cụ thể</th>
+<th>Mục đích</th>
+<th>Điều kiện tiên quyết</th>
+<th>Nếu bỏ qua</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>Danh mục dữ liệu</td>
+<td><code>/data-catalog</code></td>
+<td>Thêm bảng cần giám sát: nhập tên bảng, schema, loại kết nối, chủ sở hữu, nhóm phụ trách</td>
+<td>Tạo "registry" — nền tảng cho mọi bước sau. Bảng phải được đăng ký trước khi tạo Rule, Schedule hay Profiling</td>
+<td>Không có — đây là bước đầu tiên</td>
+<td>Không thể thực hiện bất kỳ bước nào khác</td>
+</tr>
+<tr>
+<td>②</td>
+<td>Ngưỡng cảnh báo</td>
+<td><code>/thresholds</code></td>
+<td>Đặt ngưỡng Warning (W%) và Critical (C%) cho từng chiều. Có thể đặt toàn cục hoặc riêng cho bảng cụ thể</td>
+<td>Định nghĩa "tốt / cảnh báo / không đạt" — ngưỡng này sẽ tự động điền vào form khi tạo Rule mới</td>
+<td>Đã có ít nhất 1 bảng ở bước ①</td>
+<td>Hệ thống dùng ngưỡng mặc định (W=85–95%, C=60–90% tùy chiều). Không bắt buộc nhưng khuyến nghị làm trước</td>
+</tr>
+<tr>
+<td>③</td>
+<td>Quy tắc</td>
+<td><code>/rules</code></td>
+<td>Tạo rule kiểm tra cụ thể: chọn bảng → chọn chiều → chọn metric type → điền tham số → xác nhận ngưỡng W/C</td>
+<td>Xác định chính xác <strong>cái gì</strong> và <strong>cách nào</strong> cần kiểm tra cho từng bảng</td>
+<td>Đã có bảng ở bước ①. Ngưỡng ở bước ② (nếu có) sẽ pre-fill</td>
+<td>Không có rule → Schedule chạy nhưng không kiểm tra gì → không sinh điểm</td>
+</tr>
+<tr>
+<td>④</td>
+<td>Lịch chạy</td>
+<td><code>/schedules</code></td>
+<td>Cấu hình lịch tự động: chọn bảng, tần suất (hàng giờ/ngày/tuần/tháng), giờ chạy</td>
+<td>Tự động hóa kiểm tra — mỗi lần lịch chạy sẽ thực thi <strong>toàn bộ Rule active</strong> của bảng đó</td>
+<td>Đã có bảng ở bước ① và ít nhất 1 Rule active ở bước ③</td>
+<td>Rule chỉ chạy khi user nhấn "Chạy ngay" thủ công — không tự động</td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>Vấn đề &amp; Sự cố</td>
+<td><code>/issues</code></td>
+<td>Xem danh sách vấn đề (tự sinh khi Rule fail), gán người xử lý, chuyển trạng thái, ghi chú timeline</td>
+<td>Theo dõi và xử lý khi có vi phạm chất lượng — đảm bảo mọi vấn đề được close</td>
+<td>Cần có Schedule đã chạy (bước ④) hoặc user đã nhấn "Chạy ngay"</td>
+<td>Vấn đề vẫn tồn tại nhưng không ai xử lý — tích tụ rủi ro dữ liệu</td>
+</tr>
+<tr>
+<td>⑥</td>
+<td>Báo cáo</td>
+<td><code>/reports</code></td>
+<td>Xem xu hướng điểm chất lượng theo thời gian, so sánh giữa các bảng, xuất báo cáo</td>
+<td>Đánh giá chất lượng dài hạn — phát hiện xu hướng xấu đi hoặc cải thiện</td>
+<td>Cần có lịch sử chạy Rule qua nhiều ngày</td>
+<td>Không có dữ liệu xu hướng — khó đánh giá được tiến bộ</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> Bước ② (Ngưỡng) có thể làm sau Bước ③ vì hệ thống có giá trị mặc định. Tuy nhiên khuyến nghị làm trước để tiết kiệm thời gian chỉnh sửa W/C cho từng Rule.</p>
+</blockquote>
+<hr>
+<h2 id="4-bảng-input--output-giữa-các-menu">4. Bảng INPUT → OUTPUT giữa các menu </h2>
+<p>Hệ thống DQ gồm nhiều menu liên kết chặt chẽ với nhau — <strong>output của menu này là input cho menu khác</strong>. Hiểu rõ mối quan hệ này giúp bạn biết:</p>
+<ul>
+<li>Khi cấu hình ở menu A, kết quả sẽ xuất hiện ở menu nào?</li>
+<li>Khi thấy dữ liệu ở menu B, nó được tạo ra từ đâu?</li>
+<li>Nếu muốn thay đổi kết quả ở menu C, cần quay lại chỉnh ở menu nào?</li>
+</ul>
+<p>Bảng dưới đây tổng hợp toàn bộ quan hệ INPUT → OUTPUT giữa các menu:</p>
+<table>
+<thead>
+<tr>
+<th>Menu</th>
+<th>URL</th>
+<th>Bạn nhập/cấu hình</th>
+<th>Tạo ra (Output)</th>
+<th>Được dùng ở menu</th>
+<th>Xem kết quả ở</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Danh mục dữ liệu</strong></td>
+<td><code>/data-catalog</code></td>
+<td>Tên bảng, schema, loại kết nối, chủ sở hữu</td>
+<td>Danh sách bảng DL có ID</td>
+<td>Rules, Schedules, Thresholds, Profiling</td>
+<td>DataCatalog &gt; chi tiết bảng</td>
+</tr>
+<tr>
+<td><strong>Phân tích dữ liệu</strong></td>
+<td><code>/profiling</code></td>
+<td>Chọn bảng → nhấn Chạy</td>
+<td>Snapshot thống kê cột (null%, distinct%, min/max)</td>
+<td>DataCatalog &gt; tab "Phân tích cột"</td>
+<td>Profiling &gt; Xem chi tiết</td>
+</tr>
+<tr>
+<td><strong>Ngưỡng cảnh báo</strong></td>
+<td><code>/thresholds</code></td>
+<td>W%, C% cho 6 chiều × toàn cục + riêng bảng</td>
+<td>Ngưỡng mặc định để pre-fill khi tạo Rule</td>
+<td>Rules (pre-fill W/C)</td>
+<td>Thresholds &gt; thanh màu trực quan</td>
+</tr>
+<tr>
+<td><strong>Quy tắc</strong></td>
+<td><code>/rules</code></td>
+<td>Chọn bảng, chiều, metric type, tham số, W/C</td>
+<td>Rule gắn với bảng, chứa logic kiểm tra</td>
+<td>Schedules (gắn rule vào lịch)</td>
+<td>Rules &gt; cột "Kết quả", "Điểm"</td>
+</tr>
+<tr>
+<td><strong>Lịch chạy</strong></td>
+<td><code>/schedules</code></td>
+<td>Chọn bảng, tần suất, giờ chạy</td>
+<td>Lịch tự động chạy toàn bộ rule của bảng</td>
+<td>Issues (tự sinh), Reports</td>
+<td>Schedules &gt; "Xem Issues"</td>
+</tr>
+<tr>
+<td><strong>Vấn đề &amp; Sự cố</strong></td>
+<td><code>/issues</code></td>
+<td><em>(Tự sinh từ Schedules)</em> — Gán người, đổi trạng thái</td>
+<td>Vấn đề được xử lý, timeline</td>
+<td>Dashboard, Reports, Notifications</td>
+<td>Issues &gt; chi tiết vấn đề</td>
+</tr>
+<tr>
+<td><strong>Báo cáo</strong></td>
+<td><code>/reports</code></td>
+<td>Chọn khoảng thời gian, bảng, chiều</td>
+<td>Biểu đồ xu hướng, radar chart</td>
+<td>Dashboard</td>
+<td>Reports</td>
+</tr>
+<tr>
+<td><strong>Thông báo</strong></td>
+<td><code>/notifications</code></td>
+<td>Loại kênh, trigger, người nhận</td>
+<td>Thông báo tự động gửi đi</td>
+<td><em>(nhận về qua email/SMS/webhook)</em></td>
+<td>Notifications &gt; lịch sử gửi</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mối-quan-hệ-3-cấp-của-ngưỡng">Mối quan hệ 3 cấp của Ngưỡng </h3>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Ngưỡng toàn cục (Dimension level) — Mặc định cho toàn hệ thống
+  └── Ngưỡng riêng theo bảng (Table + Dimension) — Ghi đè toàn cục
+        └── Ngưỡng trong Rule (Rule level, W/C field) — Ghi đè tất cả
+</code></pre><p><strong>Ví dụ:</strong> Toàn cục Completeness W=90%, C=80% → Bảng GD_GIAODICH Completeness W=95%, C=90% → Rule "Kiểm tra NULL MA_KH" W=98%, C=95%</p>
+<h3 id="cách-tính-điểm-chất-lượng-score">Cách tính điểm chất lượng (Score) </h3>
+<blockquote>
+<p><strong>Đây là câu hỏi quan trọng nhất:</strong> Điểm chất lượng được tính qua 3 cấp, từ dưới lên.</p>
+</blockquote>
+<h4 id="cấp-1--điểm-từng-rule-rule-score">Cấp 1 — Điểm từng Rule (Rule Score) </h4>
+<p>Mỗi Rule khi chạy sẽ trả về <strong>% bản ghi đạt yêu cầu</strong> — con số này chính là <strong>điểm</strong> của Rule (thang 0–100).</p>
+<table>
+<thead>
+<tr>
+<th>Metric type</th>
+<th>Cách tính % pass</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not_null</code></td>
+<td>(Số dòng NOT NULL ÷ Tổng dòng) × 100</td>
+<td>1.231.250 / 1.250.000 = <strong>98.5</strong></td>
+</tr>
+<tr>
+<td><code>format_regex</code></td>
+<td>(Số dòng match regex ÷ Tổng dòng) × 100</td>
+<td>785.000 / 1.000.000 = <strong>78.5</strong></td>
+</tr>
+<tr>
+<td><code>duplicate_single</code></td>
+<td>(Số giá trị distinct ÷ Tổng dòng) × 100</td>
+<td>1.250.000 / 1.250.000 = <strong>100</strong></td>
+</tr>
+<tr>
+<td><code>value_range</code></td>
+<td>(Số dòng trong [min, max] ÷ Tổng dòng) × 100</td>
+<td>992.000 / 1.000.000 = <strong>99.2</strong></td>
+</tr>
+<tr>
+<td><code>row_count</code> (bảng)</td>
+<td>Nếu trong [min, max] → 100; ngoài → tính % lệch</td>
+<td>50.000 dòng, min=1.000, max=5.000.000 → <strong>100</strong></td>
+</tr>
+<tr>
+<td><code>custom_expression</code> (bảng)</td>
+<td>Biểu thức aggregate đúng → 100; sai → 0</td>
+<td><code>SUM(VAO) - SUM(RA) ≈ 0</code> → <strong>100</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tóm lại: % pass = điểm.</strong> Không có phép chuyển đổi phức tạp nào. 98.5% dòng pass → điểm = 98.5.</p>
+</blockquote>
+<h4 id="cấp-2--điểm-từng-chiều-dữ-liệu-dimension-score">Cấp 2 — Điểm từng Chiều dữ liệu (Dimension Score) </h4>
+<p>Điểm của 1 chiều cho 1 bảng = <strong>trung bình cộng <code>lastScore</code></strong> của tất cả Rule <strong>active</strong> thuộc chiều đó.</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Dimension Score = avg(lastScore của các Rule cùng chiều, cùng bảng, đang active)
+</code></pre><p><strong>Ví dụ — Bảng KH_KHACHHANG, chiều Completeness:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>lastScore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMND/CCCD không được null</td>
+<td>98.5</td>
+</tr>
+<tr>
+<td>Ngày sinh không được null</td>
+<td>94.2</td>
+</tr>
+<tr>
+<td>Tỷ lệ null email theo tháng</td>
+<td>91.5</td>
+</tr>
+<tr>
+<td>SO_DU bắt buộc khi ACTIVE</td>
+<td><em>(thuộc bảng TK_TAIKHOAN, không tính)</em></td>
+</tr>
+</tbody>
+</table>
+<p>→ Completeness Score = (98.5 + 94.2 + 91.5) / 3 = <strong>94.7</strong></p>
+<blockquote>
+<p><strong>Chiều chưa có Rule</strong> sẽ không có điểm — trên giao diện hiển thị ghi chú "(chưa có rule)".</p>
+</blockquote>
+<h4 id="cấp-3--điểm-tổng-thể-của-bảng-overall-score">Cấp 3 — Điểm tổng thể của bảng (Overall Score) </h4>
+<p>Điểm tổng = <strong>trung bình cộng 6 chiều</strong> (chỉ tính các chiều đã có ít nhất 1 Rule).</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Overall Score = avg(dimensionScore của các chiều có rule)
+</code></pre><p><strong>Ví dụ — Bảng KH_KHACHHANG:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Chiều</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Completeness</td>
+<td>91</td>
+</tr>
+<tr>
+<td>Validity</td>
+<td>85</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>78</td>
+</tr>
+<tr>
+<td>Uniqueness</td>
+<td>95</td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td>76</td>
+</tr>
+<tr>
+<td>Timeliness</td>
+<td>88</td>
+</tr>
+</tbody>
+</table>
+<p>→ Overall = (91 + 85 + 78 + 95 + 76 + 88) / 6 = <strong>85.5</strong> → hiển thị <strong>82</strong> (sau làm tròn với trọng số thực tế)</p>
+<h4 id="lưu-ý-quan-trọng-về-thời-điểm">Lưu ý quan trọng về thời điểm </h4>
+<table>
+<thead>
+<tr>
+<th>Điểm ở đâu</th>
+<th>Nguồn tính</th>
+<th>Thời điểm</th>
+<th>Có cộng dồn lịch sử?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Danh mục dữ liệu</strong> (DataCatalog)</td>
+<td>Từ <code>lastScore</code> của Rules</td>
+<td><strong>Lần chạy Rule gần nhất</strong></td>
+<td>❌ Không — mỗi lần chạy ghi đè kết quả cũ</td>
+</tr>
+<tr>
+<td><strong>Phân tích dữ liệu</strong> (Profiling)</td>
+<td>Từ thống kê cột (null%, format%)</td>
+<td><strong>Lần quét Profiling gần nhất</strong></td>
+<td>❌ Không — mỗi lần quét là snapshot mới</td>
+</tr>
+<tr>
+<td><strong>Báo cáo</strong> (Reports)</td>
+<td>Tổng hợp lịch sử điểm qua thời gian</td>
+<td><strong>Khoảng thời gian chọn</strong></td>
+<td>✅ Có — biểu đồ xu hướng lưu lịch sử</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Cả hai</strong> đều là snapshot lần gần nhất — chỉ có menu <strong>Báo cáo</strong> mới cho phép xem xu hướng qua thời gian.</p>
+</blockquote>
+<hr>
+<h2 id="5-rule-dq-quy-tắc-cho-cột-hay-bảng">5. Rule DQ: Quy tắc cho Cột hay Bảng? </h2>
+<blockquote>
+<p><strong>Câu hỏi hay!</strong> Rule DQ <strong>KHÔNG</strong> chỉ dành cho cột. Có 2 loại phạm vi:</p>
+</blockquote>
+<h3 id="loại-1-quy-tắc-cấp-cột-column-level--1825-metric">Loại 1: Quy tắc cấp Cột (Column-level) — 18/25 metric </h3>
+<p>Áp dụng cho <strong>1 cột cụ thể</strong> trong bảng. Cột "Phạm vi" trong danh sách Rule hiển thị <code>Cột: TÊN_CỘT</code>.</p>
+<p><strong>Khi nào dùng?</strong> Khi bạn muốn kiểm tra một cột riêng lẻ: <code>EMAIL</code> có đúng format không? <code>SO_CMND</code> có NULL không? <code>SO_TIEN</code> có nằm trong khoảng hợp lệ không?</p>
+<h3 id="loại-2-quy-tắc-cấp-bảng-table-level--725-metric">Loại 2: Quy tắc cấp Bảng (Table-level) — 7/25 metric </h3>
+<p><strong>Không gắn với cột cụ thể</strong> — kiểm tra đặc tính của toàn bảng hoặc ràng buộc giữa nhiều cột. Cột "Phạm vi" hiển thị <code>Bảng</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Chiều</th>
+<th>Mô tả</th>
+<th>Ví dụ thực tế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>row_count</code></td>
+<td>Completeness</td>
+<td>Số dòng trong bảng nằm trong [min, max]</td>
+<td><code>GD_GIAODICH</code> có 1K–5M dòng — phát hiện truncate/explode</td>
+</tr>
+<tr>
+<td><code>time_coverage</code></td>
+<td>Completeness</td>
+<td>Chuỗi thời gian không bị gián đoạn</td>
+<td><code>NGAY_GD</code> có dữ liệu liên tục 30 ngày ≥ 95%</td>
+</tr>
+<tr>
+<td><code>volume_change</code></td>
+<td>Completeness</td>
+<td>% thay đổi số dòng so với N ngày trước</td>
+<td>Số dòng không thay đổi quá 30% vs. tuần trước</td>
+</tr>
+<tr>
+<td><code>table_size</code></td>
+<td>Accuracy</td>
+<td>Kích thước bảng trong khoảng [min, max] MB/GB</td>
+<td>Partition <code>GD_GIAODICH</code> 1–500 GB</td>
+</tr>
+<tr>
+<td><code>custom_expression</code></td>
+<td>Validity</td>
+<td>Điều kiện SQL WHERE tùy chỉnh</td>
+<td><code>LOAI_GD IN ('DC', 'CK', 'TM') AND SO_TIEN &gt; 0</code></td>
+</tr>
+<tr>
+<td><code>cross_column</code></td>
+<td>Consistency</td>
+<td>Ràng buộc logic giữa 2+ cột</td>
+<td><code>NGAY_KET_THUC &gt; NGAY_HIEU_LUC</code></td>
+</tr>
+<tr>
+<td><code>duplicate_composite</code></td>
+<td>Uniqueness</td>
+<td>Khóa duy nhất trên tổ hợp nhiều cột</td>
+<td>Combo <code>(MA_KH, THANG)</code> trong bảng sao kê phải unique</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-25-loại-metric-chi-tiết">6. 25 Loại Metric Chi Tiết </h2>
+<p>Hệ thống hỗ trợ <strong>25 metric type</strong> chia thành 2 nhóm: <strong>cấp cột</strong> (18 metric) và <strong>cấp bảng</strong> (7 metric).</p>
+<h3 id="bảng-tổng-hợp-25-metric--mô-tả-chi-tiết-cấu-hình--ví-dụ">Bảng tổng hợp 25 Metric — Mô tả chi tiết, cấu hình &amp; ví dụ </h3>
+<blockquote>
+<p>Bảng dưới đây tổng hợp toàn bộ 25 metric trong hệ thống. Mỗi dòng ghi rõ: tên hiển thị trên dropdown, chiều dữ liệu, cấp áp dụng, mô tả chi tiết cách cấu hình từng trường, và ví dụ thực tế. Kéo ngang để xem đầy đủ.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Metric (tên trên dropdown)</th>
+<th>Chiều</th>
+<th>Cấp</th>
+<th>Mô tả chi tiết — mục đích &amp; các trường cấu hình</th>
+<th>Ví dụ thực tế — bài toán &amp; cách cấu hình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Không được rỗng (NOT NULL)</strong></td>
+<td>Đầy đủ</td>
+<td>Cột</td>
+<td>Kiểm tra một cột không được chứa giá trị NULL.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: chọn cột cần kiểm tra từ dropdown (hoặc nhập tay)<br>Hệ thống đếm % dòng có giá trị NOT NULL → so với ngưỡng W/C.</td>
+<td><strong>Bài toán:</strong> Mọi khách hàng phải có số CMND.<br><strong>Cấu hình:</strong><br>- Bảng = <code>KH_KHACHHANG</code><br>- Cột = <code>SO_CMND</code><br>- Ngưỡng W=95, C=90<br>→ Dưới 90% có CMND = không đạt.</td>
+</tr>
+<tr>
+<td><strong>Tỷ lệ điền đủ (Fill Rate)</strong></td>
+<td>Đầy đủ</td>
+<td>Cột</td>
+<td>Tương tự NOT NULL nhưng cho phép set ngưỡng % tối thiểu linh hoạt hơn.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Tỷ lệ điền tối thiểu (%)</strong>: bao nhiêu % dòng phải có giá trị (không NULL, không rỗng)</td>
+<td><strong>Bài toán:</strong> Không bắt buộc 100% KH có email, nhưng cần ít nhất 80%.<br><strong>Cấu hình:</strong><br>- Cột = <code>EMAIL</code><br>- Tỷ lệ điền tối thiểu = <code>80</code></td>
+</tr>
+<tr>
+<td><strong>% Null theo chu kỳ</strong></td>
+<td>Đầy đủ</td>
+<td>Cột</td>
+<td>Theo dõi tỷ lệ NULL trong từng chu kỳ thời gian — phát hiện trend null tăng dần.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Cột thời gian</strong>: cột DATE/TIMESTAMP để group by<br>- <strong>Độ chi tiết</strong>: Ngày / Tuần / Tháng<br>- <strong>Khoảng kiểm (số ngày)</strong>: quét bao nhiêu ngày gần nhất<br>- <strong>% Null tối đa mỗi chu kỳ</strong>: mỗi ngày/tuần/tháng không được vượt X% null</td>
+<td><strong>Bài toán:</strong> Theo dõi null của cột SO_DU theo ngày, mỗi ngày không quá 5%.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_DU</code><br>- Cột thời gian = <code>NGAY_CAP_NHAT</code><br>- Độ chi tiết = <code>Ngày</code><br>- Khoảng kiểm = <code>30</code><br>- % Null tối đa = <code>5</code></td>
+</tr>
+<tr>
+<td><strong>NOT NULL có điều kiện</strong></td>
+<td>Đầy đủ</td>
+<td>Cột</td>
+<td>Cột chỉ bắt buộc NOT NULL khi thỏa mãn một điều kiện SQL.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Điều kiện SQL WHERE</strong>: khi điều kiện đúng thì cột phải có giá trị</td>
+<td><strong>Bài toán:</strong> SO_DU chỉ bắt buộc khi tài khoản đang ACTIVE.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_DU</code><br>- Điều kiện = <code>TRANG_THAI = 'ACTIVE'</code><br>→ Nếu TRANG_THAI='ACTIVE' mà SO_DU là NULL → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Số dòng trong khoảng</strong></td>
+<td>Đầy đủ</td>
+<td>Bảng</td>
+<td>Kiểm tra tổng số dòng trong bảng phải nằm trong khoảng [min, max]. Phát hiện bảng bị truncate hoặc tăng đột biến.<br><strong>Trường cấu hình:</strong><br>- <strong>Số dòng tối thiểu</strong>: giới hạn dưới<br>- <strong>Số dòng tối đa</strong>: giới hạn trên</td>
+<td><strong>Bài toán:</strong> Bảng GD_GIAODICH bình thường có 1M–50M dòng.<br><strong>Cấu hình:</strong><br>- Min = <code>1000000</code><br>- Max = <code>50000000</code><br>→ Nếu đột ngột còn 100 dòng → không đạt.</td>
+</tr>
+<tr>
+<td><strong>Phủ thời gian (Time Coverage)</strong></td>
+<td>Đầy đủ</td>
+<td>Bảng</td>
+<td>Kiểm tra chuỗi thời gian liên tục không bị thiếu khoảng.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột thời gian</strong>: cột DATE để group<br>- <strong>Độ chi tiết</strong>: Ngày / Tuần / Tháng<br>- <strong>Khoảng kiểm (số ngày)</strong>: quét bao nhiêu ngày gần nhất<br>- <strong>% chu kỳ phải có dữ liệu</strong>: VD 95% = trong 30 ngày phải có dữ liệu ít nhất 28-29 ngày</td>
+<td><strong>Bài toán:</strong> Bảng GD_GIAODICH phải có giao dịch mỗi ngày.<br><strong>Cấu hình:</strong><br>- Cột thời gian = <code>NGAY_GD</code><br>- Độ chi tiết = <code>Ngày</code><br>- Khoảng kiểm = <code>30</code><br>- % phủ = <code>95</code><br>→ Thiếu 3 ngày trong 30 ngày (90%) → cảnh báo.</td>
+</tr>
+<tr>
+<td><strong>Thay đổi khối lượng (Volume Change)</strong></td>
+<td>Đầy đủ</td>
+<td>Bảng</td>
+<td>So sánh số dòng hiện tại với trung bình N ngày trước — phát hiện biến động bất thường.<br><strong>Trường cấu hình:</strong><br>- <strong>Nhìn lại N ngày trước</strong>: so sánh với trung bình bao nhiêu ngày<br>- <strong>% thay đổi tối đa cho phép</strong>: vượt X% là cảnh báo</td>
+<td><strong>Bài toán:</strong> Số dòng GD_GIAODICH không nên biến động quá 30%.<br><strong>Cấu hình:</strong><br>- Nhìn lại = <code>7</code> ngày<br>- % thay đổi tối đa = <code>30</code><br>→ Hôm nay 100K dòng, 7 ngày trước TB 200K → giảm 50% → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Đúng định dạng — Whitelist Regex</strong></td>
+<td>Hợp lệ</td>
+<td>Cột</td>
+<td>Giá trị trong cột PHẢI khớp biểu thức chính quy (regex).<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Biểu thức chính quy</strong>: pattern mà giá trị phải match<br>Hệ thống đếm % dòng match regex → so với ngưỡng.</td>
+<td><strong>Bài toán:</strong> Số điện thoại phải đúng format VN 10 số.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_DIEN_THOAI</code><br>- Regex = <code>^(03|07|08|09)\d{8}$</code><br>- Ngưỡng W=95, C=90</td>
+</tr>
+<tr>
+<td><strong>Không chứa giá trị rác — Blacklist</strong></td>
+<td>Hợp lệ</td>
+<td>Cột</td>
+<td>Ngược lại Whitelist — giá trị KHÔNG ĐƯỢC khớp pattern. Dùng <code>|</code> để OR nhiều pattern.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Pattern blacklist (regex)</strong>: giá trị khớp sẽ bị coi là rác</td>
+<td><strong>Bài toán:</strong> Cột HO_TEN không được chứa giá trị test/rác.<br><strong>Cấu hình:</strong><br>- Cột = <code>HO_TEN</code><br>- Blacklist = <code>TEST|FAKE|N/A|NULL|^\\s*$</code><br>→ Dòng có HO_TEN = "TEST" hoặc "N/A" → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Trong khoảng giá trị</strong></td>
+<td>Hợp lệ</td>
+<td>Cột</td>
+<td>Giá trị số phải nằm trong khoảng [min, max]. Để trống 1 đầu = chỉ kiểm tra 1 chiều.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Giá trị tối thiểu</strong>: giới hạn dưới<br>- <strong>Giá trị tối đa</strong>: giới hạn trên</td>
+<td><strong>Bài toán:</strong> Tuổi khách hàng phải hợp lệ (18–120).<br><strong>Cấu hình:</strong><br>- Cột = <code>TUOI</code><br>- Min = <code>18</code><br>- Max = <code>120</code><br>→ Tuổi = 0 hoặc 200 → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Trong danh sách hợp lệ (Whitelist)</strong></td>
+<td>Hợp lệ</td>
+<td>Cột</td>
+<td>Giá trị phải thuộc tập hợp cho phép (enum).<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Danh sách giá trị hợp lệ</strong>: nhập các giá trị cách nhau bằng dấu phẩy</td>
+<td><strong>Bài toán:</strong> Giới tính chỉ chấp nhận 3 giá trị.<br><strong>Cấu hình:</strong><br>- Cột = <code>GIOI_TINH</code><br>- Danh sách = <code>NAM, NU, KHAC</code><br>→ Giá trị "Male" hoặc "1" → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Biểu thức SQL tùy chỉnh</strong></td>
+<td>Hợp lệ</td>
+<td>Bảng</td>
+<td>Điều kiện WHERE SQL áp dụng trên toàn bảng — metric linh hoạt nhất, dùng khi các metric khác không đủ.<br><strong>Trường cấu hình:</strong><br>- <strong>Điều kiện kiểm tra</strong>: biểu thức SQL (không cần từ khóa WHERE)<br>Hệ thống đếm % dòng thỏa mãn điều kiện.</td>
+<td><strong>Bài toán:</strong> Mọi tài khoản tín dụng/tiết kiệm phải có lãi suất &gt; 0.<br><strong>Cấu hình:</strong><br>- Biểu thức = <code>LOAI_TK IN ('TD','TK') AND LAI_SUAT &gt; 0</code><br>→ Dòng nào không thỏa = vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Kiểu dữ liệu cố định</strong></td>
+<td>Nhất quán</td>
+<td>Cột</td>
+<td>Tất cả giá trị trong cột phải đúng kiểu dữ liệu chỉ định. Phát hiện dữ liệu bị lẫn kiểu.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Kiểu dữ liệu bắt buộc</strong>: chọn từ dropdown — STRING, INTEGER, DECIMAL, DATE, TIMESTAMP</td>
+<td><strong>Bài toán:</strong> Cột NGAY_SINH phải là kiểu DATE, không lẫn string.<br><strong>Cấu hình:</strong><br>- Cột = <code>NGAY_SINH</code><br>- Kiểu = <code>DATE</code><br>→ Dòng chứa "01-01-1990" dạng string thay vì date → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Giá trị phổ biến nhất (Mode)</strong></td>
+<td>Nhất quán</td>
+<td>Cột</td>
+<td>Kiểm tra giá trị xuất hiện nhiều nhất (mode) có chiếm đủ tỷ lệ không — phát hiện dữ liệu bị "pha tạp".<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Giá trị mode kỳ vọng</strong>: tùy chọn, để trống = chỉ kiểm tra tần suất<br>- <strong>Tần suất tối thiểu (%)</strong>: mode phải chiếm ≥ X% tổng số dòng</td>
+<td><strong>Bài toán:</strong> ≥80% KH phải có quốc tịch VN.<br><strong>Cấu hình:</strong><br>- Cột = <code>QUOC_TICH</code><br>- Mode kỳ vọng = <code>VN</code><br>- Tần suất tối thiểu = <code>80</code><br>→ Nếu đột ngột giảm còn 50% → có thể lẫn nguồn lạ.</td>
+</tr>
+<tr>
+<td><strong>Nhất quán chéo cột</strong></td>
+<td>Nhất quán</td>
+<td>Bảng</td>
+<td>Biểu thức logic kiểm tra quan hệ giữa 2+ cột trong cùng bảng.<br><strong>Trường cấu hình:</strong><br>- <strong>Điều kiện kiểm tra</strong>: biểu thức SQL boolean so sánh giữa các cột</td>
+<td><strong>Bài toán:</strong> Ngày đóng tài khoản phải sau ngày mở.<br><strong>Cấu hình:</strong><br>- Biểu thức = <code>NGAY_DONG &gt; NGAY_MO</code><br>→ Dòng có NGAY_DONG trước NGAY_MO → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Toàn vẹn tham chiếu (FK)</strong></td>
+<td>Nhất quán</td>
+<td>Cột</td>
+<td>Kiểm tra giá trị trong cột phải tồn tại ở bảng tham chiếu (foreign key check).<br><strong>Trường cấu hình:</strong><br>- <strong>Cột nguồn</strong>: cột cần kiểm tra<br>- <strong>Bảng tham chiếu</strong>: chọn bảng chứa dữ liệu chuẩn<br>- <strong>Cột tham chiếu</strong>: cột trong bảng tham chiếu để so khớp</td>
+<td><strong>Bài toán:</strong> MA_KH trong giao dịch phải tồn tại trong bảng KH.<br><strong>Cấu hình:</strong><br>- Cột nguồn = <code>MA_KH</code><br>- Bảng tham chiếu = <code>KH_KHACHHANG</code><br>- Cột tham chiếu = <code>MA_KH</code><br>→ Giao dịch có MA_KH không tồn tại → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Không trùng lặp (1 cột)</strong></td>
+<td>Duy nhất</td>
+<td>Cột</td>
+<td>Kiểm tra giá trị trong một cột là duy nhất (unique).<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: chọn cột cần kiểm tra<br>Hệ thống đếm % giá trị distinct → so với ngưỡng.</td>
+<td><strong>Bài toán:</strong> Mỗi KH phải có số CMND duy nhất.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_CMND</code><br>→ Có 2 KH cùng số CMND → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Không trùng lặp (nhiều cột)</strong></td>
+<td>Duy nhất</td>
+<td>Bảng</td>
+<td>Kiểm tra tổ hợp nhiều cột là duy nhất (composite unique key).<br><strong>Trường cấu hình:</strong><br>- <strong>Danh sách cột</strong>: chọn nhiều cột từ checkbox (cần chọn ≥ 2 cột)</td>
+<td><strong>Bài toán:</strong> Mỗi KH chỉ có 1 bản ghi/tháng trong TK_TAIKHOAN.<br><strong>Cấu hình:</strong><br>- Chọn cột = <code>MA_KH</code> + <code>THANG</code><br>→ Có 2 dòng cùng MA_KH + THANG → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Khớp với dữ liệu chuẩn</strong></td>
+<td>Chính xác</td>
+<td>Cột</td>
+<td>So sánh giá trị trong cột với bảng/cột tham chiếu đã xác thực (master data).<br><strong>Trường cấu hình:</strong><br>- <strong>Cột so sánh (nguồn)</strong>: cột trong bảng hiện tại<br>- <strong>Bảng chuẩn</strong>: bảng master data<br>- <strong>Cột chuẩn</strong>: cột trong bảng chuẩn để so khớp</td>
+<td><strong>Bài toán:</strong> Mã tỉnh phải khớp danh mục tỉnh thành.<br><strong>Cấu hình:</strong><br>- Cột nguồn = <code>MA_TINH</code><br>- Bảng chuẩn = <code>DM_TINH_THANH</code><br>- Cột chuẩn = <code>MA_TINH</code><br>→ Mã tỉnh không tồn tại trong danh mục → vi phạm.</td>
+</tr>
+<tr>
+<td><strong>Thống kê trong khoảng (Statistics Bound)</strong></td>
+<td>Chính xác</td>
+<td>Cột</td>
+<td>Kiểm tra chỉ số thống kê phải nằm trong khoảng cho phép — phát hiện outlier hoặc drift phân phối.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Loại thống kê</strong>: chọn từ dropdown — Min, Max, Mean, Stddev, P25, P50 (median), P75<br>- <strong>Khoảng tối thiểu</strong>: giới hạn dưới<br>- <strong>Khoảng tối đa</strong>: giới hạn trên</td>
+<td><strong>Bài toán:</strong> Trung bình số dư tài khoản phải trong 10M–500M.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_DU</code><br>- Loại thống kê = <code>Mean</code><br>- Min = <code>10000000</code><br>- Max = <code>500000000</code><br>→ Mean đột ngột = 0 → phát hiện bảng bị zero-out.</td>
+</tr>
+<tr>
+<td><strong>Tổng cột trong khoảng (Sum Range)</strong></td>
+<td>Chính xác</td>
+<td>Cột</td>
+<td>Kiểm tra SUM toàn bộ giá trị của cột phải nằm trong khoảng [min, max].<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột cần kiểm tra<br>- <strong>Tổng tối thiểu</strong>: giới hạn dưới<br>- <strong>Tổng tối đa</strong>: giới hạn trên</td>
+<td><strong>Bài toán:</strong> Tổng doanh thu ngày phải từ 1 tỷ đến 100 tỷ.<br><strong>Cấu hình:</strong><br>- Cột = <code>SO_TIEN</code><br>- Min = <code>1000000000</code><br>- Max = <code>100000000000</code><br>→ Tổng = 0 → bảng thiếu dữ liệu.</td>
+</tr>
+<tr>
+<td><strong>Biểu thức cross-column có % pass</strong></td>
+<td>Chính xác</td>
+<td>Cột</td>
+<td>Biểu thức SparkSQL phải đúng cho ≥ X% số dòng — kiểm tra cross-column với ngưỡng cho phép sai số.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột chính liên quan<br>- <strong>Biểu thức SparkSQL</strong>: trả về true/false cho từng dòng<br>- <strong>% dòng phải pass tối thiểu</strong>: ngưỡng pass rate</td>
+<td><strong>Bài toán:</strong> Thành tiền = đơn giá × số lượng, cho phép 1% sai số do làm tròn.<br><strong>Cấu hình:</strong><br>- Biểu thức = <code>THANH_TIEN = DON_GIA * SO_LUONG</code><br>- % pass = <code>99</code></td>
+</tr>
+<tr>
+<td><strong>Kích thước bảng trong khoảng</strong></td>
+<td>Chính xác</td>
+<td>Bảng</td>
+<td>Kiểm tra dung lượng bảng/partition phải trong khoảng cho phép. Phát hiện partition size bất thường.<br><strong>Trường cấu hình:</strong><br>- <strong>Kích thước tối thiểu</strong>: giới hạn dưới<br>- <strong>Kích thước tối đa</strong>: giới hạn trên<br>- <strong>Đơn vị</strong>: chọn MB hoặc GB</td>
+<td><strong>Bài toán:</strong> Partition hàng ngày GD_GIAODICH phải từ 100MB đến 50GB.<br><strong>Cấu hình:</strong><br>- Min = <code>100</code><br>- Max = <code>50000</code><br>- Đơn vị = <code>MB</code><br>→ Partition hôm nay chỉ 1MB → thiếu dữ liệu.</td>
+</tr>
+<tr>
+<td><strong>Đúng hạn (SLA)</strong></td>
+<td>Kịp thời</td>
+<td>Cột</td>
+<td>Dữ liệu phải có mặt trước thời hạn SLA.<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột timestamp ghi nhận thời gian load/tạo<br>- <strong>Thời hạn SLA (HH:MM)</strong>: giờ deadline mỗi ngày<br>- <strong>Cửa sổ cảnh báo (phút)</strong>: cảnh báo sớm bao nhiêu phút trước deadline</td>
+<td><strong>Bài toán:</strong> Dữ liệu GD ngày hôm trước phải có trước 06:00 sáng.<br><strong>Cấu hình:</strong><br>- Cột = <code>NGAY_LOAD</code><br>- SLA = <code>06:00</code><br>- Cửa sổ cảnh báo = <code>30</code><br>→ Cảnh báo lúc 05:30 nếu chưa có dữ liệu.</td>
+</tr>
+<tr>
+<td><strong>Tươi mới (Freshness)</strong></td>
+<td>Kịp thời</td>
+<td>Cột</td>
+<td>Dữ liệu phải được cập nhật trong khoảng thời gian quy định — phát hiện bảng "chết".<br><strong>Trường cấu hình:</strong><br>- <strong>Cột</strong>: cột timestamp cập nhật cuối<br>- <strong>Dữ liệu tươi trong</strong>: số lượng<br>- <strong>Đơn vị thời gian</strong>: Phút / Giờ / Ngày</td>
+<td><strong>Bài toán:</strong> Bảng KH phải được cập nhật trong 24 giờ gần nhất.<br><strong>Cấu hình:</strong><br>- Cột = <code>UPDATED_AT</code><br>- Tươi trong = <code>24</code><br>- Đơn vị = <code>Giờ</code><br>→ Dòng gần nhất cập nhật 3 ngày trước → vi phạm.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="61-cấp-bảng-table-level--7-metrics">6.1 Cấp Bảng (Table-level) — 7 metrics </h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Metric</th>
+<th>Chiều</th>
+<th>Mô tả</th>
+<th>Tham số cần nhập</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>row_count</code></td>
+<td>Đầy đủ</td>
+<td>Số dòng bảng phải nằm trong [min, max] — phát hiện bảng bị truncate hoặc explode</td>
+<td>min rows, max rows</td>
+<td><code>GD_GIAODICH</code> có 1.000 – 5.000.000 dòng</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>time_coverage</code></td>
+<td>Đầy đủ</td>
+<td>Chuỗi thời gian không bị gián đoạn trong N ngày gần nhất</td>
+<td>Cột thời gian, granularity (ngày/tuần/tháng), số ngày, % phủ tối thiểu</td>
+<td><code>NGAY_GD</code> liên tục 30 ngày ≥ 95%</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>volume_change</code></td>
+<td>Đầy đủ</td>
+<td>% thay đổi số dòng so với N ngày trước không vượt ngưỡng</td>
+<td>Số ngày nhìn lại, % thay đổi tối đa</td>
+<td>Số dòng không thay đổi quá 30% so với 7 ngày trước</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>table_size</code></td>
+<td>Chính xác</td>
+<td>Kích thước bảng/partition trong khoảng cho phép</td>
+<td>min size, max size, đơn vị (MB/GB)</td>
+<td>Bảng chiếm 1–500 GB</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>custom_expression</code></td>
+<td>Hợp lệ</td>
+<td>Điều kiện SQL WHERE tùy chỉnh cho toàn bảng</td>
+<td>Biểu thức SQL</td>
+<td><code>LOAI_TK IN ('TD','TK') AND LAI_SUAT &gt; 0</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>cross_column</code></td>
+<td>Nhất quán</td>
+<td>Ràng buộc logic giữa 2+ cột</td>
+<td>Biểu thức SQL boolean</td>
+<td><code>NGAY_DONG &gt; NGAY_MO</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>duplicate_composite</code></td>
+<td>Duy nhất</td>
+<td>Tổ hợp nhiều cột phải unique</td>
+<td>Danh sách cột</td>
+<td><code>(MA_KH, THANG)</code> không trùng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-cấp-cột-column-level--18-metrics">6.2 Cấp Cột (Column-level) — 18 metrics </h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Metric</th>
+<th>Chiều</th>
+<th>Mô tả</th>
+<th>Tham số cần nhập</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>not_null</code></td>
+<td>Đầy đủ</td>
+<td>Cột không được có giá trị NULL</td>
+<td>Cột kiểm tra</td>
+<td><code>MA_KH</code> không NULL</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>fill_rate</code></td>
+<td>Đầy đủ</td>
+<td>% dòng có giá trị phải ≥ ngưỡng tối thiểu</td>
+<td>Cột, tỷ lệ tối thiểu (%)</td>
+<td><code>EMAIL</code> điền đủ ≥ 80%</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>null_rate_by_period</code></td>
+<td>Đầy đủ</td>
+<td>Tỷ lệ null theo chu kỳ không được vượt ngưỡng — phát hiện trend xấu dần</td>
+<td>Cột, cột thời gian, granularity, số ngày, max null%</td>
+<td><code>EMAIL</code> null ≤ 20%/tháng trong 90 ngày</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>conditional_not_null</code></td>
+<td>Đầy đủ</td>
+<td>Cột bắt buộc có giá trị khi thỏa điều kiện WHERE</td>
+<td>Cột, điều kiện SQL WHERE</td>
+<td><code>SO_DU</code> phải có giá trị khi <code>TRANG_THAI='ACTIVE'</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>format_regex</code></td>
+<td>Hợp lệ</td>
+<td>Giá trị phải khớp biểu thức chính quy</td>
+<td>Cột, pattern regex</td>
+<td><code>SO_DIEN_THOAI</code> khớp <code>^0[0-9]{9}$</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>blacklist_pattern</code></td>
+<td>Hợp lệ</td>
+<td>Giá trị không được match pattern (loại rác: TEST, FAKE, N/A)</td>
+<td>Cột, pattern (pipe-separated)</td>
+<td><code>EMAIL</code> không chứa <code>TEST|FAKE|N/A</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>value_range</code></td>
+<td>Hợp lệ</td>
+<td>Số phải trong khoảng [min, max]</td>
+<td>Cột, min, max</td>
+<td><code>TUOI</code> trong [18, 100]</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>allowed_values</code></td>
+<td>Hợp lệ</td>
+<td>Giá trị phải thuộc tập cho phép</td>
+<td>Cột, danh sách hợp lệ</td>
+<td><code>GIOI_TINH</code> ∈ {M, F, Other}</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>fixed_datatype</code></td>
+<td>Nhất quán</td>
+<td>Cột phải luôn có kiểu dữ liệu cố định</td>
+<td>Cột, kiểu dữ liệu (STRING/INTEGER/DECIMAL/DATE/TIMESTAMP)</td>
+<td><code>NGAY_SINH</code> phải là DATE</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>mode_check</code></td>
+<td>Nhất quán</td>
+<td>Giá trị phổ biến nhất phải chiếm ≥ X% — phát hiện dữ liệu bị pha tạp</td>
+<td>Cột, giá trị mode (tùy chọn), tỷ lệ tối thiểu (%)</td>
+<td><code>LOAI_TK = 'TD'</code> chiếm ≥ 60%</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>referential_integrity</code></td>
+<td>Nhất quán</td>
+<td>FK phải tồn tại trong bảng tham chiếu</td>
+<td>Cột nguồn, bảng đích, cột đích</td>
+<td><code>MA_KH</code> phải có trong <code>KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>duplicate_single</code></td>
+<td>Duy nhất</td>
+<td>Giá trị trong cột phải unique</td>
+<td>Cột</td>
+<td><code>SO_CMND</code> không trùng</td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>reference_match</code></td>
+<td>Chính xác</td>
+<td>So sánh giá trị với bảng chuẩn đã xác thực</td>
+<td>Cột nguồn, bảng chuẩn, cột chuẩn</td>
+<td><code>MA_TINH</code> khớp với bảng <code>DM_TINH_THANH</code></td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>statistics_bound</code></td>
+<td>Chính xác</td>
+<td>Giá trị thống kê (min/max/mean/stddev/percentile) nằm trong khoảng cho phép</td>
+<td>Cột, loại thống kê, min, max</td>
+<td><code>SO_TIEN</code> có mean trong [100K, 50M]</td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>sum_range</code></td>
+<td>Chính xác</td>
+<td>Tổng cột phải nằm trong [min, max] — phát hiện bảng bị zero-out</td>
+<td>Cột, min, max</td>
+<td>Tổng <code>SO_TIEN</code> &gt; 0 mỗi ngày</td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>expression_pct</code></td>
+<td>Chính xác</td>
+<td>≥ X% dòng phải thỏa biểu thức SparkSQL — kiểm tra ràng buộc đa cột</td>
+<td>Biểu thức SQL, tỷ lệ pass tối thiểu (%)</td>
+<td><code>SO_TIEN &gt; 0 AND MA_TK IS NOT NULL</code> đúng ≥ 99%</td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>on_time</code></td>
+<td>Kịp thời</td>
+<td>Dữ liệu phải có mặt trước thời hạn SLA</td>
+<td>Cột timestamp, giờ SLA, cửa sổ cảnh báo (phút)</td>
+<td><code>NGAY_TAO</code> trước 08:00 ± 30 phút</td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>freshness</code></td>
+<td>Kịp thời</td>
+<td>Cột timestamp phải được cập nhật trong X thời gian</td>
+<td>Cột timestamp, thời gian tối đa, đơn vị</td>
+<td><code>NGAY_CAP_NHAT</code> trong vòng 5 phút qua</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-hướng-dẫn-chi-tiết-tất-cả-25-metric">6.3 Hướng dẫn chi tiết tất cả 25 Metric </h3>
+<blockquote>
+<p>Ví dụ trong phần này lấy từ hệ sinh thái <strong>fintech / ví điện tử</strong> — bao gồm các bảng: <code>KH_KHACHHANG</code>, <code>GD_GIAODICH</code>, <code>TK_VIENPAY</code>, <code>CTKM_KHUYENMAI</code>, <code>DV_DICH_VU</code>, <code>SP_SANPHAM</code>, <code>DIEM_TICH_LUY</code>, <code>DM_TINH_THANH</code>.</p>
+</blockquote>
+<hr>
+<h4 id="not_null--cột-không-được-có-giá-trị-null"><code>not_null</code> — Cột không được có giá trị NULL </h4>
+<p><strong>Mục đích:</strong> Ràng buộc cứng — cột bắt buộc phải có dữ liệu với <strong>100% dòng</strong>, không cho phép bất kỳ NULL nào. Thường dùng cho các trường định danh, khóa chính, trạng thái.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần đảm bảo không NULL</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột MA_KH
+→ Mã khách hàng KHÔNG được NULL — đây là PK định danh duy nhất
+
+Bảng GD_GIAODICH, cột MA_GD
+→ Mã giao dịch bắt buộc có — dùng để reconcile với ngân hàng
+
+Bảng CTKM_KHUYENMAI, cột MA_CTKM
+→ Mã chương trình khuyến mãi null → mất khả năng trace reward về đúng CTKM
+
+Bảng TK_VIENPAY, cột TRANG_THAI
+→ Trạng thái ví không được null — ảnh hưởng logic mở/đóng giao dịch
+</code></pre><blockquote>
+<p><strong>Khi nào dùng <code>not_null</code> thay <code>fill_rate</code>:</strong> Dùng <code>not_null</code> khi ngưỡng = 100% (zero tolerance). Dùng <code>fill_rate</code> khi cho phép một tỷ lệ nhỏ bị thiếu (VD: email không bắt buộc).</p>
+</blockquote>
+<hr>
+<h4 id="fill_rate--tỷ-lệ-điền-đủ-tối-thiểu"><code>fill_rate</code> — Tỷ lệ điền đủ tối thiểu </h4>
+<p><strong>Mục đích:</strong> Cho phép một số dòng bị NULL, nhưng không quá ngưỡng — dùng cho các trường <strong>tùy chọn nhưng quan trọng</strong> trong nghiệp vụ.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra tỷ lệ điền</td>
+</tr>
+<tr>
+<td>Tỷ lệ tối thiểu (%)</td>
+<td>✅</td>
+<td>Ít nhất X% dòng phải có giá trị</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột EMAIL, minFillRate=75%
+→ Ít nhất 75% KH phải có email để gửi thông báo giao dịch
+→ Dưới 75% → Marketing không push noti được → ảnh hưởng CTKM qua email
+
+Bảng KH_KHACHHANG, cột SO_CMND, minFillRate=60%
+→ KYC yêu cầu 60% KH phải xác thực CMND — dưới ngưỡng cảnh báo compliance
+
+Bảng DV_DICH_VU, cột MO_TA_DICH_VU, minFillRate=90%
+→ 90% dịch vụ phải có mô tả để hiển thị trên app
+
+Bảng CTKM_KHUYENMAI, cột DIEU_KIEN_AP_DUNG, minFillRate=100%
+→ Mọi CTKM đều phải ghi rõ điều kiện áp dụng — tránh tranh chấp khách hàng
+</code></pre><hr>
+<h4 id="format_regex--định-dạng-phải-khớp-biểu-thức-chính-quy"><code>format_regex</code> — Định dạng phải khớp biểu thức chính quy </h4>
+<p><strong>Mục đích:</strong> Xác thực định dạng của dữ liệu văn bản — số điện thoại, email, mã định danh, tài khoản — đúng pattern quy định.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra định dạng</td>
+</tr>
+<tr>
+<td>Pattern regex</td>
+<td>✅</td>
+<td>Biểu thức chính quy hợp lệ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột SO_DIEN_THOAI, pattern=^0[0-9]{9}$
+→ SĐT phải 10 số bắt đầu bằng 0
+→ Phát hiện: +84912345678 (sai format), 0912-345-678 (dấu gạch)
+
+Bảng KH_KHACHHANG, cột EMAIL, pattern=^[^@]+@[^@]+\.[a-zA-Z]{2,}$
+→ Email đúng chuẩn — lọc "abc@", "@gmail.com", "abc"
+
+Bảng GD_GIAODICH, cột MA_GD, pattern=^GD[0-9]{12}$
+→ Mã giao dịch phải bắt đầu GD + 12 chữ số — phát hiện mã test hoặc import lỗi
+
+Bảng CTKM_KHUYENMAI, cột MA_CTKM, pattern=^CTKM[0-9]{6}(Q[1-4])?$
+→ Mã CTKM = CTKM + 6 số + tùy chọn Qúy (VD: CTKM202401, CTKM202402Q1)
+
+Bảng TK_VIENPAY, cột SO_TK, pattern=^VP[0-9]{10}$
+→ Số tài khoản ví: VP + 10 số — phát hiện account test từ môi trường staging
+</code></pre><hr>
+<h4 id="value_range--giá-trị-số-trong-khoảng-hợp-lệ"><code>value_range</code> — Giá trị số trong khoảng hợp lệ </h4>
+<p><strong>Mục đích:</strong> Đảm bảo các cột số nằm trong khoảng nghiệp vụ hợp lý — loại bỏ dữ liệu âm, dữ liệu vượt giới hạn logic.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột số cần kiểm tra</td>
+</tr>
+<tr>
+<td>Giá trị tối thiểu</td>
+<td></td>
+<td>Ngưỡng dưới (inclusive)</td>
+</tr>
+<tr>
+<td>Giá trị tối đa</td>
+<td></td>
+<td>Ngưỡng trên (inclusive)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng CTKM_KHUYENMAI, cột TI_LE_HOAN_TIEN, min=0, max=50
+→ Tỷ lệ hoàn tiền cashback 0–50% — phát hiện CTKM cấu hình sai 500% (nghìn phần)
+
+Bảng GD_GIAODICH, cột SO_TIEN, min=1000, max=500000000
+→ Giao dịch ví: tối thiểu 1.000đ, tối đa 500 triệu/lần
+→ Giao dịch âm → có thể tính sai chiều (debit/credit nhầm)
+→ &gt; 500 triệu → vượt hạn mức, cần review
+
+Bảng KH_KHACHHANG, cột TUOI, min=18, max=90
+→ KH phải đủ 18 tuổi (KYC), không quá 90 (outlier dữ liệu nhập sai)
+
+Bảng DIEM_TICH_LUY, cột SO_DIEM, min=0
+→ Điểm tích lũy không được âm — phát hiện bug trừ điểm sai
+
+Bảng DV_DICH_VU, cột GIA_DICH_VU, min=0
+→ Giá dịch vụ số không âm — dịch vụ miễn phí thì = 0
+</code></pre><hr>
+<h4 id="allowed_values--giá-trị-phải-thuộc-tập-cho-phép"><code>allowed_values</code> — Giá trị phải thuộc tập cho phép </h4>
+<p><strong>Mục đích:</strong> Đảm bảo cột enum/categorical chỉ chứa các giá trị được định nghĩa trong domain — loại bỏ giá trị lỗi, typo, hoặc mã code đã deprecated.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra domain</td>
+</tr>
+<tr>
+<td>Danh sách giá trị hợp lệ</td>
+<td>✅</td>
+<td>Các giá trị được phép (ngăn cách bằng dấu phẩy)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột LOAI_GD, values=NAP_TIEN,RUT_TIEN,CHUYEN_KHOAN,THANH_TOAN,HOAN_TIEN,DIEM_THUONG
+→ Phát hiện: LOAD_MONEY (code cũ), TRANSFER (tiếng Anh lẫn), null
+
+Bảng KH_KHACHHANG, cột TRANG_THAI, values=ACTIVE,INACTIVE,BLOCKED,PENDING_KYC,CLOSED
+→ Phát hiện: SUSPEND (deprecated), ACTIVE_ (typo thừa dấu _)
+
+Bảng TK_VIENPAY, cột LOAI_TK, values=CA_NHAN,DOANH_NGHIEP,ECOMMERCE,AGENCY
+→ Loại ví phải thuộc 4 loại được cấp phép
+
+Bảng CTKM_KHUYENMAI, cột HINH_THUC_UU_DAI, values=CASHBACK,GIAM_GIA,QUA_TANG,DIEM_X2,MIEN_PHI_GD
+→ Hình thức khuyến mãi phải khớp với logic tính thưởng trong engine
+
+Bảng DV_DICH_VU, cột TRANG_THAI_DV, values=DANG_KY,DANG_SU_DUNG,TAM_DUNG,DA_HUY,HET_HAN
+→ Dịch vụ số phải ở một trong 5 trạng thái vòng đời
+</code></pre><hr>
+<h4 id="referential_integrity--tính-toàn-vẹn-tham-chiếu-fk"><code>referential_integrity</code> — Tính toàn vẹn tham chiếu (FK) </h4>
+<p><strong>Mục đích:</strong> Đảm bảo khóa ngoại (Foreign Key) <strong>luôn tồn tại</strong> trong bảng tham chiếu — phát hiện dữ liệu orphan, delete cascade bị miss, hoặc insert thiếu master data.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột nguồn (FK)</td>
+<td>✅</td>
+<td>Cột trong bảng hiện tại chứa giá trị FK</td>
+</tr>
+<tr>
+<td>Bảng tham chiếu</td>
+<td>✅</td>
+<td>Bảng master (bảng cha)</td>
+</tr>
+<tr>
+<td>Cột tham chiếu (PK)</td>
+<td>✅</td>
+<td>Cột PK trong bảng master</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột MA_KH → bảng KH_KHACHHANG, cột MA_KH
+→ Giao dịch không được có mã KH không tồn tại
+→ Phát hiện: KH bị xóa nhưng GD vẫn còn → lỗi GDPR data retention
+
+Bảng GD_GIAODICH, cột MA_CTKM → bảng CTKM_KHUYENMAI, cột MA_CTKM
+→ Giao dịch được gắn CTKM phải tham chiếu đúng chương trình tồn tại
+→ Phát hiện: CTKM hết hạn bị xóa nhưng GD vẫn giữ reference → báo cáo sai
+
+Bảng DANG_KY_DICH_VU, cột MA_DV → bảng DV_DICH_VU, cột MA_DV
+→ Đăng ký dịch vụ phải tham chiếu đến dịch vụ đang cung cấp
+
+Bảng DIEM_TICH_LUY, cột MA_KH → bảng KH_KHACHHANG, cột MA_KH
+→ Điểm tích lũy không thể thuộc về KH không tồn tại
+</code></pre><blockquote>
+<p><strong>Lưu ý hiệu năng:</strong> Metric này chạy JOIN giữa 2 bảng — với bảng lớn (&gt;100M dòng), nên schedule vào giờ thấp điểm.</p>
+</blockquote>
+<hr>
+<h4 id="duplicate_single--giá-trị-trong-cột-phải-unique"><code>duplicate_single</code> — Giá trị trong cột phải unique </h4>
+<p><strong>Mục đích:</strong> Đảm bảo cột <strong>không có giá trị trùng lặp</strong> — dùng cho các cột định danh nghiệp vụ (không phải PK kỹ thuật).</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra uniqueness</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột SO_DIEN_THOAI
+→ 1 SĐT chỉ được đăng ký 1 tài khoản ví
+→ Phát hiện trùng → có thể bị tạo multi-account (fraud pattern)
+
+Bảng KH_KHACHHANG, cột SO_CMND
+→ 1 CMND chỉ được KYC 1 lần — phát hiện giả mạo danh tính
+
+Bảng GD_GIAODICH, cột MA_GD
+→ Mã giao dịch phải duy nhất — trùng → xử lý 2 lần (double charge)
+
+Bảng CTKM_KHUYENMAI, cột MA_CTKM
+→ Mã CTKM unique — trùng → engine áp dụng nhầm điều kiện
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>duplicate_composite</code>:</strong> <code>duplicate_single</code> kiểm tra 1 cột; <code>duplicate_composite</code> kiểm tra tổ hợp nhiều cột.</p>
+</blockquote>
+<hr>
+<h4 id="reference_match--so-sánh-giá-trị-với-bảng-danh-mục-chuẩn"><code>reference_match</code> — So sánh giá trị với bảng danh mục chuẩn </h4>
+<p><strong>Mục đích:</strong> Xác thực dữ liệu mã hóa (code) khớp với <strong>bảng danh mục đã được phê duyệt</strong> — khác với <code>referential_integrity</code> ở chỗ đây là so sánh với danh mục nghiệp vụ chuẩn, không phải FK kỹ thuật.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột nguồn</td>
+<td>✅</td>
+<td>Cột chứa mã cần xác thực</td>
+</tr>
+<tr>
+<td>Bảng chuẩn</td>
+<td>✅</td>
+<td>Bảng danh mục (lookup table)</td>
+</tr>
+<tr>
+<td>Cột chuẩn</td>
+<td>✅</td>
+<td>Cột trong bảng chuẩn chứa giá trị tham chiếu</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột MA_TINH → bảng DM_TINH_THANH, cột MA_TINH
+→ Mã tỉnh phải khớp với danh mục hành chính chính thức (63 tỉnh)
+→ Phát hiện: mã 64, 65 (tỉnh mới chưa update danh mục)
+
+Bảng GD_GIAODICH, cột MA_NGAN_HANG → bảng DM_NGAN_HANG, cột MA_BIN
+→ Mã ngân hàng đích phải trong danh mục NAPAS cho phép liên thông
+
+Bảng DV_DICH_VU, cột NHOM_DV → bảng DM_NHOM_DICH_VU, cột MA_NHOM
+→ Nhóm dịch vụ phải khớp với danh mục phân loại sản phẩm số đã phê duyệt
+
+Bảng CTKM_KHUYENMAI, cột MA_DOI_TAC → bảng DM_DOI_TAC, cột MA_DOI_TAC
+→ Chương trình KM phải gắn với đối tác đã ký hợp đồng
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>referential_integrity</code>:</strong> <code>referential_integrity</code> kiểm tra FK trong mô hình dữ liệu; <code>reference_match</code> kiểm tra khớp với danh mục nghiệp vụ bên ngoài (có thể khác schema/DB).</p>
+</blockquote>
+<hr>
+<h4 id="custom_expression--biểu-thức-sql-tùy-chỉnh-toàn-bảng"><code>custom_expression</code> — Biểu thức SQL tùy chỉnh toàn bảng </h4>
+<p><strong>Mục đích:</strong> Kiểm tra <strong>ràng buộc tổng hợp toàn bảng</strong> bằng SQL aggregate — khi không có metric chuẩn nào đáp ứng yêu cầu nghiệp vụ phức tạp. Biểu thức trả về <code>TRUE/FALSE</code>.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biểu thức SQL</td>
+<td>✅</td>
+<td>SQL aggregate trả về boolean (VD: <code>COUNT(...) = 0</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Kiểm tra không có giao dịch âm:
+  COUNT(CASE WHEN SO_TIEN &lt; 0 THEN 1 END) = 0
+→ Bảng GD_GIAODICH không được có dòng SO_TIEN âm
+
+Kiểm tra tổng NAP == tổng RUT + tổng CHUYEN trong ngày:
+  ABS(SUM(CASE WHEN LOAI='NAP' THEN SO_TIEN ELSE 0 END)
+    - SUM(CASE WHEN LOAI IN ('RUT','CHUYEN') THEN SO_TIEN ELSE 0 END)) &lt; 1000
+→ Cân đối dòng tiền nội bảng — sai lệch &gt; 1000đ → alert reconcile
+
+Kiểm tra CTKM hết hạn không còn dòng ACTIVE:
+  COUNT(CASE WHEN NGAY_KET_THUC &lt; CURRENT_DATE AND TRANG_THAI='ACTIVE' THEN 1 END) = 0
+→ Không có CTKM đã hết hạn nhưng vẫn ACTIVE (cần tắt tự động)
+
+Kiểm tra số ví mới trong ngày hợp lý (anti-fraud):
+  COUNT(CASE WHEN DATE(NGAY_TAO)=CURRENT_DATE THEN 1 END) BETWEEN 100 AND 50000
+→ Số tài khoản mở mới trong 1 ngày: 100–50.000 (ngoài dải → nghi vấn bot)
+</code></pre><blockquote>
+<p><strong>Khi nào dùng <code>custom_expression</code>:</strong> Khi logic aggregate phức tạp (CASE WHEN, cross-condition). Khi logic đơn lẻ từng dòng → dùng <code>expression_pct</code>.</p>
+</blockquote>
+<hr>
+<h4 id="cross_column--ràng-buộc-logic-giữa-nhiều-cột"><code>cross_column</code> — Ràng buộc logic giữa nhiều cột </h4>
+<p><strong>Mục đích:</strong> Kiểm tra <strong>quan hệ logic giữa 2+ cột trong cùng 1 dòng</strong> — như ngày bắt đầu phải trước ngày kết thúc, số tiền phải khớp với loại giao dịch, v.v.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biểu thức SQL boolean</td>
+<td>✅</td>
+<td>Điều kiện boolean kiểm tra từng dòng (như WHERE)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng CTKM_KHUYENMAI:
+  NGAY_KET_THUC &gt; NGAY_BAT_DAU AND NGAY_KET_THUC &gt; CURRENT_DATE - 365
+→ Ngày kết thúc sau ngày bắt đầu, không phải CTKM cũ hơn 1 năm chưa dọn
+
+Bảng GD_GIAODICH:
+  (LOAI_GD = 'NAP_TIEN' AND SO_TIEN &gt; 0) OR (LOAI_GD = 'RUT_TIEN' AND SO_TIEN &lt; 0)
+  hoặc (đơn giản hơn): LOAI_GD != 'RUT_TIEN' OR SO_TIEN &lt;= 0
+→ Giao dịch rút tiền phải có chiều âm (debit)
+
+Bảng DV_DICH_VU:
+  (TRANG_THAI = 'HET_HAN' AND NGAY_HET_HAN IS NOT NULL) OR TRANG_THAI != 'HET_HAN'
+→ Dịch vụ hết hạn phải ghi ngày hết hạn
+
+Bảng KH_KHACHHANG:
+  LOAI_KH != 'CA_NHAN' OR (SO_CMND IS NOT NULL AND NGAY_SINH IS NOT NULL)
+→ KH cá nhân bắt buộc phải có CMND và ngày sinh (quy định KYC)
+
+Bảng TK_VIENPAY:
+  TRANG_THAI != 'ACTIVE' OR HAN_MUC_NGAY &gt; 0
+→ Tài khoản ACTIVE phải có hạn mức ngày &gt; 0
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>expression_pct</code>:</strong> <code>cross_column</code> yêu cầu <strong>100% dòng</strong> thỏa; <code>expression_pct</code> cho phép đặt ngưỡng X% (linh hoạt hơn).</p>
+</blockquote>
+<hr>
+<h4 id="duplicate_composite--tổ-hợp-nhiều-cột-phải-unique"><code>duplicate_composite</code> — Tổ hợp nhiều cột phải unique </h4>
+<p><strong>Mục đích:</strong> Kiểm tra <strong>uniqueness theo tổ hợp khóa nghiệp vụ</strong> — khi không có cột đơn lẻ nào là unique, nhưng sự kết hợp của nhiều cột thì phải duy nhất.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Danh sách cột</td>
+<td>✅</td>
+<td>Các cột tạo thành composite key (VD: MA_KH, THANG)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng BAO_CAO_THANG, cột (MA_KH, THANG)
+→ Mỗi KH chỉ có 1 bản ghi báo cáo/tháng
+→ Phát hiện trùng → tổng hợp tính 2 lần → sai KPI
+
+Bảng DANG_KY_CTKM, cột (MA_KH, MA_CTKM)
+→ 1 KH chỉ đăng ký 1 CTKM 1 lần
+→ Trùng → reward bị nhân đôi, thất thoát chi phí marketing
+
+Bảng DIEM_TICH_LUY, cột (MA_KH, MA_GD)
+→ 1 giao dịch chỉ cộng điểm cho 1 KH 1 lần
+→ Trùng → fraud cộng điểm nhiều lần
+
+Bảng HAN_MUC_DICH_VU, cột (MA_KH, MA_DV, THANG)
+→ Hạn mức sử dụng dịch vụ của 1 KH trong 1 tháng chỉ có 1 record
+→ Trùng → apply sai hạn mức khi check eligibility
+</code></pre><hr>
+<h4 id="row_count--kiểm-tra-số-dòng"><code>row_count</code> — Kiểm tra số dòng </h4>
+<p><strong>Mục đích:</strong> Phát hiện bảng bị <strong>truncate</strong> (mất dữ liệu) hoặc <strong>data explosion</strong> (insert nhầm, lặp batch).</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số dòng tối thiểu (min)</td>
+<td>✅</td>
+<td>Ngưỡng dưới — ít hơn → bảng đang thiếu dữ liệu</td>
+</tr>
+<tr>
+<td>Số dòng tối đa (max)</td>
+<td></td>
+<td>Ngưỡng trên — nhiều hơn → có thể bị insert trùng</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH (partition ngày), min=50000, max=2000000
+→ Ngày thường: 50K–500K giao dịch; ngày lương/Tết: có thể đến 2M
+→ Dưới 50K → job ETL chết giữa chừng hoặc upstream bị disconnect
+→ Trên 2M → chạy batch 2 lần, hoặc load nhầm dữ liệu nhiều ngày vào 1 partition
+
+Bảng KH_KHACHHANG, min=100000
+→ Hệ thống có ít nhất 100K KH đã đăng ký — dưới ngưỡng → có thể bị truncate nhầm
+
+Bảng CTKM_KHUYENMAI, min=1, max=500
+→ Phải có ít nhất 1 CTKM đang chạy; không có hơn 500 CTKM đồng thời (vượt capacity engine)
+
+Bảng SNAPSHOT_SO_DU (chụp cuối ngày), min=100000, max=10000000
+→ Snapshot số dư phải có 100K–10M bản ghi (= số tài khoản active trong range)
+</code></pre><blockquote>
+<p><strong>Lưu ý:</strong> Đây là metric <strong>cấp bảng</strong> — không chọn cột.</p>
+</blockquote>
+<hr>
+<h4 id="time_coverage--phủ-chuỗi-thời-gian"><code>time_coverage</code> — Phủ chuỗi thời gian </h4>
+<p><strong>Mục đích:</strong> Đảm bảo dữ liệu time-series <strong>không bị gap</strong> — phát hiện ngày/tuần/tháng bị thiếu.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột thời gian</td>
+<td>✅</td>
+<td>Cột DATE/TIMESTAMP chứa mốc thời gian</td>
+</tr>
+<tr>
+<td>Granularity</td>
+<td>✅</td>
+<td>Kiểm tra theo: <code>Ngày</code> / <code>Tuần</code> / <code>Tháng</code></td>
+</tr>
+<tr>
+<td>Số ngày nhìn lại</td>
+<td>✅</td>
+<td>Kiểm tra N ngày gần nhất (VD: 30)</td>
+</tr>
+<tr>
+<td>% phủ tối thiểu</td>
+<td>✅</td>
+<td>Bao nhiêu % kỳ phải có dữ liệu (VD: 95%)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột NGAY_GD, granularity=Ngày, lookback=30, minCoverage=95%
+→ 30 ngày qua phải có ≥ 29 ngày có giao dịch
+→ Thiếu Thứ 7 + Chủ nhật liên tục → 93.3% → FAIL → pipeline tắt cuối tuần
+
+Bảng BAO_CAO_NGAY_CTKM, cột NGAY_BAO_CAO, granularity=Ngày, lookback=90, minCoverage=100%
+→ Báo cáo hiệu quả CTKM phải có đủ 90 ngày không thiếu ngày nào
+→ Thiếu ngày → tính tổng chi phí CTKM sai → report sai cho BLĐ
+
+Bảng DIEM_TICH_LUY, cột NGAY_TINH, granularity=Tháng, lookback=180, minCoverage=95%
+→ Bảng tích lũy điểm phải có dữ liệu đủ 6 tháng gần nhất (cho báo cáo loyalty)
+</code></pre><hr>
+<h4 id="volume_change--biến-động-khối-lượng"><code>volume_change</code> — Biến động khối lượng </h4>
+<p><strong>Mục đích:</strong> Cảnh báo khi số dòng <strong>tăng hoặc giảm đột biến</strong> so với kỳ trước — phát hiện mất batch, load nhầm, hoặc surge bất thường.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số ngày nhìn lại</td>
+<td>✅</td>
+<td>So sánh với trung bình N ngày trước (VD: 7)</td>
+</tr>
+<tr>
+<td>% thay đổi tối đa</td>
+<td>✅</td>
+<td>Cho phép biến động tối đa X% (VD: 30%)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, lookbackPeriod=7, maxChangePct=30%
+→ Trung bình 7 ngày qua: 150.000 GD/ngày
+→ Hôm nay: 20.000 GD → giảm -87% → FAIL → nghĩ đến: switch bank ngừng API, Tết nghỉ, pipeline chết
+
+Bảng DANG_KY_CTKM, lookbackPeriod=3, maxChangePct=200%
+→ Đăng ký CTKM mới bình thường: 500 KH/ngày
+→ Hôm nay: 50.000 KH đăng ký → tăng +9.900% → FAIL → viral share link, bot đăng ký mass
+
+Bảng KH_KHACHHANG, lookbackPeriod=7, maxChangePct=50%
+→ KH mới đăng ký: 1.000/ngày bình thường
+→ Hôm nay: 100 KH → giảm -90% → FAIL → form đăng ký bị lỗi, app down
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>row_count</code>:</strong> <code>row_count</code> kiểm tra giá trị tuyệt đối (min/max cứng); <code>volume_change</code> kiểm tra % biến động tương đối so với lịch sử.</p>
+</blockquote>
+<hr>
+<h4 id="table_size--kích-thước-bảng"><code>table_size</code> — Kích thước bảng </h4>
+<p><strong>Mục đích:</strong> Theo dõi dung lượng vật lý — phát hiện partition phình to bất thường hoặc bảng bị xóa nhầm.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kích thước tối thiểu</td>
+<td></td>
+<td>VD: <code>1</code> (MB/GB)</td>
+</tr>
+<tr>
+<td>Kích thước tối đa</td>
+<td></td>
+<td>VD: <code>500</code> (MB/GB)</td>
+</tr>
+<tr>
+<td>Đơn vị</td>
+<td>✅</td>
+<td><code>MB</code> hoặc <code>GB</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH (partition ngày), min=50MB, max=5GB, unit=MB
+→ Partition ngày giao dịch: 50MB (bình thường) đến 5GB (max tải cuối tháng lương)
+→ &lt; 50MB → job ETL chết giữa chừng, chỉ load được một phần
+→ &gt; 5GB → nghi ngờ load nhầm toàn bộ lịch sử vào partition hôm nay
+
+Bảng LOG_TRUY_CAP, max=10GB, unit=GB
+→ Log API access không được vượt 10GB/ngày → phát hiện DDoS hoặc log storm
+
+Bảng SNAPSHOT_SO_DU, min=1MB, unit=MB
+→ Snapshot số dư ví phải có ít nhất 1MB — bảng rỗng → job chưa chạy
+</code></pre><hr>
+<h4 id="null_rate_by_period--tỷ-lệ-null-theo-chu-kỳ"><code>null_rate_by_period</code> — Tỷ lệ null theo chu kỳ </h4>
+<p><strong>Mục đích:</strong> Không chỉ kiểm tra null tại thời điểm hiện tại — mà phát hiện <strong>xu hướng null tăng dần</strong> theo thời gian (dấu hiệu pipeline đang xấu đi).</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần theo dõi null rate</td>
+</tr>
+<tr>
+<td>Cột thời gian</td>
+<td>✅</td>
+<td>Cột date để chia kỳ</td>
+</tr>
+<tr>
+<td>Granularity</td>
+<td>✅</td>
+<td>Chia theo Ngày / Tuần / Tháng</td>
+</tr>
+<tr>
+<td>Số ngày nhìn lại</td>
+<td>✅</td>
+<td>Kiểm tra trong N ngày gần nhất</td>
+</tr>
+<tr>
+<td>Null rate tối đa (%)</td>
+<td>✅</td>
+<td>Mỗi kỳ không được vượt X% null</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Cột EMAIL, timeColumn=NGAY_TAO, granularity=Tháng, lookback=90 ngày, maxNullPct=20%
+→ Tháng 1: null 10% ✅ | Tháng 2: null 15% ✅ | Tháng 3: null 25% ❌ FAIL
+→ Phát hiện: từ tháng 3 nguồn không gửi email → cần check upstream
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>fill_rate</code>:</strong> <code>fill_rate</code> snapshot tại thời điểm hiện tại; <code>null_rate_by_period</code> phân tích xu hướng theo thời gian.</p>
+</blockquote>
+<hr>
+<h4 id="conditional_not_null--bắt-buộc-có-giá-trị-theo-điều-kiện"><code>conditional_not_null</code> — Bắt buộc có giá trị theo điều kiện </h4>
+<p><strong>Mục đích:</strong> Ràng buộc NULL phụ thuộc ngữ cảnh nghiệp vụ — "<strong>nếu</strong> trạng thái là X <strong>thì</strong> trường Y bắt buộc".</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột phải có giá trị khi điều kiện đúng</td>
+</tr>
+<tr>
+<td>Điều kiện SQL WHERE</td>
+<td>✅</td>
+<td>Biểu thức điều kiện (viết như mệnh đề WHERE)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng TK_VIENPAY, cột SO_DU, điều kiện: TRANG_THAI = 'ACTIVE'
+→ Ví đang ACTIVE phải có số dư (dù = 0) — NULL là chưa khởi tạo → lỗi onboarding
+→ Ví CLOSED cho phép SO_DU = NULL
+
+Bảng GD_GIAODICH, cột MA_CTKM, điều kiện: CO_AP_DUNG_CTKM = 1
+→ Giao dịch đánh dấu có CTKM bắt buộc phải có mã CTKM đi kèm
+→ NULL mà flag=1 → lỗi engine không lưu mã → không reconcile được chi phí KM
+
+Bảng KH_KHACHHANG, cột NGAY_KYC, điều kiện: MUC_KYC = 'FULL'
+→ KH đã full-KYC phải có ngày xác thực — NULL → compliance risk
+
+Bảng DANG_KY_DICH_VU, cột NGAY_HET_HAN, điều kiện: LOAI_THUE = 'CO_HAN'
+→ Gói dịch vụ có hạn bắt buộc phải ghi ngày hết hạn
+→ Gói vô hạn (KHONG_HAN) được phép NULL
+</code></pre><blockquote>
+<p><strong>Tip:</strong> Điều kiện viết như SQL WHERE không có từ khóa WHERE: <code>TRANG_THAI = 'ACTIVE' AND LOAI_KH = 'CN'</code></p>
+</blockquote>
+<hr>
+<h4 id="blacklist_pattern--giá-trị-không-được-match-pattern"><code>blacklist_pattern</code> — Giá trị không được match pattern </h4>
+<p><strong>Mục đích:</strong> Loại bỏ <strong>giá trị rác</strong> trong dữ liệu — các giá trị test, placeholder, sentinel values mà nguồn upstream hay để lại.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần lọc rác</td>
+</tr>
+<tr>
+<td>Pattern blacklist</td>
+<td>✅</td>
+<td>Regex hoặc chuỗi, nhiều pattern ngăn cách bằng <code>|</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột EMAIL, pattern=TEST|FAKE|N/A|test@test|example\.com|@localhost|noemail
+→ Phát hiện: email@test.com, fake_user@fake.com, N/A, noemail@vienpay.vn → dữ liệu rác
+
+Bảng KH_KHACHHANG, cột MA_KH, pattern=0000000|9999999|TEST|DUMMY|KH_TEMP|KH000
+→ Phát hiện mã KH placeholder từ môi trường test được import lên production
+
+Bảng GD_GIAODICH, cột MA_DOI_TAC, pattern=PARTNER_TEST|SANDBOX|DEV_|LOCAL_
+→ Giao dịch không được gắn mã đối tác test — lọc transaction từ môi trường staging
+
+Bảng SP_SANPHAM, cột TEN_SP, pattern=^test|^demo|lorem ipsum|placeholder|TODO
+→ Sản phẩm số không được có tên kiểu test/placeholder trên production
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>format_regex</code>:</strong> <code>format_regex</code> kiểm tra dữ liệu <strong>PHẢI</strong> match pattern; <code>blacklist_pattern</code> kiểm tra dữ liệu <strong>KHÔNG ĐƯỢC</strong> match pattern.</p>
+</blockquote>
+<hr>
+<h4 id="fixed_datatype--kiểu-dữ-liệu-cố-định"><code>fixed_datatype</code> — Kiểu dữ liệu cố định </h4>
+<p><strong>Mục đích:</strong> Đảm bảo cột luôn chứa đúng kiểu dữ liệu — phát hiện "rogue values" như chuỗi text lẫn vào cột số, hoặc cột ngày chứa chuỗi không parse được.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra kiểu</td>
+</tr>
+<tr>
+<td>Kiểu dữ liệu</td>
+<td>✅</td>
+<td><code>STRING</code> / <code>INTEGER</code> / <code>DECIMAL</code> / <code>DATE</code> / <code>TIMESTAMP</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng KH_KHACHHANG, cột NGAY_SINH, dataType=DATE
+→ Phát hiện: NGAY_SINH = '32/13/1990' (không parse được), '01-Jan-92' (format sai)
+
+Bảng GD_GIAODICH, cột SO_TIEN, dataType=DECIMAL
+→ Phát hiện: SO_TIEN = 'N/A', 'VND100000', '1,500,000' (string có dấu phẩy)
+→ Thường xảy ra khi import từ Excel không clean data trước
+
+Bảng CTKM_KHUYENMAI, cột NGAY_BAT_DAU, dataType=DATE
+→ Phát hiện: '2024-13-01' (tháng 13), 'TBD', 'Đang cập nhật'
+
+Bảng DIEM_TICH_LUY, cột SO_DIEM, dataType=INTEGER
+→ Phát hiện: SO_DIEM = '100.5' (decimal lọt vào cột integer điểm)
+</code></pre><hr>
+<h4 id="mode_check--giá-trị-phổ-biến-nhất-chiếm-tỷ-lệ-tối-thiểu"><code>mode_check</code> — Giá trị phổ biến nhất chiếm tỷ lệ tối thiểu </h4>
+<p><strong>Mục đích:</strong> Phát hiện dữ liệu bị <strong>pha tạp</strong> — khi một cột có giá trị thống trị (domain-specific), tỷ lệ của nó không được giảm xuống bất thường.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột cần kiểm tra</td>
+</tr>
+<tr>
+<td>Giá trị mode</td>
+<td></td>
+<td>(Tùy chọn) Cố định giá trị cần chiếm đa số. Để trống = lấy giá trị phổ biến nhất</td>
+</tr>
+<tr>
+<td>Tỷ lệ tối thiểu (%)</td>
+<td>✅</td>
+<td>Mode phải chiếm ít nhất X%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột LOAI_GD, modeValue='THANH_TOAN', minFreqPct=50%
+→ Giao dịch thanh toán phải là loại phổ biến nhất (≥50%)
+→ Nếu đột ngột THANH_TOAN chỉ còn 10% → bị migrate nhầm sang loại giao dịch khác
+
+Bảng KH_KHACHHANG, cột LOAI_KH, modeValue='CA_NHAN', minFreqPct=80%
+→ Ví điện tử B2C: KH cá nhân phải chiếm ≥80% tổng base
+→ Giảm đột ngột → có thể batch import nhầm KH doanh nghiệp vào bảng cá nhân
+
+Bảng TK_VIENPAY, cột TIEN_TE, modeValue='VND', minFreqPct=95%
+→ 95% tài khoản ví phải là VND — phát hiện bug tạo account với currency sai
+
+Bảng DV_DICH_VU, cột MA_NHOM_DV (để trống modeValue), minFreqPct=5%
+→ Mỗi nhóm dịch vụ phải chiếm ít nhất 5% — nếu 1 nhóm = 99% là data skew
+</code></pre><hr>
+<h4 id="statistics_bound--thống-kê-nằm-trong-khoảng"><code>statistics_bound</code> — Thống kê nằm trong khoảng </h4>
+<p><strong>Mục đích:</strong> Kiểm tra các đặc trưng thống kê (mean, stddev, percentile...) của cột số nằm trong khoảng hợp lý — phát hiện outlier hệ thống, không phải outlier từng dòng.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột số cần kiểm tra</td>
+</tr>
+<tr>
+<td>Loại thống kê</td>
+<td>✅</td>
+<td><code>min</code> / <code>max</code> / <code>mean</code> / <code>stddev</code> / <code>p25</code> / <code>p50</code> / <code>p75</code></td>
+</tr>
+<tr>
+<td>Giá trị tối thiểu</td>
+<td></td>
+<td>Ngưỡng dưới của thống kê</td>
+</tr>
+<tr>
+<td>Giá trị tối đa</td>
+<td></td>
+<td>Ngưỡng trên của thống kê</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột SO_TIEN, statisticType=mean, min=10000, max=5000000
+→ Giao dịch ví bình quân: 10K–5M đồng
+→ mean = 500đ → unit bị nhân sai (đơn vị xu thay vì đồng)
+→ mean = 50 tỷ → có thể 1 giao dịch test cực lớn kéo mean lên
+
+Bảng CTKM_KHUYENMAI, cột TI_LE_HOAN_TIEN, statisticType=p99, max=30
+→ 99% CTKM có hoàn tiền ≤ 30% — lọc CTKM nhập sai (500% cashback)
+
+Bảng DIEM_TICH_LUY, cột SO_DIEM, statisticType=stddev, max=10000
+→ Độ lệch chuẩn điểm tích lũy không được quá 10.000 — quá cao → có nhóm KH được cộng điểm bất thường
+
+Bảng KH_KHACHHANG, cột SO_DU_VI, statisticType=p75, min=0
+→ 75th percentile số dư ví ≥ 0 — nếu âm → bug không check hạn mức
+
+Cột LAI_SUAT, statisticType=p99, max=0.25
+→ 99th percentile lãi suất không quá 25%/năm (phát hiện dữ liệu nhập sai)
+</code></pre><hr>
+<h4 id="sum_range--tổng-cột-nằm-trong-khoảng"><code>sum_range</code> — Tổng cột nằm trong khoảng </h4>
+<p><strong>Mục đích:</strong> Đảm bảo tổng của cột (theo batch/ngày) không bằng 0 hoặc vượt ngưỡng — phát hiện bảng bị <strong>zero-out</strong> hoặc tổng phát sinh bất thường.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột kiểm tra</td>
+<td>✅</td>
+<td>Cột số cần tính tổng</td>
+</tr>
+<tr>
+<td>Giá trị tổng tối thiểu</td>
+<td></td>
+<td>Tổng phải ≥ min</td>
+</tr>
+<tr>
+<td>Giá trị tổng tối đa</td>
+<td></td>
+<td>Tổng phải ≤ max</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH (partition ngày), cột SO_TIEN, min=1000000000 (1 tỷ đồng)
+→ Tổng giao dịch trong ngày phải &gt; 1 tỷ → nếu = 0 hoặc rất nhỏ → pipeline chết/truncate
+
+Bảng GIAO_DICH_NAP (giao dịch nạp tiền), cột SO_TIEN, min=0, max=5000000000000 (5 nghìn tỷ)
+→ Tổng nạp cả ngày phải cân đối với hạn mức hệ thống
+→ Vượt 5 nghìn tỷ → bất thường cần review ngay (fraud hoặc sai đơn vị)
+
+Bảng DIEM_TICH_LUY (batch tháng), cột SO_DIEM_CONG, min=100000
+→ Mỗi batch tháng phải cộng ít nhất 100.000 điểm — nếu = 0 → job điểm không chạy
+
+Bảng HOAN_TIEN_CTKM, cột SO_TIEN_HOAN, min=0, max=10000000000 (10 tỷ)
+→ Tổng hoàn tiền trong đợt CTKM: 0 (hợp lệ nếu CTKM mới) đến tối đa 10 tỷ
+→ Vượt ngưỡng → CTKM đang bị lợi dụng hoặc logic tính sai
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>statistics_bound</code>:</strong> <code>sum_range</code> kiểm tra SUM tổng cộng toàn bảng; <code>statistics_bound</code> kiểm tra đặc trưng thống kê phân phối (mean/stddev/percentile).</p>
+</blockquote>
+<hr>
+<h4 id="expression_pct---dòng-thỏa-biểu-thức"><code>expression_pct</code> — % dòng thỏa biểu thức </h4>
+<p><strong>Mục đích:</strong> Kiểm tra <strong>ràng buộc đa cột</strong> phức tạp mà các metric đơn lẻ không làm được — ít nhất X% dòng phải thỏa mãn điều kiện SQL.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biểu thức SQL</td>
+<td>✅</td>
+<td>Điều kiện boolean trên 1 dòng (như mệnh đề WHERE)</td>
+</tr>
+<tr>
+<td>% dòng pass tối thiểu</td>
+<td>✅</td>
+<td>Bao nhiêu % dòng phải thỏa mãn (VD: 99%)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH:
+  Expression: SO_TIEN &gt; 0 AND MA_KH IS NOT NULL AND LOAI_GD IN ('NAP_TIEN','RUT_TIEN','CHUYEN_KHOAN','THANH_TOAN','HOAN_TIEN')
+  minPassPct: 99.5
+→ 99.5% giao dịch phải thỏa 3 điều kiện cơ bản — 0.5% còn lại là giao dịch đặc biệt (adjustment)
+
+Bảng DANG_KY_CTKM:
+  Expression: NGAY_DANG_KY &lt;= NGAY_KET_THUC_CTKM AND TRANG_THAI != 'ERROR'
+  minPassPct: 100
+→ 100% đăng ký CTKM phải hợp lệ về thời gian và không lỗi
+
+Bảng TK_VIENPAY:
+  Expression: (TRANG_THAI = 'ACTIVE' AND SO_DU &gt;= 0) OR TRANG_THAI != 'ACTIVE'
+  minPassPct: 100
+→ 100% tài khoản ACTIVE phải có số dư không âm
+
+Bảng DIEM_TICH_LUY:
+  Expression: SO_DIEM &gt;= 0 AND MA_GD IS NOT NULL AND MA_KH IS NOT NULL
+  minPassPct: 99.9
+→ 99.9% bản ghi điểm tích lũy phải có đủ 3 trường bắt buộc và điểm không âm
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>custom_expression</code>:</strong> <code>custom_expression</code> kiểm tra <strong>toàn bảng</strong> (1 điều kiện tổng hợp dạng aggregate); <code>expression_pct</code> kiểm tra <strong>từng dòng</strong> và tính % pass.</p>
+</blockquote>
+<hr>
+<h4 id="on_time--dữ-liệu-phải-có-mặt-đúng-sla"><code>on_time</code> — Dữ liệu phải có mặt đúng SLA </h4>
+<p><strong>Mục đích:</strong> Đảm bảo dữ liệu <strong>đến đúng giờ theo cam kết SLA</strong> — phát hiện pipeline bị trễ, ETL job chết, hoặc nguồn upstream không gửi dữ liệu đúng hẹn.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột timestamp</td>
+<td>✅</td>
+<td>Cột chứa thời điểm tạo/cập nhật record</td>
+</tr>
+<tr>
+<td>Giờ SLA</td>
+<td>✅</td>
+<td>Thời điểm cần có dữ liệu (VD: <code>08:00</code>)</td>
+</tr>
+<tr>
+<td>Cửa sổ cảnh báo (phút)</td>
+<td>✅</td>
+<td>Warning sớm N phút trước SLA (VD: 30 phút)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng GD_GIAODICH, cột NGAY_TAO, slaTime=08:00, alertWindow=30
+→ Dữ liệu giao dịch đêm qua phải load xong trước 08:00 sáng
+→ Nếu 07:30 chưa có dữ liệu mới → cảnh báo Warning
+→ Qua 08:00 vẫn chưa có → Critical — báo cáo sáng sẽ thiếu số liệu
+
+Bảng BAO_CAO_NGAY, cột THOI_GIAN_TAO, slaTime=07:00, alertWindow=15
+→ Báo cáo tổng kết ngày phải sẵn sàng trước 07:00 để ban lãnh đạo duyệt sáng
+→ Chậm → delay họp sáng, ảnh hưởng quyết định vận hành
+
+Bảng DIEM_TICH_LUY, cột NGAY_CAP_NHAT, slaTime=06:00, alertWindow=60
+→ Điểm tích lũy từ giao dịch tối hôm trước phải cập nhật trước 06:00
+→ Chậm → KH thấy điểm sai trên app → complaint
+
+Bảng CTKM_DIEU_KIEN, cột NGAY_HIEU_LUC, slaTime=00:05, alertWindow=10
+→ Điều kiện CTKM mới phải load trước 00:05 ngày hiệu lực
+→ Trễ → KH giao dịch đêm không được áp dụng CTKM → tranh chấp
+</code></pre><blockquote>
+<p><strong>Lưu ý:</strong> <code>on_time</code> kiểm tra <strong>thời điểm có mặt</strong> của dữ liệu trong ngày. Để kiểm tra dữ liệu có còn mới không (không bị stale), dùng <code>freshness</code>.</p>
+</blockquote>
+<hr>
+<h4 id="freshness--dữ-liệu-phải-còn-mới-không-stale"><code>freshness</code> — Dữ liệu phải còn mới (không stale) </h4>
+<p><strong>Mục đích:</strong> Đảm bảo timestamp của dữ liệu <strong>không quá cũ</strong> — phát hiện nguồn dữ liệu ngừng cập nhật, connector bị đứt, hoặc pipeline chạy xong nhưng không commit.</p>
+<p><strong>Tham số:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cột timestamp</td>
+<td>✅</td>
+<td>Cột chứa thời điểm cập nhật gần nhất</td>
+</tr>
+<tr>
+<td>Thời gian tối đa</td>
+<td>✅</td>
+<td>Dữ liệu không được cũ hơn N đơn vị</td>
+</tr>
+<tr>
+<td>Đơn vị</td>
+<td>✅</td>
+<td><code>phút</code> / <code>giờ</code> / <code>ngày</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ fintech:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Bảng TK_VIENPAY, cột NGAY_CAP_NHAT, maxAge=5, unit=phút
+→ Số dư ví phải được sync trong vòng 5 phút qua
+→ Cũ hơn 5 phút → có thể cache stale → KH thấy số dư sai → không dám chi tiêu
+
+Bảng TY_GIA_NGOAI_TE, cột NGAY_LAY_TY_GIA, maxAge=1, unit=giờ
+→ Tỷ giá dùng để convert thanh toán quốc tế không được cũ hơn 1 giờ
+→ Stale → áp tỷ giá sai → lỗ tỷ giá cho tổ chức
+
+Bảng DIEM_TICH_LUY, cột THOI_GIAN_TINH_DIEM, maxAge=15, unit=phút
+→ Điểm tích lũy real-time phải được cập nhật mỗi 15 phút
+→ Cũ hơn → KH check app thấy điểm không khớp → mất trust
+
+Bảng DV_DICH_VU, cột NGAY_KIEM_TRA_TRANG_THAI, maxAge=1, unit=ngày
+→ Trạng thái dịch vụ số (còn hoạt động hay ngừng) phải check lại hàng ngày
+→ Cũ hơn 1 ngày → app vẫn hiển thị dịch vụ đã ngừng → UX lỗi
+
+Bảng CHOT_SO_NGAY, cột NGAY_CHOT, maxAge=1, unit=ngày
+→ Bảng chốt số cuối ngày phải được tạo mới mỗi ngày
+→ Cũ hơn 1 ngày → nghi ngờ job chốt số chưa chạy hoặc chạy fail
+</code></pre><blockquote>
+<p><strong>Phân biệt với <code>on_time</code>:</strong> <code>on_time</code> kiểm tra dữ liệu có đến đúng giờ SLA không (một thời điểm cụ thể); <code>freshness</code> kiểm tra dữ liệu có còn trong khoảng thời gian tươi không (khoảng rolling).</p>
+</blockquote>
+<hr>
+<h2 id="7-hướng-dẫn-từng-menu">7. Hướng dẫn từng menu </h2>
+<hr>
+<h3 id="71-dashboard">7.1 Dashboard </h3>
+<p><strong>URL:</strong> <code>/</code> | <strong>Mục đích:</strong> Xem tổng quan sức khỏe dữ liệu, xác định nhanh điểm nóng cần chú ý.</p>
+<p><strong>Các thành phần trên Dashboard:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Hiển thị gì</th>
+<th>Nhấn vào để làm gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thẻ KPI (4 thẻ)</td>
+<td>Tổng bảng DL / Rule đang active / Vấn đề mở / Điểm TB hệ thống</td>
+<td>Điều hướng sang menu tương ứng</td>
+</tr>
+<tr>
+<td>Biểu đồ radar 6 chiều</td>
+<td>Điểm trung bình toàn hệ thống theo 6 chiều DL</td>
+<td>Xem menu Báo cáo</td>
+</tr>
+<tr>
+<td>Bảng "Cần chú ý"</td>
+<td>Các bảng có điểm chất lượng thấp nhất</td>
+<td>Nhấn vào bảng → DataCatalog chi tiết</td>
+</tr>
+<tr>
+<td>Danh sách vấn đề gần đây</td>
+<td>5-10 Issue mới nhất</td>
+<td>Nhấn → IssueDetail</td>
+</tr>
+<tr>
+<td>Phân bổ theo chiều</td>
+<td>Bar chart điểm 6 chiều</td>
+<td>Tham khảo</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Dashboard <strong>chỉ đọc</strong> — không có form nhập liệu. Mọi thông tin tự tổng hợp từ Rules và Issues.</p>
+</blockquote>
+<hr>
+<h3 id="72-danh-mục-dữ-liệu">7.2 Danh mục dữ liệu </h3>
+<p><strong>URL:</strong> <code>/data-catalog</code> | <strong>Mục đích:</strong> Registry (danh bạ) của tất cả bảng dữ liệu cần giám sát. Đây là <strong>bước đầu tiên bắt buộc</strong> trước khi cấu hình bất kỳ thứ gì.</p>
+<h4 id="danh-sách-bảng-data-catalog">Danh sách bảng (<code>/data-catalog</code>) </h4>
+<p>Hiển thị tất cả bảng đã đăng ký với các cột thông tin:</p>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+<th>Chi tiết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên bảng</strong></td>
+<td>Tên hiển thị + tên vật lý</td>
+<td>Nhấn vào để xem chi tiết</td>
+</tr>
+<tr>
+<td><strong>Điểm tổng</strong> (Overall Score)</td>
+<td>Trung bình cộng điểm 6 chiều</td>
+<td><strong>Snapshot lần chạy Rule gần nhất</strong> — không cộng dồn lịch sử. Xem <a href="#c%C3%A1ch-t%C3%ADnh-%C4%91i%E1%BB%83m-ch%E1%BA%A5t-l%C6%B0%E1%BB%A3ng-score">Cách tính điểm</a></td>
+</tr>
+<tr>
+<td><strong>Trạng thái</strong></td>
+<td>Active / Inactive</td>
+<td>Bảng Inactive sẽ không chạy Rule theo lịch</td>
+</tr>
+<tr>
+<td><strong>Loại kết nối</strong></td>
+<td>Database / SQL / File / API</td>
+<td>Kiểu nguồn dữ liệu</td>
+</tr>
+<tr>
+<td><strong>Lần phân tích cuối</strong></td>
+<td>Thời gian quét Profiling gần nhất</td>
+<td>Đây là lần quét thống kê cột, <strong>khác</strong> với lần chạy Rule</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>⚠️ Phân biệt quan trọng — Điểm ở DataCatalog vs Profiling:</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Danh mục dữ liệu (DataCatalog)</th>
+<th>Phân tích dữ liệu (Profiling)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nguồn tính</strong></td>
+<td><code>avg(lastScore)</code> của tất cả Rule active</td>
+<td>Tỷ lệ cột "sạch" theo thống kê (null%, format%)</td>
+</tr>
+<tr>
+<td><strong>Phản ánh</strong></td>
+<td>Chất lượng theo <strong>business logic</strong> (quy tắc tổ chức tự định nghĩa)</td>
+<td><strong>Snapshot kỹ thuật</strong> tại thời điểm quét</td>
+</tr>
+<tr>
+<td><strong>Thời điểm</strong></td>
+<td>Lần chạy Rule gần nhất (qua Schedule hoặc "Chạy ngay")</td>
+<td>Lần quét Profiling gần nhất</td>
+</tr>
+<tr>
+<td><strong>Cộng dồn?</strong></td>
+<td>❌ Không — mỗi lần chạy ghi đè <code>lastScore</code></td>
+<td>❌ Không — mỗi lần quét là snapshot mới</td>
+</tr>
+</tbody>
+</table>
+<p>→ Hai con số này <strong>có thể khác nhau</strong> và đều đúng — vì đo từ hai góc nhìn khác nhau.</p>
+</blockquote>
+<p><strong>Thao tác có thể làm:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nút</th>
+<th>Chức năng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thêm nguồn dữ liệu</td>
+<td>Đăng ký bảng mới</td>
+</tr>
+<tr>
+<td>Sửa (✏️)</td>
+<td>Cập nhật thông tin bảng</td>
+</tr>
+<tr>
+<td>Xóa (🗑️)</td>
+<td>Xóa bảng khỏi danh sách giám sát</td>
+</tr>
+<tr>
+<td>Quét ngay (▶️)</td>
+<td>Chạy profiling ngay lập tức (cập nhật thống kê cột)</td>
+</tr>
+<tr>
+<td>Xem chi tiết</td>
+<td>Vào trang chi tiết bảng</td>
+</tr>
+</tbody>
+</table>
+<h4 id="form-thêmsửa-bảng-dữ-liệu">Form Thêm/Sửa bảng dữ liệu </h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên hiển thị</strong></td>
+<td>✅</td>
+<td>Tên thân thiện để nhận biết</td>
+<td><code>Bảng khách hàng</code></td>
+</tr>
+<tr>
+<td><strong>Mô tả</strong></td>
+<td></td>
+<td>Mô tả ngắn nội dung bảng</td>
+<td><code>Chứa thông tin định danh khách hàng cá nhân</code></td>
+</tr>
+<tr>
+<td><strong>Loại kết nối</strong></td>
+<td>✅</td>
+<td>Nguồn dữ liệu: Database / SQL / File / API</td>
+<td><code>database</code></td>
+</tr>
+<tr>
+<td><strong>Schema</strong></td>
+<td></td>
+<td>Tên schema trong database</td>
+<td><code>dbo</code></td>
+</tr>
+<tr>
+<td><strong>Tên bảng vật lý</strong></td>
+<td>✅</td>
+<td>Tên bảng thực trong database</td>
+<td><code>KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td><strong>Danh mục</strong></td>
+<td></td>
+<td>Nhóm nghiệp vụ</td>
+<td><code>Khách hàng</code></td>
+</tr>
+<tr>
+<td><strong>Chủ sở hữu</strong></td>
+<td></td>
+<td>Người chịu trách nhiệm</td>
+<td><code>Nguyễn Văn A</code></td>
+</tr>
+<tr>
+<td><strong>Nhóm</strong></td>
+<td></td>
+<td>Nhóm/team sở hữu dữ liệu</td>
+<td><code>Data Engineering</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="trang-chi-tiết-bảng-data-catalogid">Trang chi tiết bảng (<code>/data-catalog/:id</code>) </h4>
+<p>Xem 4 nhóm thông tin:</p>
+<ol>
+<li>
+<p><strong>Điểm tổng thể + 6 thẻ điểm dimension</strong> — Hiển thị điểm tổng và điểm từng chiều.</p>
+<ul>
+<li><strong>Điểm tổng</strong> = trung bình cộng điểm 6 chiều (chỉ tính chiều có Rule active). Đây là <strong>snapshot lần chạy Rule gần nhất</strong>, không cộng dồn lịch sử.</li>
+<li><strong>Điểm từng chiều</strong> = trung bình cộng <code>lastScore</code> của các Rule cùng chiều. Ví dụ: Completeness có 3 rule với điểm 98.5, 94.2, 91.5 → Completeness Score = 94.7.</li>
+<li>Chiều chưa có rule sẽ ghi chú "(chưa có rule)" bên dưới — không tham gia vào tính điểm tổng.</li>
+</ul>
+</li>
+<li>
+<p><strong>Thông tin bảng + Xu hướng điểm 30 ngày</strong> — Schema, owner, rowCount, biểu đồ trend</p>
+</li>
+<li>
+<p><strong>Phân tích cột dữ liệu</strong> — Thống kê cột từ lần Profiling gần nhất: null%, distinct%, min, max, issues</p>
+<ul>
+<li>Nếu chưa có Profiling → hiển thị "Chưa phân tích, hãy chạy Phân tích dữ liệu"</li>
+</ul>
+</li>
+<li>
+<p><strong>Quy tắc chất lượng áp dụng</strong> — Danh sách Rule đang active, kèm ngưỡng W/C và kết quả lần chạy cuối</p>
+</li>
+<li>
+<p><strong>Luồng dữ liệu</strong> — Hiển thị quan hệ upstream/downstream của bảng:</p>
+<ul>
+<li><strong>Upstream</strong>: Job nào ghi dữ liệu vào bảng này (producer)</li>
+<li><strong>Downstream</strong>: Job nào đọc bảng này làm input (consumer)</li>
+<li>Nếu bảng đang có issue active → downstream section hiển thị cảnh báo "N job có thể bị ảnh hưởng"</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="73-phân-tích-dữ-liệu-profiling">7.3 Phân tích dữ liệu (Profiling) </h3>
+<p><strong>URL:</strong> <code>/profiling</code> | <strong>Mục đích:</strong> Xem <strong>lịch sử các lần quét thống kê cột</strong> (snapshot). Mỗi hàng = 1 lần quét tại thời điểm cụ thể.</p>
+<blockquote>
+<p><strong>Profiling vs Lịch chạy — khác gì nhau?</strong></p>
+<ul>
+<li><strong>Profiling</strong> = "khám sức khỏe tổng quát": quét cột → đo null%, distinct%, kiểu dữ liệu, min/max. Kết quả là snapshot kỹ thuật. Mỗi bản ghi = 1 lần quét 1 bảng.</li>
+<li><strong>Lịch chạy</strong> = "xét nghiệm theo đơn bác sĩ": trigger tất cả DQ rules active cho 1 bảng → sinh Issue nếu fail. Mỗi bản ghi = 1 lịch trình cho 1 bảng.</li>
+</ul>
+<p><strong>Profiling KHÔNG sinh Issue. Lịch chạy SINH Issue.</strong></p>
+</blockquote>
+<blockquote>
+<p><strong>Phân biệt với Danh mục dữ liệu:</strong></p>
+<ul>
+<li><strong>Danh mục</strong>: Điểm chất lượng = từ Rules (live, kết quả kiểm tra business logic)</li>
+<li><strong>Profiling</strong>: Điểm = từ thống kê cột (null rate, format tự nhiên...) — chỉ mang tính kỹ thuật</li>
+</ul>
+</blockquote>
+<h4 id="danh-sách-lịch-sử-quét">Danh sách lịch sử quét </h4>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tên bảng</td>
+<td>Bảng được quét</td>
+</tr>
+<tr>
+<td>Thời gian chạy</td>
+<td>Timestamp lúc quét</td>
+</tr>
+<tr>
+<td>Trạng thái</td>
+<td><code>running</code> (đang chạy) / <code>completed</code> (xong) / <code>failed</code> (lỗi)</td>
+</tr>
+<tr>
+<td>Tổng dòng</td>
+<td>Số bản ghi tại thời điểm quét</td>
+</tr>
+<tr>
+<td>Điểm chất lượng ℹ</td>
+<td>Tính từ tỷ lệ cột có vấn đề trong lần quét này</td>
+</tr>
+<tr>
+<td>Thời lượng ℹ</td>
+<td>Thời gian thực hiện quét (giây)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Thao tác:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nút</th>
+<th>Chức năng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>👁️ Xem</td>
+<td>Vào trang ProfilingDetail — xem thống kê chi tiết từng cột</td>
+</tr>
+<tr>
+<td>🔄 Chạy lại</td>
+<td>Tạo một lần quét mới cho cùng bảng đó (mô phỏng ~2 giây)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="trang-profilingdetail-profilingid">Trang ProfilingDetail (<code>/profiling/:id</code>) </h4>
+<blockquote>
+<p>⚠️ <strong>Banner quan trọng:</strong> "Snapshot lần quét [ngày] — Điểm ở đây tính từ thống kê cột, <strong>khác</strong> với điểm tổng hợp từ Rules ở Danh mục dữ liệu"</p>
+</blockquote>
+<p>Hiển thị:</p>
+<ul>
+<li>4 thẻ tóm tắt: Tổng dòng / Tổng cột / Điểm / Thời lượng</li>
+<li>Biểu đồ cột: <strong>Điểm phân tích cột theo chiều dữ liệu</strong></li>
+<li>Bảng chi tiết cột: columnName, dataType, null%, distinct%, min, max, danh sách vấn đề</li>
+<li>Nút <strong>Tải báo cáo</strong>: Xuất CSV toàn bộ thống kê cột</li>
+</ul>
+<h4 id="cột-vấn-đề-trong-bảng-phân-tích-cột--template-sinh-text">Cột "Vấn đề" trong bảng Phân tích cột — Template sinh text </h4>
+<p>Khi Profiling chạy, hệ thống tự động tính thống kê và điền cột <strong>Vấn đề</strong> theo template dưới đây:</p>
+<table>
+<thead>
+<tr>
+<th>Loại vấn đề</th>
+<th>Điều kiện kích hoạt</th>
+<th>Template text hiển thị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Null rate thấp</td>
+<td><code>nullRate &gt; 1% AND nullRate ≤ 5%</code></td>
+<td><code>{nullRate}% giá trị null</code></td>
+</tr>
+<tr>
+<td>Null rate cao</td>
+<td><code>nullRate &gt; 5%</code></td>
+<td><code>{nullRate}% giá trị null — vượt ngưỡng</code></td>
+</tr>
+<tr>
+<td>Định dạng sai</td>
+<td>Profiling phát hiện format issue</td>
+<td><code>{pct}% giá trị sai định dạng</code></td>
+</tr>
+<tr>
+<td>Phân phối lệch</td>
+<td><code>distinctCount &lt; 3</code> hoặc <code>distinctRate &lt; 1%</code></td>
+<td><code>Phân phối lệch — chỉ {distinctCount} giá trị phân biệt</code></td>
+</tr>
+<tr>
+<td>Outlier thống kê</td>
+<td>Max &gt; mean + 3×stddev</td>
+<td><code>Phát hiện outlier — max = {maxValue}</code></td>
+</tr>
+<tr>
+<td>Sai kiểu dữ liệu</td>
+<td>Có giá trị không parse được thành kiểu khai báo</td>
+<td><code>Có giá trị không đúng kiểu {dataType}</code></td>
+</tr>
+<tr>
+<td><strong>Không có vấn đề</strong></td>
+<td><code>nullRate ≤ 1%</code> và không có issue nào khác</td>
+<td><em>(badge xanh "Không có")</em></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý quan trọng:</strong> Cột "Vấn đề" trong Profiling là <strong>nhận xét kỹ thuật tự động từ thống kê</strong> (null rate, format rate...). Đây <strong>khác hoàn toàn</strong> với Issues ở menu "Vấn đề &amp; Sự cố" — Issues là vi phạm <strong>business logic</strong> do Rules định nghĩa.</p>
+</blockquote>
+<hr>
+<h3 id="74-quản-lý-job-pipeline">7.4 Quản lý Job (<code>/pipeline</code>) </h3>
+<p><strong>URL:</strong> <code>/pipeline</code> | <strong>Mục đích:</strong> Đăng ký các job xử lý dữ liệu (ETL/SQL/Spark), theo dõi bảng đầu vào/đầu ra, và kết quả chạy gần nhất.</p>
+<h4 id="luồng-thực-tế-trong-tổ-chức">Luồng thực tế trong tổ chức </h4>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Dữ liệu phát sinh → Data Engineer ingest về Data Lake
+  → Job xử lý (Spark/SQL) → Lập lịch trên Rundeck/Airflow
+  → Trigger tự động → Ghi kết quả vào DB/Data Mart
+  → BI Dashboard / Báo cáo
+</code></pre><p>Hệ thống DQ quản lý <strong>metadata</strong> về các job này — không trực tiếp trigger hay monitor real-time.</p>
+<h4 id="danh-sách-jobs">Danh sách jobs </h4>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tên Job</td>
+<td>Tên định danh của job ETL</td>
+</tr>
+<tr>
+<td>Bảng đầu vào</td>
+<td>Các bảng job đọc data từ đó (input)</td>
+</tr>
+<tr>
+<td>Bảng đầu ra</td>
+<td>Các bảng job ghi kết quả vào (output)</td>
+</tr>
+<tr>
+<td>Lịch chạy</td>
+<td>Tần suất chạy (VD: "Hàng ngày 06:00")</td>
+</tr>
+<tr>
+<td>Kết quả gần nhất</td>
+<td>Trạng thái lần chạy cuối</td>
+</tr>
+<tr>
+<td>Trạng thái</td>
+<td>Hoạt động / Tắt</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cột-kết-quả-gần-nhất">Cột "Kết quả gần nhất" </h4>
+<table>
+<thead>
+<tr>
+<th>Trạng thái</th>
+<th>Icon</th>
+<th>Ý nghĩa</th>
+<th>Khi nào xảy ra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Thành công</strong></td>
+<td>✅ CheckCircle</td>
+<td>Job hoàn thành, dữ liệu load đầy đủ</td>
+<td>Orchestrator báo exit code 0, output table pass validation</td>
+</tr>
+<tr>
+<td><strong>Lỗi</strong></td>
+<td>❌ XCircle</td>
+<td>Job bị lỗi</td>
+<td>Exception/timeout; hoặc input table có DQ issue critical khiến transform abort</td>
+</tr>
+<tr>
+<td><strong>Một phần</strong></td>
+<td>⚠️ AlertTriangle</td>
+<td>Chạy xong nhưng chỉ load được 1 phần</td>
+<td>Timeout giữa chừng, partial data committed</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> Không có trạng thái "Đang chạy" (running). Trong context quản lý DQ, hệ thống ghi nhận kết quả batch đã hoàn thành, không theo dõi real-time execution.</p>
+</blockquote>
+<h4 id="quan-hệ-với-dq">Quan hệ với DQ </h4>
+<ul>
+<li>Khi bảng <strong>input</strong> có issue critical → orchestrator có thể abort job → status = <code>failed</code></li>
+<li>Khi bảng <strong>output</strong> có issue → downstream jobs đọc từ bảng đó sẽ bị ảnh hưởng</li>
+<li>Thông tin upstream/downstream hiển thị ở trang chi tiết bảng (Danh mục dữ liệu)</li>
+</ul>
+<h4 id="form-thêmsửa-job">Form Thêm/Sửa job </h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên job</strong></td>
+<td>✅</td>
+<td>Tên định danh</td>
+<td><code>ETL_GD_DAILY</code></td>
+</tr>
+<tr>
+<td><strong>Mô tả</strong></td>
+<td></td>
+<td>Mô tả ngắn gọn</td>
+<td><code>Tổng hợp giao dịch hàng ngày</code></td>
+</tr>
+<tr>
+<td><strong>Trạng thái</strong></td>
+<td></td>
+<td>Hoạt động / Tắt</td>
+<td><code>Hoạt động</code></td>
+</tr>
+<tr>
+<td><strong>Chủ sở hữu</strong></td>
+<td></td>
+<td>Họ tên người phụ trách</td>
+<td><code>Trần Văn Minh</code></td>
+</tr>
+<tr>
+<td><strong>Email liên hệ</strong></td>
+<td></td>
+<td>Email để nhận thông báo</td>
+<td><code>minh@company.com</code></td>
+</tr>
+<tr>
+<td><strong>Nhóm</strong></td>
+<td></td>
+<td>Team thực hiện</td>
+<td><code>Nhóm Giao dịch</code></td>
+</tr>
+<tr>
+<td><strong>Lịch chạy</strong></td>
+<td></td>
+<td>Tần suất/thời gian</td>
+<td><code>Hàng ngày 06:00</code></td>
+</tr>
+<tr>
+<td><strong>Bảng đầu vào</strong></td>
+<td></td>
+<td>Multi-select có ô search</td>
+<td>Chọn từ DataCatalog</td>
+</tr>
+<tr>
+<td><strong>Bảng đầu ra</strong></td>
+<td></td>
+<td>Multi-select có ô search</td>
+<td>Chọn từ DataCatalog</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Ô search filter phía trên danh sách checkbox giúp tìm nhanh khi có nhiều bảng.</p>
+</blockquote>
+<blockquote>
+<p><strong>Hardcode trong demo:</strong> <code>lastRunStatus</code> là mock data, không có engine thực sự trigger job. Trong production, trạng thái sẽ do orchestrator (Rundeck/Airflow) cập nhật qua API.</p>
+</blockquote>
+<hr>
+<h3 id="75-ngưỡng-cảnh-báo-thresholds">7.5 Ngưỡng cảnh báo (Thresholds) </h3>
+<p><strong>URL:</strong> <code>/thresholds</code> | <strong>Mục đích:</strong> Định nghĩa "thế nào là tốt, thế nào là cần cảnh báo, thế nào là không đạt" — giá trị này được <strong>tự động điền vào khi tạo Rule mới</strong>.</p>
+<h4 id="công-thức-đánh-giá-áp-dụng-toàn-hệ-thống">Công thức đánh giá (áp dụng TOÀN hệ thống) </h4>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Điểm ≥ W%      →  ✅ ĐẠT
+C% ≤ Điểm &lt; W% →  ⚠️ CẢNH BÁO
+Điểm &lt; C%      →  ❌ KHÔNG ĐẠT
+</code></pre><blockquote>
+<p><strong>Ví dụ:</strong> W=90%, C=80% → Điểm 95 = Đạt | Điểm 85 = Cảnh báo | Điểm 75 = Không đạt</p>
+</blockquote>
+<h4 id="ngưỡng-mặc-định-của-hệ-thống">Ngưỡng mặc định của hệ thống </h4>
+<table>
+<thead>
+<tr>
+<th>Chiều</th>
+<th>W (Cảnh báo)</th>
+<th>C (Không đạt)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đầy đủ (Completeness)</td>
+<td>90%</td>
+<td>80%</td>
+</tr>
+<tr>
+<td>Hợp lệ (Validity)</td>
+<td>85%</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Nhất quán (Consistency)</td>
+<td>85%</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Duy nhất (Uniqueness)</td>
+<td>95%</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>Chính xác (Accuracy)</td>
+<td>85%</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Kịp thời (Timeliness)</td>
+<td>80%</td>
+<td>60%</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cấu-hình-toàn-cục-global">Cấu hình toàn cục (Global) </h4>
+<p>Chỉnh trực tiếp các ô số W / C cho từng chiều → nhấn <strong>Lưu cấu hình</strong>.<br>
+Thanh màu hiển thị trực quan: 🔴 Không đạt | 🟡 Cảnh báo | 🟢 Đạt</p>
+<h4 id="cấu-hình-riêng-theo-bảng">Cấu hình riêng theo bảng </h4>
+<p>Để ghi đè ngưỡng toàn cục cho <strong>1 bảng cụ thể + 1 chiều cụ thể</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bảng dữ liệu</strong></td>
+<td>✅</td>
+<td>Chọn bảng cần ghi đè ngưỡng</td>
+</tr>
+<tr>
+<td><strong>Chiều dữ liệu</strong></td>
+<td>✅</td>
+<td>Chiều cần ghi đè (VD: chỉ ghi đè Uniqueness)</td>
+</tr>
+<tr>
+<td><strong>Ngưỡng cảnh báo W (%)</strong></td>
+<td>✅</td>
+<td>Giá trị W riêng cho bảng này</td>
+</tr>
+<tr>
+<td><strong>Ngưỡng không đạt C (%)</strong></td>
+<td>✅</td>
+<td>Giá trị C riêng cho bảng này</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Khi nào dùng?</strong> Ví dụ: Bảng GD_GIAODICH yêu cầu Uniqueness rất cao → đặt W=99%, C=98% (thay vì mặc định 95/90)</p>
+</blockquote>
+<blockquote>
+<p><strong>⚠️ Lưu ý quan trọng về hiệu lực của Thresholds:</strong></p>
+<ul>
+<li>Ngưỡng ở menu Thresholds chỉ được <strong>tự động điền (pre-fill)</strong> vào form khi <strong>tạo Rule mới</strong>.</li>
+<li>Rule đã lưu <strong>KHÔNG tự cập nhật</strong> khi bạn thay đổi Thresholds sau này.</li>
+<li>Nếu muốn cập nhật ngưỡng cho rule cũ → phải vào <strong>Quản lý quy tắc → Chỉnh sửa</strong> từng rule thủ công.</li>
+<li>Ưu tiên ngưỡng: <strong>Per-table</strong> (nếu có) &gt; <strong>Toàn cục</strong> → được pre-fill khi chọn bảng + chiều khi tạo rule.</li>
+</ul>
+</blockquote>
+<hr>
+<h3 id="76-quản-lý-quy-tắc-rules">7.6 Quản lý quy tắc (Rules) </h3>
+<p><strong>URL:</strong> <code>/rules</code> | <strong>Mục đích:</strong> Tạo các quy tắc kiểm tra chất lượng dữ liệu cụ thể cho từng bảng.</p>
+<h4 id="danh-sách-quy-tắc">Danh sách quy tắc </h4>
+<p>Các cột trong bảng:</p>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tên quy tắc</td>
+<td>Tên mô tả quy tắc</td>
+</tr>
+<tr>
+<td>Chiều DL</td>
+<td>1 trong 6 dimension</td>
+</tr>
+<tr>
+<td>Bảng · Chỉ số</td>
+<td>Tên bảng + mô tả metric config</td>
+</tr>
+<tr>
+<td><strong>Phạm vi</strong></td>
+<td><code>Cột: TÊN_CỘT</code> hoặc <code>Bảng</code></td>
+</tr>
+<tr>
+<td>Ngưỡng W/C</td>
+<td>Ngưỡng cảnh báo / không đạt</td>
+</tr>
+<tr>
+<td>Chạy lần cuối</td>
+<td>Timestamp lần chạy gần nhất</td>
+</tr>
+<tr>
+<td>Kết quả</td>
+<td>✅ Đạt / ⚠️ Cảnh báo / ❌ Không đạt</td>
+</tr>
+<tr>
+<td>Kích hoạt</td>
+<td>Toggle bật/tắt rule</td>
+</tr>
+</tbody>
+</table>
+<h4 id="form-thêmsửa-quy-tắc">Form Thêm/Sửa quy tắc </h4>
+<p><strong>Bước 1 — Thông tin cơ bản</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên quy tắc</strong></td>
+<td>✅</td>
+<td>Đặt tên ngắn gọn, mô tả rõ</td>
+<td><code>Kiểm tra số CMND không rỗng</code></td>
+</tr>
+<tr>
+<td><strong>Mô tả</strong></td>
+<td></td>
+<td>Chi tiết hơn về mục đích</td>
+<td><code>Đảm bảo mọi KH đều có số CMND/CCCD</code></td>
+</tr>
+<tr>
+<td><strong>Bảng dữ liệu</strong></td>
+<td>✅</td>
+<td>Chọn từ DataCatalog</td>
+<td><code>KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td><strong>Kích hoạt ngay</strong></td>
+<td></td>
+<td>Toggle: Hoạt động / Không HĐ</td>
+<td>Bật → rule chạy theo lịch</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bước 2 — Chọn Chiều dữ liệu (Dimension)</strong></p>
+<p>Nhấn vào 1 trong 6 nút dimension. Sau khi chọn, danh sách Metric sẽ hiện ra phù hợp.</p>
+<p><strong>Bước 3 — Chọn loại Metric</strong></p>
+<p>Dropdown chỉ hiện các metric phù hợp với dimension đã chọn. Có tooltip giải thích.</p>
+<p><strong>Bước 4 — Điền tham số kiểm tra</strong> (tùy metric type)</p>
+<p>Xem <a href="#6-25-lo%E1%BA%A1i-metric-chi-ti%E1%BA%BFt">Phần 6 — 25 Loại Metric</a> để biết tham số cụ thể.</p>
+<p><strong>Bước 5 — Ngưỡng W/C</strong></p>
+<blockquote>
+<p>Tự động điền từ Thresholds toàn cục khi bạn chọn Dimension. Có thể chỉnh lại.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ngưỡng cảnh báo W (%)</strong></td>
+<td>Điểm nhỏ hơn W → Cảnh báo</td>
+</tr>
+<tr>
+<td><strong>Ngưỡng không đạt C (%)</strong></td>
+<td>Điểm nhỏ hơn C → Không đạt</td>
+</tr>
+</tbody>
+</table>
+<p>Ô thông tin hiển thị ngay phía dưới:</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>✅ Điểm ≥ W% → Đạt
+⚠️ C% ≤ Điểm &lt; W% → Cảnh báo
+❌ Điểm &lt; C% → Không đạt
+</code></pre><h4 id="tab-templates">Tab Templates </h4>
+<p>Thay vì tạo mới từ đầu, có thể chọn template sẵn có → tự động pre-fill form. Template được quản lý ở <strong>Cài đặt &gt; Quy tắc mặc định</strong>.</p>
+<h4 id="cơ-chế-chạy-rule">Cơ chế chạy Rule </h4>
+<blockquote>
+<ul>
+<li>Rule <strong>KHÔNG tự chạy</strong> — phải được gắn vào một <strong>Schedule</strong> để chạy tự động.</li>
+<li>Mỗi Schedule gắn với 1 bảng → chạy <strong>toàn bộ rule active</strong> của bảng đó theo tần suất đã đặt.</li>
+<li>Nút <strong>"Chạy ngay"</strong> (▶️): chạy thủ công 1 rule duy nhất, ngay lập tức, ngoài lịch. Kết quả được ghi vào lịch sử và tự sinh Issue nếu vi phạm.</li>
+</ul>
+</blockquote>
+<h4 id="lịch-sử-chạy">Lịch sử chạy </h4>
+<p>Nhấn nút <strong>Lịch sử chạy</strong> (🕐 History) → popup hiển thị 7 lần chạy gần nhất:</p>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thời gian chạy</td>
+<td>Timestamp lúc chạy</td>
+</tr>
+<tr>
+<td>Trigger</td>
+<td><code>Lịch tự động</code> hoặc <code>Chạy thủ công</code></td>
+</tr>
+<tr>
+<td>Kết quả</td>
+<td>Đạt / Cảnh báo / Không đạt</td>
+</tr>
+<tr>
+<td>Điểm</td>
+<td>Điểm đạt được (% bản ghi pass)</td>
+</tr>
+<tr>
+<td>Issue</td>
+<td>ID issue được sinh ra (nếu có)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Click vào 1 dòng</strong> → mở chi tiết bên dưới:</p>
+<ul>
+<li>So sánh điểm vs ngưỡng warning/critical</li>
+<li>% bản ghi vi phạm (nếu điểm dưới ngưỡng)</li>
+<li>Pattern yêu cầu (nếu có)</li>
+</ul>
+<blockquote>
+<p><strong>Trigger types:</strong></p>
+<ul>
+<li><code>Lịch tự động</code> — do Schedule kích hoạt theo tần suất</li>
+<li><code>Chạy thủ công</code> — do user nhấn nút "Chạy ngay"</li>
+</ul>
+</blockquote>
+<hr>
+<h3 id="77-lịch-chạy-schedules">7.7 Lịch chạy (Schedules) </h3>
+<p><strong>URL:</strong> <code>/schedules</code> | <strong>Mục đích:</strong> Cấu hình lịch tự động kiểm tra chất lượng cho từng bảng. Mỗi lịch = 1 bảng chạy toàn bộ rule của bảng đó theo tần suất định sẵn.</p>
+<h4 id="danh-sách-lịch-chạy">Danh sách lịch chạy </h4>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tên lịch</td>
+<td>Tên mô tả</td>
+</tr>
+<tr>
+<td>Bảng dữ liệu</td>
+<td>Bảng được kiểm tra</td>
+</tr>
+<tr>
+<td>Tần suất</td>
+<td>Realtime / Hàng giờ / Hàng ngày / Hàng tuần / Hàng tháng / Tùy chỉnh</td>
+</tr>
+<tr>
+<td>Chạy tiếp theo</td>
+<td>Lần chạy tự động tiếp theo</td>
+</tr>
+<tr>
+<td>Chạy lần cuối</td>
+<td>Timestamp lần chạy gần nhất</td>
+</tr>
+<tr>
+<td><strong>Kết quả</strong></td>
+<td><code>success</code> / <code>partial</code> / <code>failed</code> (xem bảng bên dưới)</td>
+</tr>
+<tr>
+<td>Số QT</td>
+<td>Số rule đang active của bảng này</td>
+</tr>
+<tr>
+<td>Kích hoạt</td>
+<td>Toggle bật/tắt lịch</td>
+</tr>
+<tr>
+<td><strong>Xem Issues</strong></td>
+<td>Nhấn → chuyển sang Issues đã lọc theo bảng này</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ý nghĩa cột Kết quả:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Giá trị</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ <code>success</code></td>
+<td>Tất cả rule của bảng → Đạt</td>
+</tr>
+<tr>
+<td>⚠️ <code>partial</code></td>
+<td>Có rule cảnh báo hoặc không đạt (nhưng lịch chạy được)</td>
+</tr>
+<tr>
+<td>❌ <code>failed</code></td>
+<td>Lịch không chạy được (lỗi kết nối, timeout) HOẶC &gt;50% rule fail</td>
+</tr>
+</tbody>
+</table>
+<h4 id="form-thêmsửa-lịch-chạy">Form Thêm/Sửa lịch chạy </h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên lịch chạy</strong></td>
+<td>✅</td>
+<td>Tên mô tả</td>
+<td><code>Kiểm tra KH hàng ngày</code></td>
+</tr>
+<tr>
+<td><strong>Bảng dữ liệu</strong></td>
+<td>✅</td>
+<td>Chọn bảng cần lịch</td>
+<td><code>KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td><strong>Tần suất</strong></td>
+<td>✅</td>
+<td>Mức độ tự động</td>
+<td><code>daily</code></td>
+</tr>
+<tr>
+<td><strong>Giờ chạy</strong></td>
+<td>(nếu daily/weekly)</td>
+<td>Giờ thực hiện</td>
+<td><code>06:00</code></td>
+</tr>
+<tr>
+<td><strong>Ngày trong tuần</strong></td>
+<td>(nếu weekly)</td>
+<td>Checkbox T2-T7, CN</td>
+<td><code>T2, T4, T6</code></td>
+</tr>
+<tr>
+<td><strong>Cron expression</strong></td>
+<td>(nếu custom)</td>
+<td>Cú pháp cron Unix</td>
+<td><code>0 6 * * 1-5</code></td>
+</tr>
+<tr>
+<td><strong>Kích hoạt ngay</strong></td>
+<td></td>
+<td>Toggle</td>
+<td>Bật để lịch tự chạy</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tần suất — giải thích chi tiết:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tần suất</th>
+<th>Khi nào chạy</th>
+<th>Phù hợp với</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>realtime</code></td>
+<td>Liên tục (trigger-based)</td>
+<td>Dữ liệu streaming, critical</td>
+</tr>
+<tr>
+<td><code>hourly</code></td>
+<td>Mỗi giờ tròn</td>
+<td>Dữ liệu cập nhật thường xuyên</td>
+</tr>
+<tr>
+<td><code>daily</code></td>
+<td>1 lần/ngày theo giờ đặt</td>
+<td>Phổ biến nhất, phù hợp batch hàng ngày</td>
+</tr>
+<tr>
+<td><code>weekly</code></td>
+<td>1+ ngày trong tuần</td>
+<td>Báo cáo, dữ liệu ít thay đổi</td>
+</tr>
+<tr>
+<td><code>monthly</code></td>
+<td>1 lần/tháng</td>
+<td>Dữ liệu tháng, báo cáo tổng hợp</td>
+</tr>
+<tr>
+<td><code>custom</code></td>
+<td>Cron tùy chỉnh</td>
+<td>Nâng cao, lịch phức tạp</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="78-vấn-đề--sự-cố-issues">7.8 Vấn đề &amp; Sự cố (Issues) </h3>
+<p><strong>URL:</strong> <code>/issues</code> | <strong>Mục đích:</strong> Xem, tra cứu và xử lý các vấn đề chất lượng dữ liệu được phát hiện tự động từ khi Schedules chạy Rule và có kết quả fail/warning.</p>
+<blockquote>
+<p><strong>Lưu ý:</strong> Issues <strong>không thêm thủ công</strong> — tự động sinh khi rule fail.</p>
+</blockquote>
+<h4 id="nguồn-gốc-dữ-liệu-issues--data-flow">Nguồn gốc dữ liệu Issues — Data Flow </h4>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Schedule chạy (hoặc user nhấn "Chạy ngay") → Rule cho kết quả fail / warning
+    ↓
+Hệ thống AUTO tạo Issue với:
+  title     = "{Tên rule} — {Đạt/Cảnh báo/Không đạt}"         ← tự sinh
+  description = "Phát hiện X% vi phạm — Điểm: Y/100 ..."      ← tự sinh từ score + threshold
+  severity  = tính từ (score, W, C)                            ← tự tính
+  status    = 'new'                                            ← mặc định khi tạo
+  tableId / dimension / ruleId = lấy trực tiếp từ Rule        ← từ Rule
+    ↓
+User vào Issues → thấy Issue mới → gán người → xử lý → đổi trạng thái
+</code></pre><h4 id="định-nghĩa-trạng-thái-status">Định nghĩa trạng thái (Status) </h4>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Tên hiển thị</th>
+<th>Ý nghĩa</th>
+<th>Ai đặt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new</code></td>
+<td>Mới</td>
+<td>Vừa tự sinh khi rule fail</td>
+<td><strong>Hệ thống</strong> tự tạo</td>
+</tr>
+<tr>
+<td><code>assigned</code></td>
+<td>Đã gán</td>
+<td>Đã gán người xử lý</td>
+<td>User</td>
+</tr>
+<tr>
+<td><code>in_progress</code></td>
+<td>Đang xử lý</td>
+<td>Người xử lý đang làm</td>
+<td>User</td>
+</tr>
+<tr>
+<td><code>pending_review</code></td>
+<td>Chờ duyệt</td>
+<td>Xử lý xong, chờ xác nhận</td>
+<td>User</td>
+</tr>
+<tr>
+<td><code>resolved</code></td>
+<td>Đã xử lý</td>
+<td>Đã xác nhận xử lý xong</td>
+<td>User/Reviewer</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td>Đóng</td>
+<td>Đóng hẳn, không theo dõi nữa</td>
+<td>User</td>
+</tr>
+</tbody>
+</table>
+<h4 id="định-nghĩa-mức-độ-severity--tự-tính-từ-điểm">Định nghĩa mức độ (Severity) — tự tính từ điểm </h4>
+<p>Severity <strong>KHÔNG phải do user chọn ban đầu</strong> — hệ thống tự tính từ điểm và ngưỡng:</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>score &lt; C (critical threshold)  →  severity = 'critical'  (Nghiêm trọng)
+C ≤ score &lt; W (warning)         →  severity = 'high'       (Cao)
+score ≥ W nhưng tạo issue       →  severity = 'medium'     (Trung bình)
+</code></pre><blockquote>
+<p>User có thể <strong>chỉnh sửa lại mức độ</strong> sau khi issue được tạo (upgrade/downgrade) nếu cần.</p>
+</blockquote>
+<h4 id="các-thẻ-thống-kê-đầu-trang">Các thẻ thống kê đầu trang </h4>
+<table>
+<thead>
+<tr>
+<th>Thẻ</th>
+<th>Điều kiện tính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mới</strong></td>
+<td><code>status === 'new'</code></td>
+</tr>
+<tr>
+<td><strong>Đang xử lý</strong></td>
+<td><code>status === 'in_progress' OR status === 'assigned'</code></td>
+</tr>
+<tr>
+<td><strong>Chờ xét duyệt</strong></td>
+<td><code>status === 'pending_review'</code></td>
+</tr>
+<tr>
+<td><strong>Đã giải quyết</strong></td>
+<td><code>status === 'resolved' OR status === 'closed'</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="trường-mô-tả-vấn-đề--từ-đâu-ra">Trường "Mô tả vấn đề" — từ đâu ra? </h4>
+<p><strong>Tự sinh tự động</strong> theo pattern:</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>"Phát hiện {X}% vi phạm trong {cột/toàn bảng} — Điểm: {score}/100
+(ngưỡng cảnh báo: {W}%, không đạt: {C}%) · {Trigger}"
+</code></pre><p>Ví dụ: <code>"Phát hiện 12.7% vi phạm trong cột EMAIL — Điểm: 87.3/100 (ngưỡng cảnh báo: 95%, không đạt: 85%) · Lịch tự động"</code></p>
+<blockquote>
+<p>Trường <strong>"Thêm bình luận hoặc ghi chú xử lý"</strong> trong chi tiết issue là để user ghi chú thêm vào timeline — KHÔNG phải nguồn của mô tả vấn đề.</p>
+</blockquote>
+<h4 id="lọc-danh-sách-issues">Lọc danh sách Issues </h4>
+<table>
+<thead>
+<tr>
+<th>Bộ lọc</th>
+<th>Lựa chọn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tìm kiếm</td>
+<td>Tên issue</td>
+</tr>
+<tr>
+<td>Mức độ</td>
+<td>Critical / High / Medium / Low</td>
+</tr>
+<tr>
+<td>Trạng thái</td>
+<td>Mới / Đã gán / Đang xử lý / Chờ duyệt / Đã xử lý / Đóng</td>
+</tr>
+<tr>
+<td>Bảng dữ liệu</td>
+<td>Dropdown bảng</td>
+</tr>
+<tr>
+<td>Chiều DL</td>
+<td>6 chiều</td>
+</tr>
+<tr>
+<td>Từ ngày / Đến ngày</td>
+<td>Khoảng thời gian phát hiện</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Nhấn "Xem Issues" từ Schedules → tự động lọc theo bảng đó</p>
+</blockquote>
+<h4 id="trang-chi-tiết-issue-issuesid">Trang chi tiết Issue (<code>/issues/:id</code>) </h4>
+<p>Gồm 2 phần:</p>
+<p><strong>Panel trái — Thông tin &amp; timeline:</strong></p>
+<ul>
+<li>Mô tả chi tiết vấn đề</li>
+<li>Bảng/cột/dimension liên quan</li>
+<li>Điểm lúc phát hiện vs ngưỡng W/C</li>
+<li>Timeline sự kiện: <code>created</code> → <code>assigned</code> → <code>status_changed</code> → <code>resolved</code></li>
+</ul>
+<p><strong>Panel phải — Xử lý:</strong></p>
+<ul>
+<li><strong>Gán cho:</strong> Nhập tên người xử lý → nhấn Cập nhật</li>
+<li><strong>Chuyển trạng thái:</strong> Đổi sang <code>in_progress</code>, <code>pending_review</code>, <code>resolved</code>...</li>
+<li><strong>Đóng vấn đề:</strong> Nút đặc biệt, yêu cầu xác nhận</li>
+</ul>
+<p><strong>Thứ tự xử lý vấn đề điển hình:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Mới (new) → Đã gán (assigned) → Đang xử lý (in_progress) → Chờ duyệt (pending_review) → Đã xử lý (resolved) → Đóng (closed)
+</code></pre><hr>
+<h3 id="79-báo-cáo-reports">7.9 Báo cáo (Reports) </h3>
+<p><strong>URL:</strong> <code>/reports</code> | <strong>Mục đích:</strong> Phân tích xu hướng chất lượng dữ liệu theo thời gian, so sánh giữa các bảng.</p>
+<p><strong>Nội dung báo cáo:</strong></p>
+<ul>
+<li><strong>4 KPI cards</strong>: Điểm TB, số bảng đạt chuẩn, vấn đề phát sinh, vấn đề đã giải quyết</li>
+<li><strong>Biểu đồ xu hướng điểm 30 ngày</strong> (area chart)</li>
+<li><strong>Radar chart</strong> 6 chiều — so sánh trực quan điểm trung bình</li>
+<li><strong>Bảng chi tiết</strong> từng bảng với điểm 6 dimension, số vấn đề, xếp hạng A/B/C/D</li>
+<li>Lọc theo: khoảng thời gian, bảng, chiều dữ liệu</li>
+</ul>
+<h4 id="cột-xu-hướng-7d">Cột "Xu hướng 7d" </h4>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Điều kiện</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>↑ (xanh lá)</td>
+<td>Điểm tổng ≥ 85</td>
+<td>Chất lượng tốt, xu hướng cải thiện</td>
+</tr>
+<tr>
+<td>→ (vàng)</td>
+<td>70 ≤ Điểm &lt; 85</td>
+<td>Ổn định</td>
+</tr>
+<tr>
+<td>↓ (đỏ)</td>
+<td>Điểm &lt; 70</td>
+<td>Chất lượng kém, cần chú ý</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="710-thông-báo-notifications">7.10 Thông báo (Notifications) </h3>
+<p><strong>URL:</strong> <code>/notifications</code> | <strong>Mục đích:</strong> Cấu hình gửi thông báo tự động khi phát sinh hoặc giải quyết vấn đề.</p>
+<h4 id="form-thêmsửa-thông-báo">Form Thêm/Sửa thông báo </h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tên cấu hình</strong></td>
+<td>✅</td>
+<td>Tên mô tả</td>
+<td><code>Cảnh báo critical cho Data Team</code></td>
+</tr>
+<tr>
+<td><strong>Loại thông báo</strong></td>
+<td>✅</td>
+<td><code>email</code> / <code>sms</code> / <code>webhook</code></td>
+<td><code>email</code></td>
+</tr>
+<tr>
+<td><strong>Người nhận</strong></td>
+<td>✅</td>
+<td>Email/SĐT (mỗi dòng 1) hoặc Webhook URL</td>
+<td><code>datateam@company.com</code></td>
+</tr>
+<tr>
+<td><strong>Trigger khi</strong></td>
+<td>✅</td>
+<td>Chọn 1+ sự kiện: Cảnh báo / Critical / Đã giải quyết</td>
+<td><code>critical</code> ✅</td>
+</tr>
+<tr>
+<td><strong>Áp dụng cho</strong></td>
+<td></td>
+<td>Tất cả bảng hoặc chọn bảng cụ thể</td>
+<td><code>GD_GIAODICH, KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td><strong>Kích hoạt</strong></td>
+<td></td>
+<td>Toggle bật/tắt</td>
+<td>Bật</td>
+</tr>
+</tbody>
+</table>
+<h4 id="nội-dung-email-chỉ-hiển-thị-khi-loại--email">Nội dung email (chỉ hiển thị khi loại = email) </h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Bắt buộc</th>
+<th>Giải thích</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tiêu đề email</strong></td>
+<td></td>
+<td>Template tiêu đề, hỗ trợ biến động</td>
+<td><code>[DQ ALERT] {{severity}} - Bảng {{table}}</code></td>
+</tr>
+<tr>
+<td><strong>Nội dung email</strong></td>
+<td></td>
+<td>Template body, hỗ trợ biến động</td>
+<td><code>Phát hiện vấn đề chất lượng dữ liệu...</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Biến hỗ trợ trong template:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Biến</th>
+<th>Giá trị thực</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{{table}}</code></td>
+<td>Tên bảng dữ liệu</td>
+<td><code>KH_KHACHHANG</code></td>
+</tr>
+<tr>
+<td><code>{{dimension}}</code></td>
+<td>Chiều chất lượng</td>
+<td><code>Completeness</code></td>
+</tr>
+<tr>
+<td><code>{{severity}}</code></td>
+<td>Mức độ nghiêm trọng</td>
+<td><code>Critical</code></td>
+</tr>
+<tr>
+<td><code>{{score}}</code></td>
+<td>Điểm chất lượng</td>
+<td><code>78</code></td>
+</tr>
+<tr>
+<td><code>{{threshold}}</code></td>
+<td>Ngưỡng cảnh báo</td>
+<td><code>W:90 / C:80</code></td>
+</tr>
+<tr>
+<td><code>{{detected_at}}</code></td>
+<td>Thời gian phát hiện</td>
+<td><code>2026-04-02 08:30</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> Nếu không nhập subject/body, hệ thống sử dụng template mặc định. Template SMS/Webhook không hỗ trợ biến (gửi nguyên nội dung payload).</p>
+</blockquote>
+<h4 id="thông-báo-downstream-toggle">Thông báo downstream (toggle) </h4>
+<p>Khi bật toggle <strong>"Tự động thông báo đến chủ sở hữu job phụ thuộc"</strong>:</p>
+<ul>
+<li>Hệ thống tự động thêm owner của các job đọc từ bảng được chọn vào danh sách người nhận</li>
+<li>Preview hiển thị danh sách người sẽ nhận thêm (tên + email)</li>
+<li>Chỉ gửi thêm khi bảng thực sự có downstream jobs</li>
+</ul>
+<hr>
+<h3 id="711-cài-đặt-settings">7.11 Cài đặt (Settings) </h3>
+<p><strong>URL:</strong> <code>/settings</code> | Gồm 3 mục con:</p>
+<h4 id="quy-tắc-mặc-định-settingsdefault-rules">Quy tắc mặc định (<code>/settings/default-rules</code>) </h4>
+<p>Template Rule tái sử dụng. Tạo template → khi vào menu Rules &gt; tab Templates có thể chọn để pre-fill form nhanh.</p>
+<h4 id="lịch-mặc-định-settingsdefault-schedules">Lịch mặc định (<code>/settings/default-schedules</code>) </h4>
+<p>Template Schedule. Hữu ích khi thêm nhiều bảng mới với cùng cấu hình lịch.</p>
+<h4 id="quản-lý-người-dùng-settingsusers">Quản lý người dùng (<code>/settings/users</code>) </h4>
+<p>Quản lý user trong hệ thống:</p>
+<ul>
+<li>Thêm/sửa/khóa user</li>
+<li>Phân quyền: Admin / Data Steward / Viewer</li>
+<li>Gán vào team</li>
+</ul>
+<hr>
+<h2 id="8-ví-dụ-thực-hành-end-to-end">8. Ví dụ thực hành end-to-end </h2>
+<h3 id="kịch-bản-thiết-lập-giám-sát-bảng-kh_khachhang-từ-đầu">Kịch bản: Thiết lập giám sát bảng <code>KH_KHACHHANG</code> từ đầu </h3>
+<blockquote>
+<p><strong>Mục tiêu:</strong> Đảm bảo bảng khách hàng luôn đầy đủ, đúng định dạng, không trùng lặp — chạy kiểm tra tự động 6:00 mỗi ngày.</p>
+</blockquote>
+<hr>
+<p><strong>① Kiểm tra bảng đã có trong DataCatalog</strong></p>
+<ol>
+<li>Vào <strong>Danh mục dữ liệu</strong> (<code>/data-catalog</code>)</li>
+<li>Tìm <code>KH_KHACHHANG</code> trong danh sách</li>
+<li>Nếu chưa có → nhấn <strong>Thêm nguồn dữ liệu</strong> → điền:
+<ul>
+<li>Tên: <code>Bảng khách hàng</code></li>
+<li>Loại: <code>database</code></li>
+<li>Tên bảng vật lý: <code>KH_KHACHHANG</code></li>
+<li>Chủ sở hữu: <code>Nguyễn Văn A</code></li>
+</ul>
+</li>
+<li>Nhấn <strong>Lưu</strong></li>
+</ol>
+<hr>
+<p><strong>② Đặt ngưỡng chất lượng</strong></p>
+<ol>
+<li>Vào <strong>Ngưỡng cảnh báo</strong> (<code>/thresholds</code>)</li>
+<li>Kiểm tra ngưỡng toàn cục Completeness: W=90%, C=80% (OK)</li>
+<li>Uniqueness cần cao hơn mặc định → nhấn <strong>Thêm cấu hình</strong> trong phần "riêng theo bảng":
+<ul>
+<li>Bảng: <code>KH_KHACHHANG</code></li>
+<li>Chiều: <code>Uniqueness (Duy nhất)</code></li>
+<li>W: <code>98%</code>, C: <code>95%</code></li>
+</ul>
+</li>
+<li>Nhấn <strong>Lưu cấu hình</strong> (toàn cục) và <strong>Lưu cấu hình</strong> (theo bảng)</li>
+</ol>
+<hr>
+<p><strong>③ Tạo các quy tắc kiểm tra</strong></p>
+<p>Vào <strong>Quản lý quy tắc</strong> (<code>/rules</code>) → nhấn <strong>Thêm quy tắc</strong> cho từng quy tắc:</p>
+<p><strong>Rule 1 — Số CMND không được rỗng:</strong></p>
+<ul>
+<li>Tên: <code>CMND/CCCD không được rỗng</code></li>
+<li>Bảng: <code>KH_KHACHHANG</code></li>
+<li>Chiều: <code>Đầy đủ (Completeness)</code> → Metric: <code>Không được rỗng (NOT NULL)</code></li>
+<li>Cột: <code>SO_CMND</code></li>
+<li>W/C: tự điền 90/80 → giữ nguyên</li>
+<li>Kích hoạt: ✅</li>
+</ul>
+<p><strong>Rule 2 — Số điện thoại đúng định dạng:</strong></p>
+<ul>
+<li>Tên: <code>Số điện thoại đúng định dạng</code></li>
+<li>Chiều: <code>Hợp lệ (Validity)</code> → Metric: <code>Đúng định dạng (Regex)</code></li>
+<li>Cột: <code>DIEN_THOAI</code>, Pattern: <code>^0[0-9]{9}$</code></li>
+<li>W/C: 85/70</li>
+</ul>
+<p><strong>Rule 3 — Không có khách hàng trùng CMND:</strong></p>
+<ul>
+<li>Tên: <code>CMND không trùng lặp</code></li>
+<li>Chiều: <code>Duy nhất (Uniqueness)</code> → Metric: <code>Không trùng lặp (1 cột)</code></li>
+<li>Cột: <code>SO_CMND</code></li>
+<li>W/C: tự điền 98/95 (từ bước ②) → giữ nguyên</li>
+</ul>
+<hr>
+<p><strong>④ Lập lịch chạy tự động</strong></p>
+<p>Vào <strong>Lịch chạy</strong> (<code>/schedules</code>) → nhấn <strong>Thêm lịch chạy</strong>:</p>
+<ul>
+<li>Tên: <code>KH hàng ngày 6h</code></li>
+<li>Bảng: <code>KH_KHACHHANG</code></li>
+<li>Tần suất: <code>Hàng ngày</code></li>
+<li>Giờ chạy: <code>06:00</code></li>
+<li>Kích hoạt: ✅</li>
+<li>Nhấn <strong>Lưu lịch chạy</strong></li>
+</ul>
+<hr>
+<p><strong>⑤ Theo dõi kết quả</strong></p>
+<p>Ngày hôm sau lúc 06:00, lịch tự chạy. Vào kiểm tra:</p>
+<ol>
+<li>
+<p><strong>Schedules</strong> → cột "Kết quả" của lịch <code>KH hàng ngày 6h</code>:</p>
+<ul>
+<li><code>success</code> = tốt</li>
+<li><code>partial</code> = có vấn đề nhỏ → nhấn <strong>🔗 Xem Issues</strong></li>
+<li><code>failed</code> = cần kiểm tra kết nối</li>
+</ul>
+</li>
+<li>
+<p><strong>Issues</strong> (nếu có vấn đề):</p>
+<ul>
+<li>Nhấn vào issue để xem chi tiết</li>
+<li>Gán cho người xử lý → nhấn <strong>Cập nhật</strong></li>
+<li>Sau khi xử lý → đổi trạng thái → <strong>Đóng vấn đề</strong></li>
+</ul>
+</li>
+<li>
+<p><strong>Danh mục dữ liệu</strong> → chi tiết <code>KH_KHACHHANG</code>:</p>
+<ul>
+<li>Xem điểm 6 dimension cập nhật sau khi rule chạy</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="kịch-bản-2-giám-sát-bảng-gd_giaodich--phát-hiện-vấn-đề-batch-và-chất-lượng-số-liệu">Kịch bản 2: Giám sát bảng <code>GD_GIAODICH</code> — phát hiện vấn đề batch và chất lượng số liệu </h3>
+<blockquote>
+<p><strong>Mục tiêu:</strong> Dùng các metric mới (row_count, volume_change, statistics_bound, expression_pct) để phát hiện pipeline lỗi và dữ liệu sai nghiệp vụ.</p>
+</blockquote>
+<hr>
+<p><strong>① Tạo Rule kiểm tra số dòng giao dịch</strong></p>
+<p>Vào <strong>Quy tắc</strong> → Thêm quy tắc:</p>
+<ul>
+<li>Chiều: <code>Đầy đủ (Completeness)</code> → Metric: <code>Số dòng (Row Count) [Bảng]</code></li>
+<li>Số dòng tối thiểu: <code>1000</code></li>
+<li>Số dòng tối đa: <code>5000000</code></li>
+<li>W/C: <code>5 / 20</code></li>
+<li>Phạm vi hiển thị: <strong>Bảng</strong> (không cần chọn cột)</li>
+</ul>
+<p><strong>② Tạo Rule biến động số dòng</strong></p>
+<ul>
+<li>Chiều: <code>Đầy đủ (Completeness)</code> → Metric: <code>Biến động khối lượng (Volume Change) [Bảng]</code></li>
+<li>Số ngày nhìn lại: <code>7</code></li>
+<li>% thay đổi tối đa: <code>30</code></li>
+<li>W/C: <code>20 / 50</code></li>
+</ul>
+<p><strong>③ Tạo Rule thống kê SO_TIEN</strong></p>
+<ul>
+<li>Chiều: <code>Chính xác (Accuracy)</code> → Metric: <code>Thống kê (Statistics Bound)</code></li>
+<li>Cột: <code>SO_TIEN</code></li>
+<li>Loại thống kê: <code>mean (Trung bình)</code></li>
+<li>Giá trị tối thiểu: <code>100000</code></li>
+<li>Giá trị tối đa: <code>50000000</code></li>
+<li>W/C: <code>5 / 20</code></li>
+</ul>
+<p><strong>④ Tạo Rule expression đa điều kiện</strong></p>
+<ul>
+<li>Chiều: <code>Chính xác (Accuracy)</code> → Metric: <code>% dòng thỏa biểu thức (Expression %)</code></li>
+<li>Biểu thức: <code>SO_TIEN &gt; 0 AND MA_TK IS NOT NULL</code></li>
+<li>% pass tối thiểu: <code>99</code></li>
+<li>W/C: <code>1 / 5</code></li>
+</ul>
+<p><strong>⑤ Gắn vào lịch chạy hàng giờ</strong></p>
+<ul>
+<li>Lịch: <code>GD_GIAODICH - Hàng giờ</code></li>
+<li>Tần suất: <code>Hàng giờ</code></li>
+<li>Kích hoạt: ✅</li>
+</ul>
+<p><strong>⑥ Khi phát hiện vấn đề</strong></p>
+<p>Nếu batch đêm bị lỗi → rule <code>row_count</code> fail (chỉ 50 dòng) → Issue tự sinh:</p>
+<ol>
+<li><strong>Schedules</strong> → "Xem Issues" → thấy issue mức độ Critical</li>
+<li><strong>Issue detail</strong> → gán cho kỹ sư data pipeline</li>
+<li>Sau khi fix batch → chạy lại → đổi trạng thái → Đóng vấn đề</li>
+</ol>
+<hr>
+<h2 id="9-thuật-ngữ--câu-hỏi-thường-gặp">9. Thuật ngữ &amp; Câu hỏi thường gặp </h2>
+<h3 id="bảng-thuật-ngữ">Bảng thuật ngữ </h3>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Giải thích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dimension</strong></td>
+<td>Chiều chất lượng dữ liệu (6 chiều: Completeness, Validity...)</td>
+</tr>
+<tr>
+<td><strong>Metric / Metric Type</strong></td>
+<td>Loại phép đo cụ thể trong 1 chiều (VD: not_null, format_regex...)</td>
+</tr>
+<tr>
+<td><strong>Rule / Quy tắc</strong></td>
+<td>Một quy tắc kiểm tra cụ thể = bảng + chiều + metric + tham số + ngưỡng</td>
+</tr>
+<tr>
+<td><strong>Score / Điểm</strong></td>
+<td>Kết quả rule (0-100%). Ví dụ: 95% dòng không NULL → điểm 95</td>
+</tr>
+<tr>
+<td><strong>W (Warning Threshold)</strong></td>
+<td>Ngưỡng cảnh báo (%). Điểm ≥ W → Đạt; C ≤ Điểm &lt; W → Cảnh báo</td>
+</tr>
+<tr>
+<td><strong>C (Critical Threshold)</strong></td>
+<td>Ngưỡng không đạt (%). Điểm &lt; C → Không đạt</td>
+</tr>
+<tr>
+<td><strong>Profiling</strong></td>
+<td>Quét thống kê kỹ thuật của cột: null rate, distinct count, min/max...</td>
+</tr>
+<tr>
+<td><strong>Schedule</strong></td>
+<td>Lịch tự động chạy toàn bộ rule của 1 bảng theo tần suất</td>
+</tr>
+<tr>
+<td><strong>Issue</strong></td>
+<td>Vấn đề phát sinh khi rule fail, cần xử lý</td>
+</tr>
+<tr>
+<td><strong>Severity</strong></td>
+<td>Mức độ nghiêm trọng của Issue: Critical &gt; High &gt; Medium &gt; Low</td>
+</tr>
+</tbody>
+</table>
+<h3 id="câu-hỏi-thường-gặp">Câu hỏi thường gặp </h3>
+<p><strong>❓ Tại sao điểm ở Danh mục dữ liệu khác điểm ở Phân tích dữ liệu (Profiling)?</strong></p>
+<p>Hai nguồn tính toán hoàn toàn khác nhau:</p>
+<ul>
+<li><strong>Danh mục dữ liệu</strong>: Điểm = <code>avg(lastScore)</code> của tất cả Rule active → phản ánh chất lượng theo <strong>business logic</strong> (quy tắc mà tổ chức tự định nghĩa). <strong>Snapshot lần chạy Rule gần nhất — không cộng dồn lịch sử.</strong></li>
+<li><strong>Profiling</strong>: Điểm = tỷ lệ cột "sạch" theo thống kê kỹ thuật (null rate, format...) → là <strong>snapshot kỹ thuật</strong> tại thời điểm quét. <strong>Cũng không cộng dồn.</strong></li>
+</ul>
+<p>Xem chi tiết cách tính 3 cấp (Rule → Dimension → Overall) tại <a href="#c%C3%A1ch-t%C3%ADnh-%C4%91i%E1%BB%83m-ch%E1%BA%A5t-l%C6%B0%E1%BB%A3ng-score">Mục 4 — Cách tính điểm</a>.</p>
+<hr>
+<p><strong>❓ Điểm tổng (Overall Score) ở DataCatalog tính bằng % hay điểm? Tại sao hiển thị số 82, 74...?</strong></p>
+<p><strong>% chính là điểm.</strong> Ví dụ: Rule <code>not_null</code> trên cột <code>CMND</code> → 98.5% dòng không null → điểm Rule = 98.5. Trung bình 6 chiều sẽ cho ra Overall Score. Con số 82, 74 bạn thấy chính là <strong>phần trăm bản ghi đạt yêu cầu</strong> trung bình qua tất cả các Rule và Dimension.</p>
+<hr>
+<p><strong>❓ Điểm ở DataCatalog có cộng dồn kết quả chạy trong quá khứ không?</strong></p>
+<p><strong>Không.</strong> Cột "Điểm tổng" luôn phản ánh <strong>chỉ kết quả lần chạy Rule gần nhất</strong>. Mỗi lần Schedule chạy (hoặc user nhấn "Chạy ngay"), <code>lastScore</code> của Rule bị ghi đè bằng kết quả mới. Nếu muốn xem xu hướng điểm qua thời gian → vào menu <strong>Báo cáo</strong> (<code>/reports</code>).</p>
+<hr>
+<p><strong>❓ Rule chỉ dành cho từng cột riêng lẻ à? Kiểm tra quan hệ giữa các cột thì dùng gì?</strong></p>
+<p>Không — có <strong>7 metric type</strong> dành cho <strong>toàn bảng</strong> (không gắn với cột cụ thể):</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Mục đích chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>row_count</code></td>
+<td>Kiểm tra số dòng tuyệt đối [min, max]</td>
+</tr>
+<tr>
+<td><code>time_coverage</code></td>
+<td>Chuỗi thời gian không bị gap</td>
+</tr>
+<tr>
+<td><code>volume_change</code></td>
+<td>% biến động số dòng so với kỳ trước</td>
+</tr>
+<tr>
+<td><code>table_size</code></td>
+<td>Dung lượng vật lý bảng</td>
+</tr>
+<tr>
+<td><code>cross_column</code></td>
+<td>Ràng buộc logic giữa 2+ cột</td>
+</tr>
+<tr>
+<td><code>duplicate_composite</code></td>
+<td>Khóa duy nhất tổ hợp nhiều cột</td>
+</tr>
+<tr>
+<td><code>custom_expression</code></td>
+<td>Điều kiện SQL WHERE bất kỳ</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><strong>❓ Tôi vừa sửa ngưỡng ở Thresholds, các Rule cũ có tự cập nhật không?</strong></p>
+<p><strong>Không.</strong> Ngưỡng ở Thresholds chỉ được tự động điền (pre-fill) vào các <strong>Rule mới</strong> khi bạn tạo rule. Các rule cũ vẫn giữ nguyên W/C đã lưu. Nếu muốn cập nhật, phải vào sửa từng rule.</p>
+<hr>
+<p><strong>❓ Lịch chạy (Schedule) có tự động phát hiện Rule mới thêm vào không?</strong></p>
+<p>Có. Mỗi lần lịch chạy, nó sẽ chạy <strong>tất cả</strong> Rule active đang gắn với bảng đó (kể cả rule mới thêm sau khi lịch được tạo).</p>
+<hr>
+<p><strong>❓ Sự khác biệt giữa <code>failed</code> và <code>partial</code> trong kết quả lịch chạy?</strong></p>
+<ul>
+<li><code>partial</code>: Lịch chạy <strong>thành công</strong> (kết nối được, thực hiện được) nhưng có rule cho kết quả Cảnh báo hoặc Không đạt → sinh Issues</li>
+<li><code>failed</code>: Lịch <strong>không chạy được</strong> (lỗi kết nối, timeout...) hoặc hơn 50% rule fail → cần kiểm tra hạ tầng</li>
+</ul>
+<hr>
+<p><strong>❓ Sự khác biệt giữa <code>fill_rate</code>, <code>not_null</code>, và <code>null_rate_by_period</code> — dùng cái nào?</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Khi nào dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not_null</code></td>
+<td>Cột bắt buộc 100% — không cho phép NULL dù chỉ 1 dòng</td>
+</tr>
+<tr>
+<td><code>fill_rate</code></td>
+<td>Cột không bắt buộc — nhưng phải điền đủ ≥ X% (VD: email khuyến nghị nhưng không ép)</td>
+</tr>
+<tr>
+<td><code>null_rate_by_period</code></td>
+<td>Bạn muốn phát hiện <strong>xu hướng xấu đi theo thời gian</strong> — mỗi tháng null rate tăng dần là dấu hiệu pipeline upstream có vấn đề</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><strong>❓ <code>expression_pct</code> và <code>custom_expression</code> dùng biểu thức SQL nhưng khác nhau thế nào?</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>custom_expression:
+  → Kiểm tra TOÀN BẢng theo 1 aggregate condition (dạng đúng/sai)
+  → VD: "ABS(SUM(col_a) - SUM(col_b)) / SUM(col_b) &lt;= 0.01"
+  → Kết quả: PASS hoặc FAIL (không có %)
+
+expression_pct:
+  → Kiểm tra TỪNG DÒNG — đếm % dòng thỏa mãn điều kiện
+  → VD: "SO_TIEN &gt; 0 AND MA_TK IS NOT NULL"
+  → Kết quả: 99.4% dòng pass → điểm 99.4
+</code></pre><hr>
+<p><strong>❓ Tôi nên dùng <code>statistics_bound</code> hay <code>value_range</code> để kiểm tra SO_TIEN?</strong></p>
+<ul>
+<li><strong><code>value_range</code></strong>: Kiểm tra từng dòng — giá trị của mỗi dòng phải trong [min, max]. Phát hiện <strong>outlier từng giao dịch</strong>.</li>
+<li><strong><code>statistics_bound</code></strong>: Kiểm tra thống kê tổng hợp — giá trị MEAN/STDDEV/P99... của toàn bộ cột phải trong [min, max]. Phát hiện <strong>vấn đề hệ thống</strong> (VD: unit conversion lỗi làm toàn bộ giá trị ÷100).</li>
+</ul>
+<p>Thực tế nên dùng cả hai: <code>value_range</code> bắt từng giao dịch bất thường, <code>statistics_bound</code> bắt vấn đề cả batch.</p>
+<hr>
+<p><strong>❓ <code>blacklist_pattern</code> viết pattern thế nào nếu muốn loại nhiều giá trị?</strong></p>
+<p>Dùng pipe <code>|</code> để OR nhiều pattern. Pattern hỗ trợ regex:</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>TEST|FAKE|N/A|n/a|null|NULL|0000-00-00|example\.com|@localhost|@test\.
+</code></pre><p>Hệ thống sẽ FAIL nếu giá trị <strong>khớp với bất kỳ pattern nào</strong> trong danh sách trên.</p>
+<hr>
+<p><strong>❓ Tôi muốn nhận email ngay khi có vấn đề nghiêm trọng — cấu hình ở đâu?</strong></p>
+<p>Vào <strong>Thông báo</strong> (<code>/notifications</code>) → Thêm cấu hình:</p>
+<ul>
+<li>Loại: <code>email</code></li>
+<li>Người nhận: địa chỉ email của bạn</li>
+<li>Trigger khi: chọn <code>Critical</code></li>
+<li>Áp dụng cho: Tất cả bảng (hoặc chọn bảng cụ thể)</li>
+</ul>
+<hr>
+<p><em>Hết tài liệu — Phiên bản 1.1 | Data Quality System | Cập nhật 2026-04-01 — 25 metric types</em></p>
+
+      </div>
+      
+      
+    
+    
+    <script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+
+
+var MERMAID_CONFIG = ({"startOnLoad":false});
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "default"
+}
+
+mermaid.initialize(MERMAID_CONFIG || {})
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+} else {
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+}
+</script>
+    
+    
+    
+  
+    </body></html>

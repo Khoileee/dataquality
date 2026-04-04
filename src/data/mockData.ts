@@ -10,7 +10,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Nguyễn Thị Lan', team: 'Nhóm Khách hàng', category: 'KH',
     rowCount: 1250000, lastProfiled: '2026-03-28T08:30:00', overallScore: 82,
     dimensionScores: { completeness: 91, validity: 85, consistency: 78, uniqueness: 95, accuracy: 76, timeliness: 88 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T08:30:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T08:30:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-002', name: 'GD_GIAODICH', type: 'database', schema: 'CORE',
@@ -18,7 +19,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Trần Văn Minh', team: 'Nhóm Giao dịch', category: 'GD',
     rowCount: 45000000, lastProfiled: '2026-03-28T06:00:00', overallScore: 74,
     dimensionScores: { completeness: 88, validity: 72, consistency: 65, uniqueness: 99, accuracy: 68, timeliness: 55 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T06:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T06:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-003', name: 'TK_TAIKHOAN', type: 'database', schema: 'CORE',
@@ -26,7 +28,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Sản phẩm', category: 'TK',
     rowCount: 2100000, lastProfiled: '2026-03-28T07:15:00', overallScore: 88,
     dimensionScores: { completeness: 95, validity: 90, consistency: 85, uniqueness: 98, accuracy: 82, timeliness: 79 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T07:15:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T07:15:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-004', name: 'SP_SANPHAM', type: 'database', schema: 'CORE',
@@ -34,7 +37,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Sản phẩm', category: 'SP',
     rowCount: 850, lastProfiled: '2026-03-27T14:00:00', overallScore: 95,
     dimensionScores: { completeness: 98, validity: 96, consistency: 94, uniqueness: 100, accuracy: 93, timeliness: 91 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T14:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T14:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-005', name: 'HOP_DONG', type: 'database', schema: 'CORE',
@@ -42,15 +46,17 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Nguyễn Thị Lan', team: 'Nhóm Tín dụng', category: 'KH',
     rowCount: 380000, lastProfiled: '2026-03-28T05:00:00', overallScore: 71,
     dimensionScores: { completeness: 78, validity: 70, consistency: 62, uniqueness: 97, accuracy: 65, timeliness: 58 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T05:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T05:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-006', name: 'BAO_CAO_NGAY', type: 'sql', schema: 'REPORT',
-    tableName: 'BAO_CAO_NGAY', description: 'Báo cáo tổng hợp số liệu hàng ngày',
+    tableName: 'BAO_CAO_NGAY', description: 'Báo cáo tổng hợp số liệu hàng ngày từ bảng giao dịch và tài khoản',
     status: 'active', owner: 'Trần Văn Minh', team: 'Nhóm Báo cáo', category: 'BC',
     rowCount: 12500, lastProfiled: '2026-03-28T09:00:00', overallScore: 63,
     dimensionScores: { completeness: 70, validity: 65, consistency: 58, uniqueness: 85, accuracy: 55, timeliness: 47 },
-    createdAt: '2024-02-01T00:00:00', updatedAt: '2026-03-28T09:00:00'
+    createdAt: '2024-02-01T00:00:00', updatedAt: '2026-03-28T09:00:00',
+    moduleType: 'report', sourceTableIds: ['ds-002', 'ds-003']
   },
   {
     id: 'ds-007', name: 'DM_TIENTE', type: 'database', schema: 'DM',
@@ -58,7 +64,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Quản trị DL', category: 'DM',
     rowCount: 180, lastProfiled: '2026-03-25T10:00:00', overallScore: 97,
     dimensionScores: { completeness: 100, validity: 98, consistency: 97, uniqueness: 100, accuracy: 96, timeliness: 93 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-25T10:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-25T10:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-008', name: 'DM_CHINHANH', type: 'database', schema: 'DM',
@@ -66,7 +73,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Quản trị DL', category: 'DM',
     rowCount: 320, lastProfiled: '2026-03-26T10:00:00', overallScore: 94,
     dimensionScores: { completeness: 97, validity: 95, consistency: 92, uniqueness: 100, accuracy: 91, timeliness: 90 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-26T10:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-26T10:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-009', name: 'KH_NHOM_KH', type: 'database', schema: 'CORE',
@@ -74,7 +82,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Nguyễn Thị Lan', team: 'Nhóm Khách hàng', category: 'KH',
     rowCount: 45000, lastProfiled: '2026-03-27T08:00:00', overallScore: 79,
     dimensionScores: { completeness: 85, validity: 80, consistency: 75, uniqueness: 92, accuracy: 72, timeliness: 70 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T08:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T08:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-010', name: 'BIEU_PHI', type: 'database', schema: 'CORE',
@@ -82,7 +91,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Sản phẩm', category: 'SP',
     rowCount: 2200, lastProfiled: '2026-03-27T11:00:00', overallScore: 86,
     dimensionScores: { completeness: 92, validity: 88, consistency: 83, uniqueness: 95, accuracy: 80, timeliness: 77 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T11:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-27T11:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-011', name: 'LOG_GIAODICH', type: 'database', schema: 'LOG',
@@ -90,14 +100,16 @@ export const mockDataSources: DataSource[] = [
     status: 'error', owner: 'Trần Văn Minh', team: 'Nhóm Giao dịch', category: 'GD',
     rowCount: 125000000, lastProfiled: '2026-03-27T22:00:00', overallScore: 55,
     dimensionScores: { completeness: 65, validity: 58, consistency: 48, uniqueness: 78, accuracy: 50, timeliness: 32 },
-    createdAt: '2024-03-01T00:00:00', updatedAt: '2026-03-27T22:00:00'
+    createdAt: '2024-03-01T00:00:00', updatedAt: '2026-03-27T22:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-012', name: 'QUAN_LY_RR', type: 'sql', schema: 'RISK',
-    tableName: 'QUAN_LY_RR', description: 'Dữ liệu quản lý rủi ro tín dụng và thị trường',
+    tableName: 'QUAN_LY_RR', description: 'Báo cáo quản lý rủi ro tín dụng và thị trường, tổng hợp từ bảng khách hàng và hợp đồng',
     status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Rủi ro', category: 'QTRI',
     rowCount: 95000, lastProfiled: '2026-03-28T04:00:00', overallScore: 68,
     dimensionScores: { completeness: 75, validity: 68, consistency: 62, uniqueness: 88, accuracy: 58, timeliness: 60 },
+    moduleType: 'report', sourceTableIds: ['ds-001', 'ds-005'],
     createdAt: '2024-02-15T00:00:00', updatedAt: '2026-03-28T04:00:00'
   },
   {
@@ -106,7 +118,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Nguyễn Thị Lan', team: 'Nhóm Bảo mật', category: 'QTRI',
     rowCount: 15000, lastProfiled: '2026-03-26T16:00:00', overallScore: 90,
     dimensionScores: { completeness: 96, validity: 92, consistency: 88, uniqueness: 99, accuracy: 85, timeliness: 84 },
-    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-26T16:00:00'
+    createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-26T16:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-014', name: 'LICH_SU_GD_TONG', type: 'file', schema: 'ARCHIVE',
@@ -114,7 +127,8 @@ export const mockDataSources: DataSource[] = [
     status: 'inactive', owner: 'Trần Văn Minh', team: 'Nhóm Lưu trữ', category: 'GD',
     rowCount: 500000000, lastProfiled: '2026-02-28T00:00:00', overallScore: 72,
     dimensionScores: { completeness: 80, validity: 75, consistency: 68, uniqueness: 90, accuracy: 65, timeliness: 53 },
-    createdAt: '2023-06-01T00:00:00', updatedAt: '2026-02-28T00:00:00'
+    createdAt: '2023-06-01T00:00:00', updatedAt: '2026-02-28T00:00:00',
+    moduleType: 'source'
   },
   {
     id: 'ds-015', name: 'KPI_KINHDOANH', type: 'sql', schema: 'REPORT',
@@ -122,7 +136,8 @@ export const mockDataSources: DataSource[] = [
     status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
     rowCount: 8500, lastProfiled: '2026-03-28T07:00:00', overallScore: 77,
     dimensionScores: { completeness: 83, validity: 78, consistency: 72, uniqueness: 95, accuracy: 70, timeliness: 63 },
-    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:00:00'
+    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:00:00',
+    moduleType: 'kpi', sourceTableIds: ['ds-006'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) / COUNT(chi_nhanh)'
   },
 ]
 
@@ -162,6 +177,15 @@ export const mockRules: QualityRule[] = [
   { id: 'r-026', name: 'GD - Thống kê SO_TIEN trong khoảng hợp lý', description: 'Giá trị trung bình cột SO_TIEN phải nằm trong [100.000 – 50.000.000] đồng', dimension: 'accuracy', tableId: 'ds-002', tableName: 'GD_GIAODICH', columnName: 'SO_TIEN', metricConfig: { metricType: 'statistics_bound', column: 'SO_TIEN', statisticType: 'mean', minValue: 100000, maxValue: 50000000 }, threshold: { warning: 5, critical: 20 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 95.0, createdBy: 'Trần Văn Minh', createdAt: '2025-02-15T00:00:00' },
   { id: 'r-027', name: 'GD - Expression SO_TIEN hợp lệ', description: 'Ít nhất 99% dòng giao dịch phải có SO_TIEN > 0 và MA_TK không null', dimension: 'accuracy', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'expression_pct', expression: 'SO_TIEN > 0 AND MA_TK IS NOT NULL', minPassPct: 99 }, threshold: { warning: 1, critical: 5 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 99.4, createdBy: 'Trần Văn Minh', createdAt: '2025-03-01T00:00:00' },
   { id: 'r-028', name: 'TK - SO_DU bắt buộc khi tài khoản ACTIVE', description: 'Tài khoản có TRANG_THAI=ACTIVE bắt buộc phải có giá trị SO_DU', dimension: 'completeness', tableId: 'ds-003', tableName: 'TK_TAIKHOAN', columnName: 'SO_DU', metricConfig: { metricType: 'conditional_not_null', column: 'SO_DU', condition: "TRANG_THAI = 'ACTIVE'" }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T07:15:00', lastResult: 'pass', lastScore: 99.8, createdBy: 'Lê Thị Hoa', createdAt: '2025-03-01T00:00:00' },
+  // Report-specific rules
+  { id: 'r-029', name: 'BC - Đối soát tổng giao dịch ngày', description: 'SUM(THUC_TE) của báo cáo ngày phải khớp SUM(SO_TIEN) bảng GD_GIAODICH (sai lệch ≤ 0.1%)', dimension: 'accuracy', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'aggregate_reconciliation', sourceTableId: 'ds-002', sourceColumn: 'SO_TIEN', reportColumn: 'THUC_TE', tolerancePct: 0.1 }, threshold: { warning: 0.05, critical: 0.5 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'warning', lastScore: 92.5, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
+  { id: 'r-030', name: 'BC - Số dòng báo cáo khớp nguồn', description: 'Số dòng báo cáo ngày phải bằng COUNT(DISTINCT NGAY_GD) từ bảng giao dịch', dimension: 'consistency', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'report_row_count_match', sourceTableId: 'ds-002', tolerancePct: 1 }, threshold: { warning: 1, critical: 5 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'pass', lastScore: 98.0, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
+  { id: 'r-031', name: 'BC - Cập nhật báo cáo đúng hạn', description: 'Báo cáo ngày phải được cập nhật trước 08:00 sáng', dimension: 'timeliness', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'on_time', column: 'NGAY_BC', slaTime: '08:00', alertWindowMinutes: 30 }, threshold: { warning: 1, critical: 3 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'fail', lastScore: 55.0, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
+  { id: 'r-032', name: 'RR - Đối soát SUM rủi ro với nguồn', description: 'SUM(DIEM_RR) báo cáo rủi ro phải khớp với dữ liệu nguồn khách hàng và hợp đồng', dimension: 'accuracy', tableId: 'ds-012', tableName: 'QUAN_LY_RR', metricConfig: { metricType: 'cross_source_sum', sourceTableId: 'ds-001', sourceColumn: 'DIEM_RR', reportColumn: 'DIEM_RR', tolerancePct: 0.5 }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T04:00:00', lastResult: 'pass', lastScore: 96.0, createdBy: 'Phạm Quốc Hùng', createdAt: '2025-04-15T00:00:00' },
+  // KPI-specific rules
+  { id: 'r-033', name: 'KPI - Biến động chỉ tiêu ≤ 30%', description: 'Giá trị KPI kinh doanh không được biến động quá 30% so với kỳ trước', dimension: 'accuracy', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 30, column: 'TONG_TIEN' }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'warning', lastScore: 72.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-034', name: 'KPI - Đầy đủ kỳ tháng', description: 'Chỉ tiêu KPI phải có dữ liệu đủ cho tất cả chi nhánh trong kỳ tháng', dimension: 'completeness', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'period_completeness', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'pass', lastScore: 97.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-035', name: 'KPI - Tổng chi nhánh = tổng công ty', description: 'SUM KPI tất cả chi nhánh phải bằng KPI tổng công ty (sai lệch ≤ 1%)', dimension: 'consistency', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'parent_child_match', parentKpiColumn: 'TONG_TIEN', childSumExpression: 'SUM(TONG_TIEN) GROUP BY MA_SP', tolerancePct: 1 }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'pass', lastScore: 99.2, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
 ]
 
 export const mockRuleTemplates: RuleTemplate[] = [

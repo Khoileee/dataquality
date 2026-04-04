@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Search, Plus, Download, Eye, Edit, Trash2, ChevronLeft, ChevronRight,
-  AlertTriangle, RefreshCw,
+  AlertTriangle, RefreshCw, Database, FileBarChart, Target,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,9 +20,15 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
 import { mockDataSources, mockUsers } from '@/data/mockData'
-import type { DataSource } from '@/types'
+import type { DataSource, ModuleType, PeriodType } from '@/types'
 
 const PAGE_SIZE = 10
+
+const MODULE_TABS: { key: ModuleType; label: string; icon: React.ReactNode; description: string }[] = [
+  { key: 'source', label: 'Bảng nguồn', icon: <Database className="h-4 w-4" />, description: 'Bảng dữ liệu gốc trong hệ thống core' },
+  { key: 'report', label: 'Báo cáo', icon: <FileBarChart className="h-4 w-4" />, description: 'Báo cáo tổng hợp từ các bảng nguồn' },
+  { key: 'kpi', label: 'Chỉ tiêu', icon: <Target className="h-4 w-4" />, description: 'Chỉ tiêu KPI kinh doanh' },
+]
 
 function exportCSV(sources: DataSource[]) {
   const header = ['STT', 'Tên bảng', 'Schema', 'Bảng vật lý', 'Loại', 'Danh mục', 'Chủ sở hữu', 'Điểm tổng', 'Trạng thái', 'Lần phân tích cuối']
@@ -44,6 +50,7 @@ export function DataCatalog() {
   const [sources, setSources] = useState<DataSource[]>([...mockDataSources])
   const [scanningIds, setScanningIds] = useState<Record<string, boolean>>({})
 
+  const [activeTab, setActiveTab] = useState<ModuleType>('source')
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
@@ -69,8 +76,20 @@ export function DataCatalog() {
   const [formCategory, setFormCategory] = useState('KH')
   const [formOwner, setFormOwner] = useState('')
   const [formTeam, setFormTeam] = useState('Nhóm Khách hàng')
+  const [formModuleType, setFormModuleType] = useState<ModuleType>('source')
+  const [formSourceTableIds, setFormSourceTableIds] = useState<string[]>([])
+  const [formPeriodType, setFormPeriodType] = useState<PeriodType>('monthly')
+  const [formKpiFormula, setFormKpiFormula] = useState('')
+
+  // Count per module type for tab badges
+  const countByModule: Record<ModuleType, number> = {
+    source: sources.filter(s => s.moduleType === 'source').length,
+    report: sources.filter(s => s.moduleType === 'report').length,
+    kpi: sources.filter(s => s.moduleType === 'kpi').length,
+  }
 
   const filtered = sources.filter(ds => {
+    if (ds.moduleType !== activeTab) return false
     if (activeSearch && !ds.name.toLowerCase().includes(activeSearch.toLowerCase()) && !ds.description.toLowerCase().includes(activeSearch.toLowerCase())) return false
     if (activeType && ds.type !== activeType) return false
     if (activeStatus && ds.status !== activeStatus) return false
@@ -93,6 +112,7 @@ export function DataCatalog() {
     setEditItem(null)
     setFormName(''); setFormDesc(''); setFormType('database'); setFormSchema('')
     setFormTable(''); setFormCategory('KH'); setFormOwner(mockUsers[0]?.name ?? ''); setFormTeam('Nhóm Khách hàng')
+    setFormModuleType(activeTab); setFormSourceTableIds([]); setFormPeriodType('monthly'); setFormKpiFormula('')
     setDialogOpen(true)
   }
 
@@ -101,6 +121,8 @@ export function DataCatalog() {
     setFormName(ds.name); setFormDesc(ds.description); setFormType(ds.type)
     setFormSchema(ds.schema); setFormTable(ds.tableName); setFormCategory(ds.category)
     setFormOwner(ds.owner); setFormTeam(ds.team)
+    setFormModuleType(ds.moduleType); setFormSourceTableIds(ds.sourceTableIds ?? [])
+    setFormPeriodType(ds.periodType ?? 'monthly'); setFormKpiFormula(ds.kpiFormula ?? '')
     setDialogOpen(true)
   }
 
@@ -108,7 +130,15 @@ export function DataCatalog() {
     const now = new Date().toISOString()
     if (editItem) {
       setSources(prev => prev.map(ds => ds.id === editItem.id
-        ? { ...ds, name: formName, description: formDesc, type: formType as DataSource['type'], schema: formSchema, tableName: formTable, category: formCategory, owner: formOwner, team: formTeam, updatedAt: now }
+        ? {
+            ...ds, name: formName, description: formDesc, type: formType as DataSource['type'],
+            schema: formSchema, tableName: formTable, category: formCategory, owner: formOwner, team: formTeam,
+            moduleType: formModuleType,
+            sourceTableIds: formModuleType !== 'source' ? formSourceTableIds : undefined,
+            periodType: formModuleType === 'kpi' ? formPeriodType : undefined,
+            kpiFormula: formModuleType === 'kpi' ? formKpiFormula : undefined,
+            updatedAt: now,
+          }
         : ds
       ))
     } else {
@@ -119,6 +149,10 @@ export function DataCatalog() {
         status: 'active', rowCount: 0, overallScore: 0,
         dimensionScores: { completeness: 0, validity: 0, consistency: 0, uniqueness: 0, accuracy: 0, timeliness: 0 },
         createdAt: now, updatedAt: now,
+        moduleType: formModuleType,
+        sourceTableIds: formModuleType !== 'source' ? formSourceTableIds : undefined,
+        periodType: formModuleType === 'kpi' ? formPeriodType : undefined,
+        kpiFormula: formModuleType === 'kpi' ? formKpiFormula : undefined,
       }
       setSources(prev => [newDs, ...prev])
     }
@@ -172,10 +206,37 @@ export function DataCatalog() {
         breadcrumbs={[{ label: 'Danh mục dữ liệu' }]}
         actions={
           <Button onClick={openAddDialog} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="h-4 w-4" />Thêm nguồn dữ liệu
+            <Plus className="h-4 w-4" />Thêm {activeTab === 'source' ? 'bảng nguồn' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}
           </Button>
         }
       />
+
+      {/* Module Type Tabs */}
+      <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+        {MODULE_TABS.map(tab => {
+          const isActive = activeTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); setPage(1); setSelected([]) }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              <Badge variant={isActive ? 'default' : 'secondary'} className={`ml-1 text-xs ${isActive ? 'bg-blue-500 text-white' : ''}`}>
+                {countByModule[tab.key]}
+              </Badge>
+            </button>
+          )
+        })}
+        <div className="ml-auto px-3 text-xs text-gray-400">
+          {MODULE_TABS.find(t => t.key === activeTab)?.description}
+        </div>
+      </div>
 
       {/* Filter */}
       <Card>
@@ -239,7 +300,7 @@ export function DataCatalog() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-base font-semibold">Kết quả tìm kiếm</CardTitle>
-              <Badge variant="secondary">{filtered.length} bảng</Badge>
+              <Badge variant="secondary">{filtered.length} {activeTab === 'source' ? 'bảng' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}</Badge>
             </div>
             <Button variant="outline" className="text-sm flex items-center gap-1" onClick={() => exportCSV(filtered)}>
               <Download className="h-4 w-4" />Xuất CSV
@@ -255,23 +316,25 @@ export function DataCatalog() {
                     <input type="checkbox" checked={selected.length === paginated.length && paginated.length > 0}
                       onChange={toggleAll} className="rounded border-gray-300" />
                   </TableHead>
-                  <TableHead className="w-12 text-center">STT</TableHead>
-                  <TableHead>Tên bảng</TableHead>
+                  <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
+                  <TableHead>Tên {activeTab === 'source' ? 'bảng' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}</TableHead>
                   <TableHead>Loại</TableHead>
                   <TableHead>Danh mục</TableHead>
                   <TableHead>Chủ sở hữu</TableHead>
+                  {activeTab === 'report' && <TableHead>Bảng nguồn</TableHead>}
+                  {activeTab === 'kpi' && <TableHead>Chu kỳ</TableHead>}
                   <TableHead><span className="inline-flex items-center gap-1">Điểm tổng <InfoTooltip text="Điểm tổng hợp chất lượng dữ liệu của bảng, tính trung bình từ 6 chiều: Completeness, Validity, Consistency, Uniqueness, Accuracy, Timeliness. Thang điểm 0-100." /></span></TableHead>
                   <TableHead>Lần phân tích cuối</TableHead>
                   <TableHead><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của bảng trong hệ thống DQ. Cấu hình trong form Thêm/Sửa bảng dữ liệu.
 'Hoạt động' = đang được giám sát chất lượng.
 'Không HĐ' = tạm dừng giám sát." /></span></TableHead>
-                  <TableHead className="w-28">Thao tác</TableHead>
+                  <TableHead className="w-28 sticky right-0 z-10 sticky-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12 text-gray-400">
+                    <TableCell colSpan={activeTab !== 'source' ? 11 : 10} className="text-center py-12 text-gray-400">
                       <Search className="h-10 w-10 mx-auto mb-2 opacity-30" />
                       <p>Không tìm thấy kết quả nào</p>
                     </TableCell>
@@ -282,12 +345,12 @@ export function DataCatalog() {
                       <input type="checkbox" checked={selected.includes(ds.id)}
                         onChange={() => toggleSelect(ds.id)} className="rounded border-gray-300" />
                     </TableCell>
-                    <TableCell className="text-center text-sm text-gray-500 font-medium">
+                    <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
                       {(page - 1) * PAGE_SIZE + idx + 1}
                     </TableCell>
                     <TableCell>
                       <button onClick={() => navigate(`/data-catalog/${ds.id}`)} className="text-left">
-                        <span className="font-semibold text-blue-600 hover:underline block">{ds.name}</span>
+                        <span className="font-semibold text-blue-600 hover:underline block" title={ds.name}>{ds.name}</span>
                         <span className="text-xs text-gray-400">{ds.schema}.{ds.tableName}</span>
                       </button>
                     </TableCell>
@@ -305,6 +368,28 @@ export function DataCatalog() {
                         <span className="text-sm text-gray-700 whitespace-nowrap">{ds.owner}</span>
                       </div>
                     </TableCell>
+                    {activeTab === 'report' && (
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {(ds.sourceTableIds ?? []).map(stId => {
+                            const st = sources.find(s => s.id === stId)
+                            return (
+                              <Badge key={stId} variant="secondary" className="text-xs cursor-pointer hover:bg-blue-100" onClick={() => st && navigate(`/data-catalog/${st.id}`)}>
+                                {st?.name ?? stId}
+                              </Badge>
+                            )
+                          })}
+                          {(!ds.sourceTableIds || ds.sourceTableIds.length === 0) && <span className="text-xs text-gray-400">—</span>}
+                        </div>
+                      </TableCell>
+                    )}
+                    {activeTab === 'kpi' && (
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {ds.periodType === 'daily' ? 'Ngày' : ds.periodType === 'weekly' ? 'Tuần' : ds.periodType === 'monthly' ? 'Tháng' : ds.periodType === 'quarterly' ? 'Quý' : ds.periodType === 'yearly' ? 'Năm' : '—'}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell>
                       {ds.overallScore === 0 && !ds.lastProfiled ? (
                         <span className="text-xs text-gray-400 italic bg-gray-50 px-2 py-0.5 rounded">Chưa phân tích</span>
@@ -329,8 +414,8 @@ export function DataCatalog() {
                         : <StatusBadge status={ds.status} />
                       }
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-0.5">
+                    <TableCell className="sticky right-0 z-10 sticky-right">
+                      <div className="flex items-center justify-center gap-0.5">
                         <button
                           onClick={() => navigate(`/data-catalog/${ds.id}`)}
                           className="p-1 rounded hover:bg-blue-50 hover:text-blue-600 text-gray-400 transition-colors"
@@ -372,7 +457,7 @@ export function DataCatalog() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} bảng
+                Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} {activeTab === 'source' ? 'bảng' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}
               </p>
               <div className="flex items-center gap-1">
                 <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
@@ -399,19 +484,41 @@ export function DataCatalog() {
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title={editItem ? 'Chỉnh sửa nguồn dữ liệu' : 'Thêm nguồn dữ liệu'}
-        description={editItem ? `Cập nhật thông tin bảng ${editItem.name}` : 'Điền thông tin để thêm nguồn dữ liệu mới'}
+        title={editItem ? 'Chỉnh sửa nguồn dữ liệu' : `Thêm ${activeTab === 'source' ? 'bảng nguồn' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}`}
+        description={editItem ? `Cập nhật thông tin ${editItem.name}` : 'Điền thông tin để thêm nguồn dữ liệu mới'}
         size="lg"
       >
         <div className="space-y-4">
+          {/* Module Type Selector */}
+          <div>
+            <Label className="text-sm font-medium mb-1 block">Loại đối tượng <span className="text-red-500">*</span></Label>
+            <div className="flex gap-2">
+              {MODULE_TABS.map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setFormModuleType(tab.key)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm font-medium transition-all ${
+                    formModuleType === tab.key
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <Label className="text-sm font-medium mb-1 block">Tên bảng hiển thị <span className="text-red-500">*</span></Label>
-              <Input placeholder="VD: KH_KHACHHANG" value={formName} onChange={e => setFormName(e.target.value)} />
+              <Label className="text-sm font-medium mb-1 block">Tên hiển thị <span className="text-red-500">*</span></Label>
+              <Input placeholder={formModuleType === 'source' ? 'VD: KH_KHACHHANG' : formModuleType === 'report' ? 'VD: BAO_CAO_NGAY' : 'VD: KPI_KINHDOANH'} value={formName} onChange={e => setFormName(e.target.value)} />
             </div>
             <div className="md:col-span-2">
               <Label className="text-sm font-medium mb-1 block">Mô tả</Label>
-              <Textarea placeholder="Mô tả nội dung và mục đích của bảng dữ liệu..." value={formDesc}
+              <Textarea placeholder="Mô tả nội dung và mục đích..." value={formDesc}
                 onChange={e => setFormDesc(e.target.value)} rows={3} />
             </div>
             <div>
@@ -463,6 +570,90 @@ export function DataCatalog() {
               </Select>
             </div>
           </div>
+
+          {/* Conditional fields for Report */}
+          {formModuleType === 'report' && (
+            <div className="border-t border-gray-100 pt-4">
+              <Label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <FileBarChart className="h-4 w-4 text-purple-500" />
+                Thông tin báo cáo
+              </Label>
+              <div>
+                <Label className="text-sm font-medium mb-1 block">Bảng nguồn liên kết</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formSourceTableIds.map(stId => {
+                    const st = sources.find(s => s.id === stId)
+                    return (
+                      <Badge key={stId} variant="secondary" className="flex items-center gap-1">
+                        {st?.name ?? stId}
+                        <button type="button" onClick={() => setFormSourceTableIds(prev => prev.filter(x => x !== stId))} className="ml-1 text-gray-400 hover:text-red-500">&times;</button>
+                      </Badge>
+                    )
+                  })}
+                </div>
+                <Select value="" onChange={e => {
+                  if (e.target.value && !formSourceTableIds.includes(e.target.value)) {
+                    setFormSourceTableIds(prev => [...prev, e.target.value])
+                  }
+                }}>
+                  <option value="">Chọn bảng nguồn...</option>
+                  {sources.filter(s => s.moduleType === 'source' && !formSourceTableIds.includes(s.id)).map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {/* Conditional fields for KPI */}
+          {formModuleType === 'kpi' && (
+            <div className="border-t border-gray-100 pt-4">
+              <Label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <Target className="h-4 w-4 text-orange-500" />
+                Thông tin chỉ tiêu KPI
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium mb-1 block">Chu kỳ tính</Label>
+                  <Select value={formPeriodType} onChange={e => setFormPeriodType(e.target.value as PeriodType)}>
+                    <option value="daily">Ngày</option>
+                    <option value="weekly">Tuần</option>
+                    <option value="monthly">Tháng</option>
+                    <option value="quarterly">Quý</option>
+                    <option value="yearly">Năm</option>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium mb-1 block">Nguồn dữ liệu (báo cáo/bảng)</Label>
+                  <Select value="" onChange={e => {
+                    if (e.target.value && !formSourceTableIds.includes(e.target.value)) {
+                      setFormSourceTableIds(prev => [...prev, e.target.value])
+                    }
+                  }}>
+                    <option value="">Chọn nguồn...</option>
+                    {sources.filter(s => (s.moduleType === 'source' || s.moduleType === 'report') && !formSourceTableIds.includes(s.id)).map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.moduleType === 'report' ? 'BC' : 'Nguồn'})</option>
+                    ))}
+                  </Select>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formSourceTableIds.map(stId => {
+                      const st = sources.find(s => s.id === stId)
+                      return (
+                        <Badge key={stId} variant="secondary" className="flex items-center gap-1">
+                          {st?.name ?? stId}
+                          <button type="button" onClick={() => setFormSourceTableIds(prev => prev.filter(x => x !== stId))} className="ml-1 text-gray-400 hover:text-red-500">&times;</button>
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-sm font-medium mb-1 block">Công thức tính</Label>
+                  <Input placeholder="VD: SUM(doanh_thu) / COUNT(chi_nhanh)" value={formKpiFormula} onChange={e => setFormKpiFormula(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Hủy</Button>

@@ -33,6 +33,14 @@ export type MetricType =
   | 'custom_expression'
   | 'cross_column'
   | 'duplicate_composite'
+  // Report-specific
+  | 'aggregate_reconciliation'
+  | 'cross_source_sum'
+  | 'report_row_count_match'
+  // KPI-specific
+  | 'kpi_variance'
+  | 'period_completeness'
+  | 'parent_child_match'
 
 export interface MetricConfig {
   metricType: MetricType
@@ -89,9 +97,19 @@ export interface MetricConfig {
   tableSizeUnit?: 'MB' | 'GB'
   // Sum range
   // (reuses minValue/maxValue)
+  // Report-specific
+  sourceTableId?: string
+  reportColumn?: string
+  tolerancePct?: number
+  // KPI-specific
+  maxVariancePct?: number
+  parentKpiColumn?: string
+  childSumExpression?: string
 }
 export type DataSourceType = 'database' | 'sql' | 'file' | 'api'
 export type DataSourceStatus = 'active' | 'inactive' | 'error'
+export type ModuleType = 'source' | 'report' | 'kpi'
+export type PeriodType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
 export type RuleStatus = 'active' | 'inactive'
 export type RuleResultStatus = 'pass' | 'warning' | 'fail' | 'error' | 'pending'
 export type ScheduleFrequency = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'custom'
@@ -116,6 +134,15 @@ export interface DataSource {
   dimensionScores: Record<QualityDimension, number>
   createdAt: string
   updatedAt: string
+  // Module classification
+  moduleType: ModuleType
+  // Report-specific: IDs of source tables this report depends on
+  sourceTableIds?: string[]
+  // KPI-specific
+  parentKpiId?: string
+  childKpiIds?: string[]
+  periodType?: PeriodType
+  kpiFormula?: string
 }
 
 export interface QualityRule {

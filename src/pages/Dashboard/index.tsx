@@ -4,7 +4,7 @@ import {
   ResponsiveContainer, Area, AreaChart,
 } from 'recharts'
 import {
-  Database, BarChart2, AlertTriangle, CheckCircle,
+  Database, BarChart2, AlertTriangle, CheckCircle, FileBarChart, Target,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -15,8 +15,19 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
-import { mockDataSources, mockIssues, mockTrendData } from '@/data/mockData'
-import type { QualityDimension } from '@/types'
+import { mockDataSources, mockIssues, mockTrendData, mockRules } from '@/data/mockData'
+import type { QualityDimension, ModuleType } from '@/types'
+
+const MODULE_LABELS: Record<ModuleType, string> = {
+  source: 'Bảng nguồn',
+  report: 'Báo cáo',
+  kpi: 'Chỉ tiêu',
+}
+const MODULE_COLORS: Record<ModuleType, string> = {
+  source: 'bg-blue-50 text-blue-700 border-blue-200',
+  report: 'bg-amber-50 text-amber-700 border-amber-200',
+  kpi: 'bg-purple-50 text-purple-700 border-purple-200',
+}
 
 const dimensionRows: { key: QualityDimension; score: number }[] = [
   { key: 'completeness', score: 87 },
@@ -34,6 +45,12 @@ function fakeTrend(id: string) {
 
 export function Dashboard() {
   const [_tab] = useState('overview')
+
+  const moduleCounts = mockDataSources.reduce(
+    (acc, ds) => { acc[ds.moduleType] = (acc[ds.moduleType] || 0) + 1; return acc },
+    {} as Record<ModuleType, number>,
+  )
+  const activeRulesCount = mockRules.filter(r => r.status === 'active').length
 
   const worstSources = [...mockDataSources]
     .sort((a, b) => a.overallScore - b.overallScore)
@@ -56,11 +73,12 @@ export function Dashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-gray-500 font-medium">Tổng bảng dữ liệu</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">15</p>
-                <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                  <span>↑</span>
-                  <span>+2 so với tháng trước</span>
-                </p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{mockDataSources.length}</p>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-xs text-blue-700"><Database className="w-3 h-3" />{moduleCounts.source || 0} nguồn</span>
+                  <span className="inline-flex items-center gap-1 text-xs text-amber-700"><FileBarChart className="w-3 h-3" />{moduleCounts.report || 0} BC</span>
+                  <span className="inline-flex items-center gap-1 text-xs text-purple-700"><Target className="w-3 h-3" />{moduleCounts.kpi || 0} KPI</span>
+                </div>
               </div>
               <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <Database className="w-6 h-6 text-blue-600" />
@@ -113,7 +131,7 @@ export function Dashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-gray-500 font-medium">Quy tắc đang hoạt động</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">20</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{activeRulesCount}</p>
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <span>─</span>
                   <span>Không thay đổi</span>
@@ -226,6 +244,7 @@ export function Dashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tên bảng</TableHead>
+                <TableHead className="text-center">Loại</TableHead>
                 <TableHead className="text-center">Điểm tổng</TableHead>
                 <TableHead className="text-center">Đầy đủ</TableHead>
                 <TableHead className="text-center">Hợp lệ</TableHead>
@@ -242,6 +261,11 @@ export function Dashboard() {
                 return (
                   <TableRow key={ds.id}>
                     <TableCell className="font-medium text-gray-900">{ds.name}</TableCell>
+                    <TableCell className="text-center">
+                      <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                        {MODULE_LABELS[ds.moduleType]}
+                      </span>
+                    </TableCell>
                     <TableCell className={`text-center font-semibold ${getScoreColor(ds.overallScore)}`}>
                       {ds.overallScore}
                     </TableCell>
@@ -293,6 +317,7 @@ export function Dashboard() {
                 <TableHead>Tiêu đề</TableHead>
                 <TableHead>Mức độ</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
+                <TableHead>Loại</TableHead>
                 <TableHead>Chiều DL</TableHead>
                 <TableHead>Phát hiện</TableHead>
                 <TableHead>Trạng thái</TableHead>
@@ -308,6 +333,17 @@ export function Dashboard() {
                     <StatusBadge status={issue.severity} />
                   </TableCell>
                   <TableCell className="text-gray-600 text-sm">{issue.tableName}</TableCell>
+                  <TableCell>
+                    {(() => {
+                      const ds = mockDataSources.find(d => d.name === issue.tableName)
+                      if (!ds) return null
+                      return (
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                          {MODULE_LABELS[ds.moduleType]}
+                        </span>
+                      )
+                    })()}
+                  </TableCell>
                   <TableCell>
                     <DimensionBadge dimension={issue.dimension} />
                   </TableCell>

@@ -17,7 +17,16 @@ import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { formatDateTime } from '@/lib/utils'
 import { mockIssues, mockDataSources, getDownstreamJobs } from '@/data/mockData'
 import { _ruleGeneratedIssues } from '@/pages/Rules'
-import type { Issue } from '@/types'
+import type { Issue, ModuleType } from '@/types'
+
+const MODULE_LABELS: Record<ModuleType, string> = {
+  source: 'Bảng nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu',
+}
+const MODULE_COLORS: Record<ModuleType, string> = {
+  source: 'bg-blue-50 text-blue-700 border-blue-200',
+  report: 'bg-amber-50 text-amber-700 border-amber-200',
+  kpi: 'bg-purple-50 text-purple-700 border-purple-200',
+}
 
 const PAGE_SIZE = 10
 
@@ -88,6 +97,7 @@ export function Issues() {
   const [severity, setSeverity] = useState('')
   const [status, setStatus] = useState('')
   const [tableFilter, setTableFilter] = useState(prefilledTableId)
+  const [moduleFilter, setModuleFilter] = useState<ModuleType | ''>('')
   const [dimension, setDimension] = useState('')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
@@ -106,6 +116,10 @@ export function Issues() {
     if (severity && issue.severity !== severity) return false
     if (status && issue.status !== status) return false
     if (tableFilter && issue.tableId !== tableFilter) return false
+    if (moduleFilter) {
+      const ds = mockDataSources.find(d => d.id === issue.tableId)
+      if (ds && ds.moduleType !== moduleFilter) return false
+    }
     if (dimension && issue.dimension !== dimension) return false
     if (fromDate && issue.detectedAt < fromDate) return false
     if (toDate && issue.detectedAt.slice(0, 10) > toDate) return false
@@ -185,7 +199,7 @@ export function Issues() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-5 space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-5 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-600 mb-1 block">Tìm kiếm</label>
               <Input
@@ -223,6 +237,15 @@ export function Issues() {
                 {mockDataSources.map(ds => (
                   <option key={ds.id} value={ds.id}>{ds.tableName}</option>
                 ))}
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 mb-1 block">Loại nguồn</label>
+              <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | '')}>
+                <option value="">Tất cả</option>
+                <option value="source">Bảng nguồn</option>
+                <option value="report">Báo cáo</option>
+                <option value="kpi">Chỉ tiêu</option>
               </Select>
             </div>
           </div>
@@ -276,34 +299,35 @@ export function Issues() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 text-center">STT</TableHead>
+                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead className="w-24">ID</TableHead>
                 <TableHead><span className="inline-flex items-center gap-1">Tiêu đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
                 <TableHead className="w-32"><span className="inline-flex items-center gap-1">Mức độ <InfoTooltip text="Mức độ nghiêm trọng: Critical (khẩn cấp, SLA 24h), High (cao), Medium (trung bình), Low (thấp)" /></span></TableHead>
                 <TableHead className="w-36">Bảng dữ liệu</TableHead>
+                <TableHead className="w-24">Loại</TableHead>
                 <TableHead className="w-28">Chiều DL</TableHead>
                 <TableHead className="w-28"><span className="inline-flex items-center gap-1">⚡ Tác động <InfoTooltip text="Số job downstream đọc từ bảng bị lỗi — có thể bị ảnh hưởng bởi vấn đề này" /></span></TableHead>
                 <TableHead className="w-36">Phát hiện lúc</TableHead>
                 <TableHead className="w-36"><span className="inline-flex items-center gap-1">Gán cho <InfoTooltip text="Người được phân công xử lý. Cập nhật trong trang chi tiết vấn đề." /></span></TableHead>
                 <TableHead className="w-28"><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Vòng đời: Mới → Đã gán → Đang xử lý → Chờ xét duyệt → Đã giải quyết → Đóng" /></span></TableHead>
-                <TableHead className="w-16 text-center">Xem</TableHead>
+                <TableHead className="w-16 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paged.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-12 text-gray-400">
+                  <TableCell colSpan={12} className="text-center py-12 text-gray-400">
                     Không tìm thấy vấn đề nào
                   </TableCell>
                 </TableRow>
               ) : (
                 paged.map((issue, idx) => (
                   <TableRow key={issue.id} className="hover:bg-gray-50">
-                    <TableCell className="text-center text-sm text-gray-500 font-medium">
+                    <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
                       {(page - 1) * PAGE_SIZE + idx + 1}
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
                         {issue.id.toUpperCase()}
                       </span>
                     </TableCell>
@@ -312,7 +336,7 @@ export function Issues() {
                         onClick={() => navigate(`/issues/${issue.id}`)}
                         className="text-left hover:text-blue-600 group"
                       >
-                        <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors" title={issue.title}>
                           {issue.title}
                         </div>
                         <div className="text-xs text-gray-400 truncate max-w-xs mt-0.5">
@@ -328,6 +352,17 @@ export function Issues() {
                         <Database className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                         <span className="truncate">{issue.tableName}</span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const ds = mockDataSources.find(d => d.id === issue.tableId)
+                        if (!ds) return null
+                        return (
+                          <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                            {MODULE_LABELS[ds.moduleType]}
+                          </span>
+                        )
+                      })()}
                     </TableCell>
                     <TableCell>
                       <DimensionBadge dimension={issue.dimension} />
@@ -353,7 +388,7 @@ export function Issues() {
                     <TableCell>
                       <StatusBadge status={issue.status} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="sticky right-0 z-10 sticky-right">
                       <div className="flex items-center justify-center">
                         <button
                           onClick={() => navigate(`/issues/${issue.id}`)}

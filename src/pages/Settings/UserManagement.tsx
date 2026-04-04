@@ -110,20 +110,24 @@ export function UserManagement() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Họ tên</TableHead>
                 <TableHead>Vai trò</TableHead>
                 <TableHead>Nhóm</TableHead>
                 <TableHead className="text-center">Dữ liệu quản lý</TableHead>
                 <TableHead className="text-center">Trạng thái</TableHead>
                 <TableHead>Đăng nhập cuối</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+                <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(user => {
+              {filtered.map((user, idx) => {
                 const roleConfig = ROLE_CONFIG[user.role]
                 return (
                   <TableRow key={user.id}>
+                    <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
+                      {idx + 1}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${user.role === 'admin' ? 'bg-red-500' : user.role === 'data_steward' ? 'bg-blue-500' : user.role === 'analyst' ? 'bg-purple-500' : 'bg-gray-400'}`}>
@@ -153,8 +157,8 @@ export function UserManagement() {
                       <Switch checked={user.isActive} onCheckedChange={() => toggleActive(user.id)} disabled={user.role === 'admin'} />
                     </TableCell>
                     <TableCell className="text-xs text-gray-500">{formatDateTime(user.lastLoginAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                    <TableCell className="text-center sticky right-0 z-10 sticky-right">
+                      <div className="flex items-center justify-center gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
                           <Pencil className="h-4 w-4 text-gray-500" />
                         </Button>

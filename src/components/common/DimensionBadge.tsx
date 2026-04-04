@@ -13,7 +13,7 @@ export const DIMENSION_CONFIG: Record<QualityDimension, { label: string; color: 
 export function DimensionBadge({ dimension }: { dimension: QualityDimension }) {
   const c = DIMENSION_CONFIG[dimension]
   return (
-    <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium', c.color, c.bg, c.border)}>
+    <span className={cn('inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium', c.color, c.bg, c.border)}>
       {c.label}
     </span>
   )

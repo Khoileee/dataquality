@@ -223,30 +223,34 @@ export function Thresholds() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
                 <TableHead>Chiều DL</TableHead>
                 <TableHead className="text-center">Ngưỡng cảnh báo (W)</TableHead>
                 <TableHead className="text-center">Ngưỡng không đạt (C)</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+                <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(t => (
+              {filtered.map((t, idx) => (
                 <TableRow key={t.id}>
+                  <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
+                    {idx + 1}
+                  </TableCell>
                   <TableCell className="font-medium">{t.tableName}</TableCell>
                   <TableCell><DimensionBadge dimension={t.dimension} /></TableCell>
                   <TableCell className="text-center">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-sm font-medium">
+                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-sm font-medium">
                       {t.warningThreshold}%
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-sm font-medium">
+                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-sm font-medium">
                       {t.criticalThreshold}%
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
+                  <TableCell className="text-center sticky right-0 z-10 sticky-right">
+                    <div className="flex items-center justify-center gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(t)}>
                         <Pencil className="h-4 w-4 text-gray-500" />
                       </Button>
@@ -259,7 +263,7 @@ export function Thresholds() {
               ))}
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-gray-400">
+                  <TableCell colSpan={6} className="text-center py-10 text-gray-400">
                     Chưa có cấu hình riêng nào. Nhấn "Thêm cấu hình" để tạo mới.
                   </TableCell>
                 </TableRow>
