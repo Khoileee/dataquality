@@ -1,6 +1,7 @@
 import type {
   DataSource, QualityRule, RuleTemplate, Schedule, Issue,
-  NotificationConfig, ThresholdConfig, User, ProfilingResult, DashboardStats, PipelineJob
+  NotificationConfig, ThresholdConfig, User, ProfilingResult, DashboardStats, PipelineJob,
+  CascadeEvent, CascadeChain, CascadeConfig, ReconciliationResult, KpiPeriodResult
 } from '../types'
 
 export const mockDataSources: DataSource[] = [
@@ -52,7 +53,7 @@ export const mockDataSources: DataSource[] = [
   {
     id: 'ds-006', name: 'BAO_CAO_NGAY', type: 'sql', schema: 'REPORT',
     tableName: 'BAO_CAO_NGAY', description: 'Báo cáo tổng hợp số liệu hàng ngày từ bảng giao dịch và tài khoản',
-    status: 'active', owner: 'Trần Văn Minh', team: 'Nhóm Báo cáo', category: 'BC',
+    status: 'waiting_data', owner: 'Trần Văn Minh', team: 'Nhóm Báo cáo', category: 'BC',
     rowCount: 12500, lastProfiled: '2026-03-28T09:00:00', overallScore: 63,
     dimensionScores: { completeness: 70, validity: 65, consistency: 58, uniqueness: 85, accuracy: 55, timeliness: 47 },
     createdAt: '2024-02-01T00:00:00', updatedAt: '2026-03-28T09:00:00',
@@ -133,11 +134,53 @@ export const mockDataSources: DataSource[] = [
   {
     id: 'ds-015', name: 'KPI_KINHDOANH', type: 'sql', schema: 'REPORT',
     tableName: 'KPI_KINHDOANH', description: 'Chỉ tiêu KPI kinh doanh theo chi nhánh và sản phẩm',
-    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
+    status: 'waiting_data', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
     rowCount: 8500, lastProfiled: '2026-03-28T07:00:00', overallScore: 77,
     dimensionScores: { completeness: 83, validity: 78, consistency: 72, uniqueness: 95, accuracy: 70, timeliness: 63 },
     createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:00:00',
-    moduleType: 'kpi', sourceTableIds: ['ds-006'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) / COUNT(chi_nhanh)'
+    moduleType: 'kpi', sourceTableIds: ['ds-006'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) / COUNT(chi_nhanh)',
+    childKpiIds: ['ds-016', 'ds-017', 'ds-018', 'ds-019'],
+  },
+  // --- 4 KPI con ---
+  {
+    id: 'ds-016', name: 'KPI_DOANHTHU_CN', type: 'sql', schema: 'REPORT',
+    tableName: 'KPI_DOANHTHU_CN', description: 'KPI doanh thu chi nhánh — tổng hợp từ BAO_CAO_NGAY theo từng chi nhánh',
+    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
+    rowCount: 3200, lastProfiled: '2026-03-28T07:10:00', overallScore: 85,
+    dimensionScores: { completeness: 90, validity: 82, consistency: 80, uniqueness: 96, accuracy: 78, timeliness: 84 },
+    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:10:00',
+    moduleType: 'kpi', sourceTableIds: ['ds-006'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) GROUP BY chi_nhanh',
+    parentKpiId: 'ds-015',
+  },
+  {
+    id: 'ds-017', name: 'KPI_DOANHTHU_ONLINE', type: 'sql', schema: 'REPORT',
+    tableName: 'KPI_DOANHTHU_ONLINE', description: 'KPI doanh thu kênh online — tổng hợp giao dịch qua app/web',
+    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
+    rowCount: 5100, lastProfiled: '2026-03-28T07:12:00', overallScore: 91,
+    dimensionScores: { completeness: 95, validity: 88, consistency: 90, uniqueness: 98, accuracy: 85, timeliness: 90 },
+    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:12:00',
+    moduleType: 'kpi', sourceTableIds: ['ds-006'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) WHERE kenh = "online"',
+    parentKpiId: 'ds-015',
+  },
+  {
+    id: 'ds-018', name: 'KPI_CHIPHI', type: 'sql', schema: 'REPORT',
+    tableName: 'KPI_CHIPHI', description: 'KPI chi phí hoạt động — tổng hợp từ bảng chi phí và hợp đồng',
+    status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Tài chính', category: 'TC',
+    rowCount: 4200, lastProfiled: '2026-03-28T07:15:00', overallScore: 73,
+    dimensionScores: { completeness: 78, validity: 70, consistency: 68, uniqueness: 92, accuracy: 65, timeliness: 65 },
+    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:15:00',
+    moduleType: 'kpi', sourceTableIds: ['ds-012'], periodType: 'monthly', kpiFormula: 'SUM(chi_phi) GROUP BY loai_cp',
+    parentKpiId: 'ds-015',
+  },
+  {
+    id: 'ds-019', name: 'KPI_LOINHUAN', type: 'sql', schema: 'REPORT',
+    tableName: 'KPI_LOINHUAN', description: 'KPI lợi nhuận ròng — doanh thu trừ chi phí, tổng hợp từ KPI con',
+    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Báo cáo', category: 'BC',
+    rowCount: 1500, lastProfiled: '2026-03-28T07:20:00', overallScore: 68,
+    dimensionScores: { completeness: 75, validity: 65, consistency: 60, uniqueness: 90, accuracy: 62, timeliness: 58 },
+    createdAt: '2024-04-01T00:00:00', updatedAt: '2026-03-28T07:20:00',
+    moduleType: 'kpi', sourceTableIds: ['ds-006', 'ds-012'], periodType: 'monthly', kpiFormula: 'SUM(doanh_thu) - SUM(chi_phi)',
+    parentKpiId: 'ds-015',
   },
 ]
 
@@ -152,7 +195,7 @@ export const mockRules: QualityRule[] = [
   { id: 'r-006', name: 'KH - Email đúng định dạng', description: 'Email phải đúng định dạng user@domain.com', dimension: 'validity', tableId: 'ds-001', tableName: 'KH_KHACHHANG', columnName: 'EMAIL', metricConfig: { metricType: 'format_regex', column: 'EMAIL', pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T08:30:00', lastResult: 'warning', lastScore: 87.3, createdBy: 'Nguyễn Thị Lan', createdAt: '2024-02-01T00:00:00' },
   { id: 'r-007', name: 'KH - Số điện thoại đúng định dạng', description: 'SĐT phải là 10 chữ số bắt đầu bằng 0', dimension: 'validity', tableId: 'ds-001', tableName: 'KH_KHACHHANG', columnName: 'SO_DIEN_THOAI', metricConfig: { metricType: 'format_regex', column: 'SO_DIEN_THOAI', pattern: '^0[0-9]{9}$' }, threshold: { warning: 3, critical: 10 }, status: 'active', lastRunAt: '2026-03-28T08:30:00', lastResult: 'fail', lastScore: 78.5, createdBy: 'Nguyễn Thị Lan', createdAt: '2024-02-01T00:00:00' },
   { id: 'r-008', name: 'GD - Số tiền phải dương', description: 'Giá trị giao dịch phải lớn hơn 0', dimension: 'validity', tableId: 'ds-002', tableName: 'GD_GIAODICH', columnName: 'SO_TIEN', metricConfig: { metricType: 'value_range', column: 'SO_TIEN', minValue: 1 }, threshold: { warning: 0.1, critical: 0.5 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 99.8, createdBy: 'Trần Văn Minh', createdAt: '2024-02-01T00:00:00' },
-  { id: 'r-009', name: 'HĐ - Ngày kết thúc sau ngày bắt đầu', description: 'NGAY_KET_THUC phải lớn hơn NGAY_HIEU_LUC', dimension: 'consistency', tableId: 'ds-005', tableName: 'HOP_DONG', metricConfig: { metricType: 'cross_column', expression: 'NGAY_KET_THUC > NGAY_HIEU_LUC' }, threshold: { warning: 0, critical: 1 }, status: 'active', lastRunAt: '2026-03-28T05:00:00', lastResult: 'warning', lastScore: 97.2, createdBy: 'Nguyễn Thị Lan', createdAt: '2024-02-15T00:00:00' },
+  { id: 'r-009', name: 'HĐ - Ngày kết thúc sau ngày bắt đầu', description: 'NGAY_KET_THUC phải lớn hơn NGAY_HIEU_LUC', dimension: 'consistency', tableId: 'ds-005', tableName: 'HOP_DONG', metricConfig: { metricType: 'custom_expression', expression: 'NGAY_KET_THUC > NGAY_HIEU_LUC' }, threshold: { warning: 0, critical: 1 }, status: 'active', lastRunAt: '2026-03-28T05:00:00', lastResult: 'warning', lastScore: 97.2, createdBy: 'Nguyễn Thị Lan', createdAt: '2024-02-15T00:00:00' },
   { id: 'r-010', name: 'TK - Loại tài khoản hợp lệ', description: 'LOAI_TK phải nằm trong danh mục hợp lệ', dimension: 'validity', tableId: 'ds-003', tableName: 'TK_TAIKHOAN', columnName: 'LOAI_TK', metricConfig: { metricType: 'allowed_values', column: 'LOAI_TK', allowedValues: ['THANH_TOAN', 'TIET_KIEM', 'TICH_LUY', 'DAU_TU'] }, threshold: { warning: 1, critical: 5 }, status: 'active', lastRunAt: '2026-03-28T07:15:00', lastResult: 'pass', lastScore: 99.5, createdBy: 'Lê Thị Hoa', createdAt: '2024-02-01T00:00:00' },
   // Consistency rules
   { id: 'r-011', name: 'GD - Tổng giao dịch khớp số dư', description: 'Tổng tiền vào - ra phải khớp với biến động số dư', dimension: 'consistency', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'custom_expression', expression: 'ABS(SUM(SO_TIEN_VAO) - SUM(SO_TIEN_RA) - SUM(BIEN_DONG_SO_DU)) / NULLIF(SUM(ABS(BIEN_DONG_SO_DU)), 0) * 100 <= 0.1' }, threshold: { warning: 0.01, critical: 0.1 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'fail', lastScore: 65.0, createdBy: 'Trần Văn Minh', createdAt: '2024-03-01T00:00:00' },
@@ -171,7 +214,7 @@ export const mockRules: QualityRule[] = [
   // New metrics (12 added types)
   { id: 'r-021', name: 'GD - Số dòng giao dịch trong ngưỡng', description: 'Tổng số giao dịch mỗi ngày phải nằm trong khoảng 1.000 – 5.000.000', dimension: 'completeness', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'row_count', minRows: 1000, maxRows: 5000000 }, threshold: { warning: 5, critical: 20 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 98.0, createdBy: 'Trần Văn Minh', createdAt: '2025-01-10T00:00:00' },
   { id: 'r-022', name: 'GD - Phủ ngày giao dịch liên tục 30 ngày', description: 'Bảng GD_GIAODICH phải có dữ liệu đủ cho 30 ngày gần nhất, không bị gián đoạn', dimension: 'completeness', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'time_coverage', timeColumn: 'NGAY_GD', granularity: 'day', coverageDays: 30, minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 96.7, createdBy: 'Trần Văn Minh', createdAt: '2025-01-10T00:00:00' },
-  { id: 'r-023', name: 'GD - Biến động số dòng theo tuần', description: 'Số dòng giao dịch không được thay đổi quá 30% so với tuần trước', dimension: 'completeness', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'volume_change', lookbackPeriod: 7, maxChangePct: 30 }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'warning', lastScore: 72.0, createdBy: 'Trần Văn Minh', createdAt: '2025-01-15T00:00:00' },
+  { id: 'r-023', name: 'GD - Biến động số dòng theo tuần', description: 'Số dòng giao dịch không được thay đổi quá 30% so với tuần trước', dimension: 'completeness', tableId: 'ds-002', tableName: 'GD_GIAODICH', metricConfig: { metricType: 'volume_change', timeColumn: 'NGAY_GD', lookbackPeriod: 7, maxChangePct: 30 }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'warning', lastScore: 72.0, createdBy: 'Trần Văn Minh', createdAt: '2025-01-15T00:00:00' },
   { id: 'r-024', name: 'KH - Tỷ lệ null email theo tháng', description: 'Tỷ lệ null cột EMAIL của khách hàng tạo mới không được vượt 20% mỗi tháng', dimension: 'completeness', tableId: 'ds-001', tableName: 'KH_KHACHHANG', columnName: 'EMAIL', metricConfig: { metricType: 'null_rate_by_period', column: 'EMAIL', timeColumn: 'NGAY_TAO', granularity: 'month', coverageDays: 90, maxNullPct: 20 }, threshold: { warning: 15, critical: 30 }, status: 'active', lastRunAt: '2026-03-28T08:30:00', lastResult: 'pass', lastScore: 91.5, createdBy: 'Nguyễn Thị Lan', createdAt: '2025-02-01T00:00:00' },
   { id: 'r-025', name: 'KH - Email không chứa giá trị rác', description: 'Cột EMAIL không được chứa giá trị rác như TEST, FAKE, N/A', dimension: 'validity', tableId: 'ds-001', tableName: 'KH_KHACHHANG', columnName: 'EMAIL', metricConfig: { metricType: 'blacklist_pattern', column: 'EMAIL', blacklistPattern: 'TEST|FAKE|N/A|test@test|example\\.com' }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T08:30:00', lastResult: 'warning', lastScore: 88.0, createdBy: 'Nguyễn Thị Lan', createdAt: '2025-02-01T00:00:00' },
   { id: 'r-026', name: 'GD - Thống kê SO_TIEN trong khoảng hợp lý', description: 'Giá trị trung bình cột SO_TIEN phải nằm trong [100.000 – 50.000.000] đồng', dimension: 'accuracy', tableId: 'ds-002', tableName: 'GD_GIAODICH', columnName: 'SO_TIEN', metricConfig: { metricType: 'statistics_bound', column: 'SO_TIEN', statisticType: 'mean', minValue: 100000, maxValue: 50000000 }, threshold: { warning: 5, critical: 20 }, status: 'active', lastRunAt: '2026-03-28T06:00:00', lastResult: 'pass', lastScore: 95.0, createdBy: 'Trần Văn Minh', createdAt: '2025-02-15T00:00:00' },
@@ -181,11 +224,23 @@ export const mockRules: QualityRule[] = [
   { id: 'r-029', name: 'BC - Đối soát tổng giao dịch ngày', description: 'SUM(THUC_TE) của báo cáo ngày phải khớp SUM(SO_TIEN) bảng GD_GIAODICH (sai lệch ≤ 0.1%)', dimension: 'accuracy', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'aggregate_reconciliation', sourceTableId: 'ds-002', sourceColumn: 'SO_TIEN', reportColumn: 'THUC_TE', tolerancePct: 0.1 }, threshold: { warning: 0.05, critical: 0.5 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'warning', lastScore: 92.5, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
   { id: 'r-030', name: 'BC - Số dòng báo cáo khớp nguồn', description: 'Số dòng báo cáo ngày phải bằng COUNT(DISTINCT NGAY_GD) từ bảng giao dịch', dimension: 'consistency', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'report_row_count_match', sourceTableId: 'ds-002', tolerancePct: 1 }, threshold: { warning: 1, critical: 5 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'pass', lastScore: 98.0, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
   { id: 'r-031', name: 'BC - Cập nhật báo cáo đúng hạn', description: 'Báo cáo ngày phải được cập nhật trước 08:00 sáng', dimension: 'timeliness', tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', metricConfig: { metricType: 'on_time', column: 'NGAY_BC', slaTime: '08:00', alertWindowMinutes: 30 }, threshold: { warning: 1, critical: 3 }, status: 'active', lastRunAt: '2026-03-28T09:00:00', lastResult: 'fail', lastScore: 55.0, createdBy: 'Trần Văn Minh', createdAt: '2025-04-01T00:00:00' },
-  { id: 'r-032', name: 'RR - Đối soát SUM rủi ro với nguồn', description: 'SUM(DIEM_RR) báo cáo rủi ro phải khớp với dữ liệu nguồn khách hàng và hợp đồng', dimension: 'accuracy', tableId: 'ds-012', tableName: 'QUAN_LY_RR', metricConfig: { metricType: 'cross_source_sum', sourceTableId: 'ds-001', sourceColumn: 'DIEM_RR', reportColumn: 'DIEM_RR', tolerancePct: 0.5 }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T04:00:00', lastResult: 'pass', lastScore: 96.0, createdBy: 'Phạm Quốc Hùng', createdAt: '2025-04-15T00:00:00' },
+  { id: 'r-032', name: 'RR - Đối soát SUM rủi ro với nguồn', description: 'SUM(DIEM_RR) báo cáo rủi ro phải khớp với dữ liệu nguồn khách hàng và hợp đồng', dimension: 'accuracy', tableId: 'ds-012', tableName: 'QUAN_LY_RR', metricConfig: { metricType: 'aggregate_reconciliation', sourceTableId: 'ds-001', sourceColumn: 'DIEM_RR', reportColumn: 'DIEM_RR', tolerancePct: 0.5 }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T04:00:00', lastResult: 'pass', lastScore: 96.0, createdBy: 'Phạm Quốc Hùng', createdAt: '2025-04-15T00:00:00' },
   // KPI-specific rules
   { id: 'r-033', name: 'KPI - Biến động chỉ tiêu ≤ 30%', description: 'Giá trị KPI kinh doanh không được biến động quá 30% so với kỳ trước', dimension: 'accuracy', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 30, column: 'TONG_TIEN' }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'warning', lastScore: 72.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
-  { id: 'r-034', name: 'KPI - Đầy đủ kỳ tháng', description: 'Chỉ tiêu KPI phải có dữ liệu đủ cho tất cả chi nhánh trong kỳ tháng', dimension: 'completeness', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'period_completeness', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'pass', lastScore: 97.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-034', name: 'KPI - Đầy đủ kỳ tháng', description: 'Chỉ tiêu KPI phải có dữ liệu đủ cho tất cả chi nhánh trong kỳ tháng', dimension: 'completeness', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'time_coverage', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'pass', lastScore: 97.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
   { id: 'r-035', name: 'KPI - Tổng chi nhánh = tổng công ty', description: 'SUM KPI tất cả chi nhánh phải bằng KPI tổng công ty (sai lệch ≤ 1%)', dimension: 'consistency', tableId: 'ds-015', tableName: 'KPI_KINHDOANH', metricConfig: { metricType: 'parent_child_match', parentKpiColumn: 'TONG_TIEN', childSumExpression: 'SUM(TONG_TIEN) GROUP BY MA_SP', tolerancePct: 1 }, threshold: { warning: 0.5, critical: 2 }, status: 'active', lastRunAt: '2026-03-28T07:00:00', lastResult: 'pass', lastScore: 99.2, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  // KPI con - Doanh thu chi nhánh
+  { id: 'r-036', name: 'KPI CN - Biến động doanh thu ≤ 25%', description: 'Doanh thu chi nhánh không biến động quá 25% so với kỳ trước', dimension: 'accuracy', tableId: 'ds-016', tableName: 'KPI_DOANHTHU_CN', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 25, column: 'DOANH_THU' }, threshold: { warning: 15, critical: 40 }, status: 'active', lastRunAt: '2026-03-28T07:10:00', lastResult: 'pass', lastScore: 88.5, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-037', name: 'KPI CN - Đầy đủ kỳ tháng', description: 'Dữ liệu KPI chi nhánh phải đủ cho tất cả chi nhánh', dimension: 'completeness', tableId: 'ds-016', tableName: 'KPI_DOANHTHU_CN', metricConfig: { metricType: 'time_coverage', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:10:00', lastResult: 'pass', lastScore: 96.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  // KPI con - Doanh thu online
+  { id: 'r-038', name: 'KPI Online - Biến động ≤ 35%', description: 'Doanh thu online biến động cho phép cao hơn do tính mùa vụ', dimension: 'accuracy', tableId: 'ds-017', tableName: 'KPI_DOANHTHU_ONLINE', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 35, column: 'DOANH_THU' }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T07:12:00', lastResult: 'pass', lastScore: 93.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-039', name: 'KPI Online - Đầy đủ kỳ tháng', description: 'Dữ liệu doanh thu online phải đủ mỗi tháng', dimension: 'completeness', tableId: 'ds-017', tableName: 'KPI_DOANHTHU_ONLINE', metricConfig: { metricType: 'time_coverage', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 90 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:12:00', lastResult: 'pass', lastScore: 95.5, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  // KPI con - Chi phí
+  { id: 'r-040', name: 'KPI CP - Biến động chi phí ≤ 20%', description: 'Chi phí hoạt động không được biến động quá 20%', dimension: 'accuracy', tableId: 'ds-018', tableName: 'KPI_CHIPHI', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 20, column: 'CHI_PHI' }, threshold: { warning: 10, critical: 30 }, status: 'active', lastRunAt: '2026-03-28T07:15:00', lastResult: 'warning', lastScore: 76.0, createdBy: 'Phạm Quốc Hùng', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-041', name: 'KPI CP - Đầy đủ phân loại chi phí', description: 'Tất cả loại chi phí phải có dữ liệu mỗi kỳ', dimension: 'completeness', tableId: 'ds-018', tableName: 'KPI_CHIPHI', metricConfig: { metricType: 'time_coverage', timeColumn: 'NGAY', granularity: 'month', minCoveragePct: 95 }, threshold: { warning: 5, critical: 15 }, status: 'active', lastRunAt: '2026-03-28T07:15:00', lastResult: 'pass', lastScore: 90.0, createdBy: 'Phạm Quốc Hùng', createdAt: '2025-05-01T00:00:00' },
+  // KPI con - Lợi nhuận
+  { id: 'r-042', name: 'KPI LN - Biến động lợi nhuận ≤ 30%', description: 'Lợi nhuận ròng không được biến động quá 30%', dimension: 'accuracy', tableId: 'ds-019', tableName: 'KPI_LOINHUAN', metricConfig: { metricType: 'kpi_variance', maxVariancePct: 30, column: 'LOI_NHUAN' }, threshold: { warning: 20, critical: 50 }, status: 'active', lastRunAt: '2026-03-28T07:20:00', lastResult: 'warning', lastScore: 65.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
+  { id: 'r-043', name: 'KPI LN - Tổng con = tổng cha', description: 'Lợi nhuận = Doanh thu CN + Online - Chi phí (sai lệch ≤ 2%)', dimension: 'consistency', tableId: 'ds-019', tableName: 'KPI_LOINHUAN', metricConfig: { metricType: 'parent_child_match', parentKpiColumn: 'LOI_NHUAN', childSumExpression: 'SUM(DOANH_THU_CN) + SUM(DOANH_THU_ONLINE) - SUM(CHI_PHI)', tolerancePct: 2 }, threshold: { warning: 1, critical: 5 }, status: 'active', lastRunAt: '2026-03-28T07:20:00', lastResult: 'fail', lastScore: 58.0, createdBy: 'Lê Thị Hoa', createdAt: '2025-05-01T00:00:00' },
 ]
 
 export const mockRuleTemplates: RuleTemplate[] = [
@@ -202,7 +257,7 @@ export const mockRuleTemplates: RuleTemplate[] = [
   { id: 'tmpl-009', name: 'Giá trị số trong khoảng hợp lệ', dimension: 'validity', description: 'Giá trị số phải nằm trong khoảng [min, max]', category: 'Range', usageCount: 88, metricConfig: { metricType: 'value_range', column: '', minValue: 0, maxValue: 1000000000 } },
   { id: 'tmpl-010', name: 'Kiểm tra định dạng ngày tháng', dimension: 'validity', description: 'Ngày tháng phải đúng định dạng và hợp lệ', category: 'Format', usageCount: 112, metricConfig: { metricType: 'format_regex', column: '', pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' } },
   // Consistency
-  { id: 'tmpl-011', name: 'Ngày kết thúc sau ngày bắt đầu', dimension: 'consistency', description: 'Cột ngày kết thúc phải lớn hơn ngày bắt đầu', category: 'Date order', usageCount: 93, metricConfig: { metricType: 'cross_column', expression: 'NGAY_KET_THUC > NGAY_BAT_DAU' } },
+  { id: 'tmpl-011', name: 'Ngày kết thúc sau ngày bắt đầu', dimension: 'consistency', description: 'Cột ngày kết thúc phải lớn hơn ngày bắt đầu', category: 'Date order', usageCount: 93, metricConfig: { metricType: 'custom_expression', expression: 'NGAY_KET_THUC > NGAY_BAT_DAU' } },
   { id: 'tmpl-012', name: 'Tổng chi tiết khớp tổng hợp', dimension: 'consistency', description: 'Tổng các dòng chi tiết phải bằng giá trị tổng hợp', category: 'Aggregation', usageCount: 45, metricConfig: { metricType: 'custom_expression', expression: 'ABS(SUM(col_chitiet) - MAX(col_tonghop)) / NULLIF(MAX(col_tonghop), 0) * 100 <= 0.01' } },
   { id: 'tmpl-013', name: 'Trường tham chiếu tồn tại', dimension: 'consistency', description: 'Giá trị khóa ngoại phải tồn tại trong bảng tham chiếu', category: 'Referential', usageCount: 167, metricConfig: { metricType: 'referential_integrity', column: '', refTable: '', refColumn: '' } },
   { id: 'tmpl-014', name: 'Trạng thái hợp lệ theo luồng', dimension: 'consistency', description: 'Trạng thái phải tuân theo luồng trạng thái đã định nghĩa', category: 'State machine', usageCount: 38, metricConfig: { metricType: 'allowed_values', column: 'TRANG_THAI', allowedValues: ['NEW', 'PROCESSING', 'DONE', 'CANCELLED'] } },
@@ -332,7 +387,7 @@ export const mockIssues: Issue[] = [
 ]
 
 export const mockNotifications: NotificationConfig[] = [
-  { id: 'notif-001', name: 'Cảnh báo nghiêm trọng - Nhóm DBA', type: 'email', recipients: ['dba@vietbank.vn', 'team-dba@vietbank.vn'], triggerOn: ['critical'], tables: ['ds-001', 'ds-002', 'ds-003'], isActive: true, emailSubject: '[DQ ALERT] {{severity}} - Bảng {{table}} cần xử lý ngay', emailBody: 'Kính gửi DBA Team,\n\nHệ thống DQ phát hiện vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Chiều dữ liệu: {{dimension}}\n• Mức độ: {{severity}}\n• Điểm chất lượng: {{score}}/100 (ngưỡng: {{threshold}})\n• Phát hiện lúc: {{detected_at}}\n\nVui lòng truy cập hệ thống DQ để xem chi tiết và xử lý kịp thời.\n\nTrân trọng,\nHệ thống Data Quality' },
+  { id: 'notif-001', name: 'Cảnh báo nghiêm trọng - Nhóm DBA', type: 'email', recipients: ['dba@vietbank.vn', 'team-dba@vietbank.vn'], triggerOn: ['critical'], tables: ['ds-001', 'ds-002', 'ds-003'], isActive: true, notifyDownstream: true, emailSubject: '[DQ ALERT] {{severity}} - Bảng {{table}} cần xử lý ngay', emailBody: 'Kính gửi DBA Team,\n\nHệ thống DQ phát hiện vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Chiều dữ liệu: {{dimension}}\n• Mức độ: {{severity}}\n• Điểm chất lượng: {{score}}/100 (ngưỡng: {{threshold}})\n• Phát hiện lúc: {{detected_at}}\n\nVui lòng truy cập hệ thống DQ để xem chi tiết và xử lý kịp thời.\n\nTrân trọng,\nHệ thống Data Quality' },
   { id: 'notif-002', name: 'Cảnh báo chất lượng - Quản lý', type: 'email', recipients: ['manager@vietbank.vn', 'director-data@vietbank.vn'], triggerOn: ['critical', 'warning'], tables: ['ds-006', 'ds-015'], isActive: true, emailSubject: '[DQ] Cảnh báo chất lượng dữ liệu - {{table}}', emailBody: 'Kính gửi Ban Quản lý,\n\nBáo cáo vấn đề chất lượng dữ liệu:\n\n• Bảng: {{table}}\n• Mức độ: {{severity}}\n• Điểm hiện tại: {{score}}/100\n• Phát hiện: {{detected_at}}\n\nĐội ngũ kỹ thuật đang xử lý.\n\nTrân trọng,\nHệ thống Data Quality' },
   { id: 'notif-003', name: 'SMS cảnh báo - On-call team', type: 'sms', recipients: ['+84901234567', '+84901234568'], triggerOn: ['critical'], tables: ['ds-002', 'ds-011'], isActive: true },
   { id: 'notif-004', name: 'Webhook tích hợp Jira', type: 'webhook', recipients: ['https://jira.vietbank.vn/webhook/dq'], triggerOn: ['critical', 'warning', 'resolved'], tables: [], isActive: false },
@@ -500,6 +555,365 @@ export const mockPipelineJobs: PipelineJob[] = [
     team: 'Nhóm Quản trị DL', inputTableIds: ['ds-007', 'ds-008'], outputTableIds: ['ds-004'],
     status: 'active', schedule: 'Hàng tháng ngày 1 01:00', lastRunAt: '2026-04-01T01:00:00', lastRunStatus: 'success',
   },
+]
+
+// ========== CASCADE MOCK DATA ==========
+
+export const cascadeConfig: CascadeConfig = {
+  notifyDownstream: true,
+  autoWaitingData: true,
+  autoRerun: false,
+  autoResolve: true,
+  cascadeDepth: 0, // unlimited
+  cascadeSummary: true,
+}
+
+export const cascadeChains: CascadeChain[] = [
+  {
+    id: 'chain-001',
+    rootIssueId: 'ISS-031',
+    rootTableId: 'ds-002',
+    rootTableName: 'GD_GIAODICH',
+    affectedEntities: [
+      { tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', type: 'report', status: 'waiting_data' },
+      { tableId: 'ds-015', tableName: 'KPI_KINHDOANH', type: 'kpi', status: 'waiting_data' },
+    ],
+    status: 'active',
+    startedAt: '2026-04-04T08:00:00Z',
+    totalEvents: 7,
+  },
+  {
+    id: 'chain-002',
+    rootIssueId: 'ISS-025',
+    rootTableId: 'ds-003',
+    rootTableName: 'KH_KHACHHANG',
+    affectedEntities: [
+      { tableId: 'ds-012', tableName: 'QUAN_LY_RR', type: 'report', status: 'active' },
+    ],
+    status: 'resolved',
+    startedAt: '2026-04-03T06:00:00Z',
+    resolvedAt: '2026-04-03T09:30:00Z',
+    totalEvents: 6,
+  },
+]
+
+export const cascadeEvents: CascadeEvent[] = [
+  // Chain 1: Active cascade — GD_GIAODICH → BAO_CAO_NGAY → KPI_KINHDOANH
+  {
+    id: 'ce-001',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-002',
+    affectedTableName: 'GD_GIAODICH',
+    affectedType: 'source',
+    eventType: 'cascade_triggered',
+    previousStatus: 'active',
+    newStatus: 'error',
+    message: 'Rule "not_null MA_GD" FAIL (score: 45/100). Bảng GD_GIAODICH chuyển trạng thái error.',
+    timestamp: '2026-04-04T08:00:00Z',
+  },
+  {
+    id: 'ce-002',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-002',
+    affectedTableName: 'GD_GIAODICH',
+    affectedType: 'source',
+    eventType: 'notification_sent',
+    notificationRecipient: 'Tran Van Minh',
+    notificationChannel: 'email',
+    message: 'Cảnh báo gửi cho Tran Van Minh (owner bảng GD_GIAODICH): Dữ liệu bị lỗi, cần xử lý.',
+    timestamp: '2026-04-04T08:00:30Z',
+  },
+  {
+    id: 'ce-003',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-006',
+    affectedTableName: 'BAO_CAO_NGAY',
+    affectedType: 'report',
+    eventType: 'status_changed',
+    previousStatus: 'active',
+    newStatus: 'waiting_data',
+    message: 'BAO_CAO_NGAY chuyển trạng thái "Chờ dữ liệu" do bảng nguồn GD_GIAODICH đang lỗi.',
+    timestamp: '2026-04-04T08:01:00Z',
+  },
+  {
+    id: 'ce-004',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-006',
+    affectedTableName: 'BAO_CAO_NGAY',
+    affectedType: 'report',
+    eventType: 'notification_sent',
+    notificationRecipient: 'Le Thi Hoa',
+    notificationChannel: 'email',
+    message: 'Thông báo gửi cho Le Thi Hoa (owner BC BAO_CAO_NGAY): Bảng GD_GIAODICH đang lỗi, báo cáo đang chờ dữ liệu.',
+    timestamp: '2026-04-04T08:01:15Z',
+  },
+  {
+    id: 'ce-005',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-015',
+    affectedTableName: 'KPI_KINHDOANH',
+    affectedType: 'kpi',
+    eventType: 'status_changed',
+    previousStatus: 'active',
+    newStatus: 'waiting_data',
+    message: 'KPI_KINHDOANH chuyển trạng thái "Chờ dữ liệu" do BAO_CAO_NGAY đang chờ dữ liệu.',
+    timestamp: '2026-04-04T08:01:30Z',
+  },
+  {
+    id: 'ce-006',
+    chainId: 'chain-001',
+    triggerIssueId: 'ISS-031',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    affectedTableId: 'ds-015',
+    affectedTableName: 'KPI_KINHDOANH',
+    affectedType: 'kpi',
+    eventType: 'notification_sent',
+    notificationRecipient: 'Nguyen Van An',
+    notificationChannel: 'sms',
+    message: 'Thông báo gửi cho Nguyen Van An (owner KPI KPI_KINHDOANH): Dữ liệu đang lỗi, chỉ tiêu đang chờ cập nhật.',
+    timestamp: '2026-04-04T08:01:45Z',
+  },
+  // The chain is still active - no resolution events yet for chain-001
+  // This represents current state: waiting for fix
+
+  // Chain 2: Resolved cascade — KH_KHACHHANG → QUAN_LY_RR (already resolved)
+  {
+    id: 'ce-101',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-003',
+    affectedTableName: 'KH_KHACHHANG',
+    affectedType: 'source',
+    eventType: 'cascade_triggered',
+    previousStatus: 'active',
+    newStatus: 'error',
+    message: 'Rule "duplicate_single MSISDN" FAIL (score: 62/100). Bảng KH_KHACHHANG chuyển trạng thái error.',
+    timestamp: '2026-04-03T06:00:00Z',
+  },
+  {
+    id: 'ce-102',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-012',
+    affectedTableName: 'QUAN_LY_RR',
+    affectedType: 'report',
+    eventType: 'status_changed',
+    previousStatus: 'active',
+    newStatus: 'waiting_data',
+    message: 'QUAN_LY_RR chuyển trạng thái "Chờ dữ liệu" do bảng nguồn KH_KHACHHANG đang lỗi.',
+    timestamp: '2026-04-03T06:01:00Z',
+  },
+  {
+    id: 'ce-103',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-003',
+    affectedTableName: 'KH_KHACHHANG',
+    affectedType: 'source',
+    eventType: 'resolved',
+    previousStatus: 'error',
+    newStatus: 'active',
+    message: 'KH_KHACHHANG đã sửa lỗi. Chạy lại rule → PASS (score: 97/100).',
+    timestamp: '2026-04-03T08:30:00Z',
+  },
+  {
+    id: 'ce-104',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-012',
+    affectedTableName: 'QUAN_LY_RR',
+    affectedType: 'report',
+    eventType: 'revalidation_started',
+    previousStatus: 'waiting_data',
+    newStatus: 'revalidating',
+    message: 'QUAN_LY_RR bắt đầu kiểm tra lại sau khi bảng nguồn KH_KHACHHANG đã OK.',
+    timestamp: '2026-04-03T09:00:00Z',
+  },
+  {
+    id: 'ce-105',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-012',
+    affectedTableName: 'QUAN_LY_RR',
+    affectedType: 'report',
+    eventType: 'resolved',
+    previousStatus: 'revalidating',
+    newStatus: 'active',
+    message: 'QUAN_LY_RR chạy lại thành công. Trạng thái chuyển về Active.',
+    timestamp: '2026-04-03T09:25:00Z',
+  },
+  {
+    id: 'ce-106',
+    chainId: 'chain-002',
+    triggerIssueId: 'ISS-025',
+    sourceTableId: 'ds-003',
+    sourceTableName: 'KH_KHACHHANG',
+    affectedTableId: 'ds-003',
+    affectedTableName: 'KH_KHACHHANG',
+    affectedType: 'source',
+    eventType: 'chain_completed',
+    message: 'Chuỗi cảnh báo KH_KHACHHANG → QUAN_LY_RR đã khôi phục hoàn toàn (3h30 từ phát hiện → hoàn tất).',
+    timestamp: '2026-04-03T09:30:00Z',
+  },
+]
+
+// Reconciliation results — derived from rules r-029, r-030, r-032
+export const reconciliationResults: ReconciliationResult[] = [
+  {
+    id: 'recon-001',
+    ruleId: 'r-029',
+    ruleName: 'BC - Đối soát tổng giao dịch ngày',
+    metricType: 'aggregate_reconciliation',
+    reportTableId: 'ds-006',
+    reportTableName: 'BAO_CAO_NGAY',
+    reportColumn: 'THUC_TE',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    sourceColumn: 'SO_TIEN',
+    sourceValue: 1523456000,
+    reportValue: 1525283947,
+    variance: 0.12,
+    tolerancePct: 0.1,
+    result: 'warning',
+    qualityScore: 92.5,
+    checkedAt: '2026-03-28T09:00:00',
+  },
+  {
+    id: 'recon-002',
+    ruleId: 'r-030',
+    ruleName: 'BC - Số dòng báo cáo khớp nguồn',
+    metricType: 'report_row_count_match',
+    reportTableId: 'ds-006',
+    reportTableName: 'BAO_CAO_NGAY',
+    reportColumn: 'COUNT(*)',
+    sourceTableId: 'ds-002',
+    sourceTableName: 'GD_GIAODICH',
+    sourceColumn: 'COUNT(DISTINCT NGAY_GD)',
+    sourceValue: 31,
+    reportValue: 31,
+    variance: 0.0,
+    tolerancePct: 1,
+    result: 'pass',
+    qualityScore: 98.0,
+    checkedAt: '2026-03-28T09:00:00',
+  },
+  {
+    id: 'recon-003',
+    ruleId: 'r-032',
+    ruleName: 'RR - Đối soát SUM rủi ro với nguồn',
+    metricType: 'aggregate_reconciliation',
+    reportTableId: 'ds-012',
+    reportTableName: 'QUAN_LY_RR',
+    reportColumn: 'DIEM_RR',
+    sourceTableId: 'ds-001',
+    sourceTableName: 'KH_KHACHHANG',
+    sourceColumn: 'DIEM_RR',
+    sourceValue: 847523,
+    reportValue: 846845,
+    variance: 0.08,
+    tolerancePct: 0.5,
+    result: 'pass',
+    qualityScore: 96.0,
+    checkedAt: '2026-03-28T04:00:00',
+  },
+]
+
+// KPI Period Results — điểm chất lượng theo kỳ
+export const kpiPeriodResults: KpiPeriodResult[] = [
+  // KPI_KINHDOANH (ds-015) — parent
+  { kpiId: 'ds-015', period: '2026-01', qualityScore: 80, previousScore: 75, ruleResults: [
+    { ruleId: 'r-033', ruleName: 'KPI - Biến động chỉ tiêu ≤ 30%', score: 74, result: 'warning' },
+    { ruleId: 'r-034', ruleName: 'KPI - Đầy đủ kỳ tháng', score: 96, result: 'pass' },
+    { ruleId: 'r-035', ruleName: 'KPI - Tổng chi nhánh = tổng công ty', score: 98, result: 'pass' },
+  ]},
+  { kpiId: 'ds-015', period: '2026-02', qualityScore: 77, previousScore: 80, ruleResults: [
+    { ruleId: 'r-033', ruleName: 'KPI - Biến động chỉ tiêu ≤ 30%', score: 72, result: 'warning' },
+    { ruleId: 'r-034', ruleName: 'KPI - Đầy đủ kỳ tháng', score: 97, result: 'pass' },
+    { ruleId: 'r-035', ruleName: 'KPI - Tổng chi nhánh = tổng công ty', score: 99, result: 'pass' },
+  ]},
+  { kpiId: 'ds-015', period: '2026-03', qualityScore: 77, previousScore: 77, ruleResults: [
+    { ruleId: 'r-033', ruleName: 'KPI - Biến động chỉ tiêu ≤ 30%', score: 72, result: 'warning' },
+    { ruleId: 'r-034', ruleName: 'KPI - Đầy đủ kỳ tháng', score: 97, result: 'pass' },
+    { ruleId: 'r-035', ruleName: 'KPI - Tổng chi nhánh = tổng công ty', score: 99.2, result: 'pass' },
+  ]},
+  // KPI_DOANHTHU_CN (ds-016)
+  { kpiId: 'ds-016', period: '2026-01', qualityScore: 82, previousScore: 78, ruleResults: [
+    { ruleId: 'r-036', ruleName: 'KPI CN - Biến động doanh thu ≤ 25%', score: 85, result: 'pass' },
+    { ruleId: 'r-037', ruleName: 'KPI CN - Đầy đủ kỳ tháng', score: 94, result: 'pass' },
+  ]},
+  { kpiId: 'ds-016', period: '2026-02', qualityScore: 86, previousScore: 82, ruleResults: [
+    { ruleId: 'r-036', ruleName: 'KPI CN - Biến động doanh thu ≤ 25%', score: 90, result: 'pass' },
+    { ruleId: 'r-037', ruleName: 'KPI CN - Đầy đủ kỳ tháng', score: 95, result: 'pass' },
+  ]},
+  { kpiId: 'ds-016', period: '2026-03', qualityScore: 85, previousScore: 86, ruleResults: [
+    { ruleId: 'r-036', ruleName: 'KPI CN - Biến động doanh thu ≤ 25%', score: 88.5, result: 'pass' },
+    { ruleId: 'r-037', ruleName: 'KPI CN - Đầy đủ kỳ tháng', score: 96, result: 'pass' },
+  ]},
+  // KPI_DOANHTHU_ONLINE (ds-017)
+  { kpiId: 'ds-017', period: '2026-01', qualityScore: 88, previousScore: 84, ruleResults: [
+    { ruleId: 'r-038', ruleName: 'KPI Online - Biến động ≤ 35%', score: 90, result: 'pass' },
+    { ruleId: 'r-039', ruleName: 'KPI Online - Đầy đủ kỳ tháng', score: 93, result: 'pass' },
+  ]},
+  { kpiId: 'ds-017', period: '2026-02', qualityScore: 90, previousScore: 88, ruleResults: [
+    { ruleId: 'r-038', ruleName: 'KPI Online - Biến động ≤ 35%', score: 92, result: 'pass' },
+    { ruleId: 'r-039', ruleName: 'KPI Online - Đầy đủ kỳ tháng', score: 95, result: 'pass' },
+  ]},
+  { kpiId: 'ds-017', period: '2026-03', qualityScore: 91, previousScore: 90, ruleResults: [
+    { ruleId: 'r-038', ruleName: 'KPI Online - Biến động ≤ 35%', score: 93, result: 'pass' },
+    { ruleId: 'r-039', ruleName: 'KPI Online - Đầy đủ kỳ tháng', score: 95.5, result: 'pass' },
+  ]},
+  // KPI_CHIPHI (ds-018)
+  { kpiId: 'ds-018', period: '2026-01', qualityScore: 78, previousScore: 72, ruleResults: [
+    { ruleId: 'r-040', ruleName: 'KPI CP - Biến động chi phí ≤ 20%', score: 80, result: 'pass' },
+    { ruleId: 'r-041', ruleName: 'KPI CP - Đầy đủ phân loại chi phí', score: 88, result: 'pass' },
+  ]},
+  { kpiId: 'ds-018', period: '2026-02', qualityScore: 75, previousScore: 78, ruleResults: [
+    { ruleId: 'r-040', ruleName: 'KPI CP - Biến động chi phí ≤ 20%', score: 74, result: 'warning' },
+    { ruleId: 'r-041', ruleName: 'KPI CP - Đầy đủ phân loại chi phí', score: 91, result: 'pass' },
+  ]},
+  { kpiId: 'ds-018', period: '2026-03', qualityScore: 73, previousScore: 75, ruleResults: [
+    { ruleId: 'r-040', ruleName: 'KPI CP - Biến động chi phí ≤ 20%', score: 76, result: 'warning' },
+    { ruleId: 'r-041', ruleName: 'KPI CP - Đầy đủ phân loại chi phí', score: 90, result: 'pass' },
+  ]},
+  // KPI_LOINHUAN (ds-019)
+  { kpiId: 'ds-019', period: '2026-01', qualityScore: 72, previousScore: 68, ruleResults: [
+    { ruleId: 'r-042', ruleName: 'KPI LN - Biến động lợi nhuận ≤ 30%', score: 68, result: 'warning' },
+    { ruleId: 'r-043', ruleName: 'KPI LN - Tổng con = tổng cha', score: 60, result: 'fail' },
+  ]},
+  { kpiId: 'ds-019', period: '2026-02', qualityScore: 70, previousScore: 72, ruleResults: [
+    { ruleId: 'r-042', ruleName: 'KPI LN - Biến động lợi nhuận ≤ 30%', score: 66, result: 'warning' },
+    { ruleId: 'r-043', ruleName: 'KPI LN - Tổng con = tổng cha', score: 62, result: 'fail' },
+  ]},
+  { kpiId: 'ds-019', period: '2026-03', qualityScore: 68, previousScore: 70, ruleResults: [
+    { ruleId: 'r-042', ruleName: 'KPI LN - Biến động lợi nhuận ≤ 30%', score: 65, result: 'warning' },
+    { ruleId: 'r-043', ruleName: 'KPI LN - Tổng con = tổng cha', score: 58, result: 'fail' },
+  ]},
 ]
 
 export function getDownstreamJobs(tableId: string): PipelineJob[] {

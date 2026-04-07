@@ -1,6 +1,6 @@
 # Hướng Dẫn Sử Dụng — Data Quality System
 
-> **Phiên bản:** 1.2 | **Ngày:** 2026-04-03
+> **Phiên bản:** 1.3 | **Ngày:** 2026-04-07
 > Tài liệu này hướng dẫn toàn bộ quy trình sử dụng hệ thống giám sát chất lượng dữ liệu — từ người chưa từng dùng DQ tool đến quản trị viên nâng cao.
 
 ---
@@ -13,10 +13,10 @@
 4. [Bảng INPUT → OUTPUT giữa các menu](#4-bảng-input--output-giữa-các-menu)
    - [Cách tính điểm chất lượng (Score)](#cách-tính-điểm-chất-lượng-score)
 5. [Rule DQ: Quy tắc cho Cột hay Bảng?](#5-rule-dq-quy-tắc-cho-cột-hay-bảng)
-6. [31 Loại Metric Chi Tiết](#6-31-loại-metric-chi-tiết)
-   - 6.1 [Cấp Bảng — 13 metrics](#61-cấp-bảng-table-level--13-metrics)
+6. [28 Loại Metric Chi Tiết](#6-28-loại-metric-chi-tiết)
+   - 6.1 [Cấp Bảng — 10 metrics](#61-cấp-bảng-table-level--10-metrics)
    - 6.2 [Cấp Cột — 18 metrics](#62-cấp-cột-column-level--18-metrics)
-   - 6.3 [Hướng dẫn chi tiết tất cả 31 Metric](#63-hướng-dẫn-chi-tiết-tất-cả-31-metric)
+   - 6.3 [Hướng dẫn chi tiết tất cả 28 Metric](#63-hướng-dẫn-chi-tiết-tất-cả-28-metric)
 7. [Hướng dẫn từng menu](#7-hướng-dẫn-từng-menu)
    - 7.1 [Dashboard](#71-dashboard)
    - 7.2 [Danh mục dữ liệu](#72-danh-mục-dữ-liệu)
@@ -279,13 +279,13 @@ Overall Score = avg(dimensionScore của các chiều có rule)
 
 > **Câu hỏi hay!** Rule DQ **KHÔNG** chỉ dành cho cột. Có 2 loại phạm vi:
 
-### Loại 1: Quy tắc cấp Cột (Column-level) — 18/31 metric
+### Loại 1: Quy tắc cấp Cột (Column-level) — 18/28 metric
 
 Áp dụng cho **1 cột cụ thể** trong bảng. Cột "Phạm vi" trong danh sách Rule hiển thị `Cột: TÊN_CỘT`.
 
 **Khi nào dùng?** Khi bạn muốn kiểm tra một cột riêng lẻ: `EMAIL` có đúng format không? `SO_CMND` có NULL không? `SO_TIEN` có nằm trong khoảng hợp lệ không?
 
-### Loại 2: Quy tắc cấp Bảng (Table-level) — 13/31 metric
+### Loại 2: Quy tắc cấp Bảng (Table-level) — 10/28 metric
 
 **Không gắn với cột cụ thể** — kiểm tra đặc tính của toàn bảng hoặc ràng buộc giữa nhiều cột. Cột "Phạm vi" hiển thị `Bảng`.
 
@@ -295,79 +295,70 @@ Overall Score = avg(dimensionScore của các chiều có rule)
 | `time_coverage` | Completeness | Chuỗi thời gian không bị gián đoạn | `NGAY_GD` có dữ liệu liên tục 30 ngày ≥ 95% |
 | `volume_change` | Completeness | % thay đổi số dòng so với N ngày trước | Số dòng không thay đổi quá 30% vs. tuần trước |
 | `report_row_count_match` | Completeness | Số dòng BC phải khớp bảng nguồn | `BAO_CAO_NGAY` vs `GD_GIAODICH` — phát hiện mất dòng khi tổng hợp |
-| `period_completeness` | Completeness | KPI phải có đủ kỳ dữ liệu | `KPI_KINHDOANH` phải có đủ 12 tháng gần nhất ≥ 95% |
 | `table_size` | Accuracy | Kích thước bảng trong khoảng [min, max] MB/GB | Partition `GD_GIAODICH` 1–500 GB |
 | `aggregate_reconciliation` | Accuracy | Đối soát cột tổng hợp BC vs SUM từ nguồn | `THUC_TE` trên BC khớp SUM(`SO_TIEN`) từ GD ± 1% |
 | `kpi_variance` | Accuracy | Biến động KPI so kỳ trước ≤ X% | KPI doanh thu tháng thay đổi ≤ 30% |
 | `custom_expression` | Validity | Điều kiện SQL WHERE tùy chỉnh | `LOAI_GD IN ('DC', 'CK', 'TM') AND SO_TIEN > 0` |
-| `cross_column` | Consistency | Ràng buộc logic giữa 2+ cột | `NGAY_KET_THUC > NGAY_HIEU_LUC` |
-| `cross_source_sum` | Consistency | Tổng chéo nguồn BC vs bảng gốc | Tổng `QUAN_LY_RR` khớp SUM từ `KH_KHACHHANG` ± 5% |
 | `parent_child_match` | Consistency | Tổng KPI con bằng KPI cha | `TONG_GD` = SUM(sub_kpi_value) ± 5% |
 | `duplicate_composite` | Uniqueness | Khóa duy nhất trên tổ hợp nhiều cột | Combo `(MA_KH, THANG)` trong bảng sao kê phải unique |
 
 ---
 
-## 6. 31 Loại Metric Chi Tiết
+## 6. 28 Loại Metric Chi Tiết
 
-Hệ thống hỗ trợ **31 metric type** chia thành 2 nhóm: **cấp cột** (18 metric) và **cấp bảng** (13 metric).
+Hệ thống hỗ trợ **28 metric type** chia thành 2 nhóm: **cấp cột** (18 metric) và **cấp bảng** (10 metric).
 
-> **Phiên bản 1.2:** Bổ sung 6 metric mới dành cho **Báo cáo** và **Chỉ tiêu (KPI)** — hỗ trợ đối soát, kiểm tra chéo nguồn, biến động KPI và khớp cây chỉ tiêu.
+> **Phiên bản 1.3:** Gom 3 metric trùng lặp (`cross_column`, `period_completeness`, `cross_source_sum`), bổ sung field cấu hình cho 4 metric.
 
-### Bảng tổng hợp 31 Metric — Mô tả chi tiết, cấu hình & ví dụ
+### Bảng tổng hợp 28 Metric — Mô tả chi tiết, cấu hình & ví dụ
 
-> Bảng dưới đây tổng hợp toàn bộ 31 metric trong hệ thống. Mỗi dòng ghi rõ: tên hiển thị trên dropdown, chiều dữ liệu, cấp áp dụng, mô tả chi tiết cách cấu hình từng trường, và ví dụ thực tế. Kéo ngang để xem đầy đủ.
+> Bảng dưới đây tổng hợp toàn bộ 28 metric trong hệ thống. Mỗi dòng ghi rõ: tên hiển thị trên dropdown, chiều dữ liệu, cấp áp dụng, mô tả chi tiết cách cấu hình từng trường, và ví dụ thực tế. Kéo ngang để xem đầy đủ.
 
-| Metric (tên trên dropdown) | Chiều | Cấp | Mô tả chi tiết — mục đích & các trường cấu hình | Ví dụ thực tế — bài toán & cách cấu hình |
-|---|---|---|---|---|
-| **Không được rỗng (NOT NULL)** | Đầy đủ | Cột | Kiểm tra một cột không được chứa giá trị NULL.<br>**Trường cấu hình:**<br>- **Cột**: chọn cột cần kiểm tra từ dropdown (hoặc nhập tay)<br>Hệ thống đếm % dòng có giá trị NOT NULL → so với ngưỡng W/C. | **Bài toán:** Mọi khách hàng phải có số CMND.<br>**Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `SO_CMND`<br>- Ngưỡng W=95, C=90<br>→ Dưới 90% có CMND = không đạt. |
-| **Tỷ lệ điền đủ (Fill Rate)** | Đầy đủ | Cột | Tương tự NOT NULL nhưng cho phép set ngưỡng % tối thiểu linh hoạt hơn.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Tỷ lệ điền tối thiểu (%)**: bao nhiêu % dòng phải có giá trị (không NULL, không rỗng) | **Bài toán:** Không bắt buộc 100% KH có email, nhưng cần ít nhất 80%.<br>**Cấu hình:**<br>- Cột = `EMAIL`<br>- Tỷ lệ điền tối thiểu = `80` |
-| **% Null theo chu kỳ** | Đầy đủ | Cột | Theo dõi tỷ lệ NULL trong từng chu kỳ thời gian — phát hiện trend null tăng dần.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Cột thời gian**: cột DATE/TIMESTAMP để group by<br>- **Độ chi tiết**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% Null tối đa mỗi chu kỳ**: mỗi ngày/tuần/tháng không được vượt X% null | **Bài toán:** Theo dõi null của cột SO_DU theo ngày, mỗi ngày không quá 5%.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Cột thời gian = `NGAY_CAP_NHAT`<br>- Độ chi tiết = `Ngày`<br>- Khoảng kiểm = `30`<br>- % Null tối đa = `5` |
-| **NOT NULL có điều kiện** | Đầy đủ | Cột | Cột chỉ bắt buộc NOT NULL khi thỏa mãn một điều kiện SQL.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Điều kiện SQL WHERE**: khi điều kiện đúng thì cột phải có giá trị | **Bài toán:** SO_DU chỉ bắt buộc khi tài khoản đang ACTIVE.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Điều kiện = `TRANG_THAI = 'ACTIVE'`<br>→ Nếu TRANG_THAI='ACTIVE' mà SO_DU là NULL → vi phạm. |
-| **Số dòng trong khoảng** | Đầy đủ | Bảng | Kiểm tra tổng số dòng trong bảng phải nằm trong khoảng [min, max]. Phát hiện bảng bị truncate hoặc tăng đột biến.<br>**Trường cấu hình:**<br>- **Số dòng tối thiểu**: giới hạn dưới<br>- **Số dòng tối đa**: giới hạn trên | **Bài toán:** Bảng GD_GIAODICH bình thường có 1M–50M dòng.<br>**Cấu hình:**<br>- Min = `1000000`<br>- Max = `50000000`<br>→ Nếu đột ngột còn 100 dòng → không đạt. |
-| **Phủ thời gian (Time Coverage)** | Đầy đủ | Bảng | Kiểm tra chuỗi thời gian liên tục không bị thiếu khoảng.<br>**Trường cấu hình:**<br>- **Cột thời gian**: cột DATE để group<br>- **Độ chi tiết**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% chu kỳ phải có dữ liệu**: VD 95% = trong 30 ngày phải có dữ liệu ít nhất 28-29 ngày | **Bài toán:** Bảng GD_GIAODICH phải có giao dịch mỗi ngày.<br>**Cấu hình:**<br>- Cột thời gian = `NGAY_GD`<br>- Độ chi tiết = `Ngày`<br>- Khoảng kiểm = `30`<br>- % phủ = `95`<br>→ Thiếu 3 ngày trong 30 ngày (90%) → cảnh báo. |
-| **Thay đổi khối lượng (Volume Change)** | Đầy đủ | Bảng | So sánh số dòng hiện tại với trung bình N ngày trước — phát hiện biến động bất thường.<br>**Trường cấu hình:**<br>- **Nhìn lại N ngày trước**: so sánh với trung bình bao nhiêu ngày<br>- **% thay đổi tối đa cho phép**: vượt X% là cảnh báo | **Bài toán:** Số dòng GD_GIAODICH không nên biến động quá 30%.<br>**Cấu hình:**<br>- Nhìn lại = `7` ngày<br>- % thay đổi tối đa = `30`<br>→ Hôm nay 100K dòng, 7 ngày trước TB 200K → giảm 50% → vi phạm. |
-| **Đúng định dạng — Whitelist Regex** | Hợp lệ | Cột | Giá trị trong cột PHẢI khớp biểu thức chính quy (regex).<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Biểu thức chính quy**: pattern mà giá trị phải match<br>Hệ thống đếm % dòng match regex → so với ngưỡng. | **Bài toán:** Số điện thoại phải đúng format VN 10 số.<br>**Cấu hình:**<br>- Cột = `SO_DIEN_THOAI`<br>- Regex = `^(03\|07\|08\|09)\d{8}$`<br>- Ngưỡng W=95, C=90 |
-| **Không chứa giá trị rác — Blacklist** | Hợp lệ | Cột | Ngược lại Whitelist — giá trị KHÔNG ĐƯỢC khớp pattern. Dùng `\|` để OR nhiều pattern.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Pattern blacklist (regex)**: giá trị khớp sẽ bị coi là rác | **Bài toán:** Cột HO_TEN không được chứa giá trị test/rác.<br>**Cấu hình:**<br>- Cột = `HO_TEN`<br>- Blacklist = `TEST\|FAKE\|N/A\|NULL\|^\\s*$`<br>→ Dòng có HO_TEN = "TEST" hoặc "N/A" → vi phạm. |
-| **Trong khoảng giá trị** | Hợp lệ | Cột | Giá trị số phải nằm trong khoảng [min, max]. Để trống 1 đầu = chỉ kiểm tra 1 chiều.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Giá trị tối thiểu**: giới hạn dưới<br>- **Giá trị tối đa**: giới hạn trên | **Bài toán:** Tuổi khách hàng phải hợp lệ (18–120).<br>**Cấu hình:**<br>- Cột = `TUOI`<br>- Min = `18`<br>- Max = `120`<br>→ Tuổi = 0 hoặc 200 → vi phạm. |
-| **Trong danh sách hợp lệ (Whitelist)** | Hợp lệ | Cột | Giá trị phải thuộc tập hợp cho phép (enum).<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Danh sách giá trị hợp lệ**: nhập các giá trị cách nhau bằng dấu phẩy | **Bài toán:** Giới tính chỉ chấp nhận 3 giá trị.<br>**Cấu hình:**<br>- Cột = `GIOI_TINH`<br>- Danh sách = `NAM, NU, KHAC`<br>→ Giá trị "Male" hoặc "1" → vi phạm. |
-| **Biểu thức SQL tùy chỉnh** | Hợp lệ | Bảng | Điều kiện WHERE SQL áp dụng trên toàn bảng — metric linh hoạt nhất, dùng khi các metric khác không đủ.<br>**Trường cấu hình:**<br>- **Điều kiện kiểm tra**: biểu thức SQL (không cần từ khóa WHERE)<br>Hệ thống đếm % dòng thỏa mãn điều kiện. | **Bài toán:** Mọi tài khoản tín dụng/tiết kiệm phải có lãi suất > 0.<br>**Cấu hình:**<br>- Biểu thức = `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0`<br>→ Dòng nào không thỏa = vi phạm. |
-| **Kiểu dữ liệu cố định** | Nhất quán | Cột | Tất cả giá trị trong cột phải đúng kiểu dữ liệu chỉ định. Phát hiện dữ liệu bị lẫn kiểu.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Kiểu dữ liệu bắt buộc**: chọn từ dropdown — STRING, INTEGER, DECIMAL, DATE, TIMESTAMP | **Bài toán:** Cột NGAY_SINH phải là kiểu DATE, không lẫn string.<br>**Cấu hình:**<br>- Cột = `NGAY_SINH`<br>- Kiểu = `DATE`<br>→ Dòng chứa "01-01-1990" dạng string thay vì date → vi phạm. |
-| **Giá trị phổ biến nhất (Mode)** | Nhất quán | Cột | Kiểm tra giá trị xuất hiện nhiều nhất (mode) có chiếm đủ tỷ lệ không — phát hiện dữ liệu bị "pha tạp".<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Giá trị mode kỳ vọng**: tùy chọn, để trống = chỉ kiểm tra tần suất<br>- **Tần suất tối thiểu (%)**: mode phải chiếm ≥ X% tổng số dòng | **Bài toán:** ≥80% KH phải có quốc tịch VN.<br>**Cấu hình:**<br>- Cột = `QUOC_TICH`<br>- Mode kỳ vọng = `VN`<br>- Tần suất tối thiểu = `80`<br>→ Nếu đột ngột giảm còn 50% → có thể lẫn nguồn lạ. |
-| **Nhất quán chéo cột** | Nhất quán | Bảng | Biểu thức logic kiểm tra quan hệ giữa 2+ cột trong cùng bảng.<br>**Trường cấu hình:**<br>- **Điều kiện kiểm tra**: biểu thức SQL boolean so sánh giữa các cột | **Bài toán:** Ngày đóng tài khoản phải sau ngày mở.<br>**Cấu hình:**<br>- Biểu thức = `NGAY_DONG > NGAY_MO`<br>→ Dòng có NGAY_DONG trước NGAY_MO → vi phạm. |
-| **Toàn vẹn tham chiếu (FK)** | Nhất quán | Cột | Kiểm tra giá trị trong cột phải tồn tại ở bảng tham chiếu (foreign key check).<br>**Trường cấu hình:**<br>- **Cột nguồn**: cột cần kiểm tra<br>- **Bảng tham chiếu**: chọn bảng chứa dữ liệu chuẩn<br>- **Cột tham chiếu**: cột trong bảng tham chiếu để so khớp | **Bài toán:** MA_KH trong giao dịch phải tồn tại trong bảng KH.<br>**Cấu hình:**<br>- Cột nguồn = `MA_KH`<br>- Bảng tham chiếu = `KH_KHACHHANG`<br>- Cột tham chiếu = `MA_KH`<br>→ Giao dịch có MA_KH không tồn tại → vi phạm. |
-| **Không trùng lặp (1 cột)** | Duy nhất | Cột | Kiểm tra giá trị trong một cột là duy nhất (unique).<br>**Trường cấu hình:**<br>- **Cột**: chọn cột cần kiểm tra<br>Hệ thống đếm % giá trị distinct → so với ngưỡng. | **Bài toán:** Mỗi KH phải có số CMND duy nhất.<br>**Cấu hình:**<br>- Cột = `SO_CMND`<br>→ Có 2 KH cùng số CMND → vi phạm. |
-| **Không trùng lặp (nhiều cột)** | Duy nhất | Bảng | Kiểm tra tổ hợp nhiều cột là duy nhất (composite unique key).<br>**Trường cấu hình:**<br>- **Danh sách cột**: chọn nhiều cột từ checkbox (cần chọn ≥ 2 cột) | **Bài toán:** Mỗi KH chỉ có 1 bản ghi/tháng trong TK_TAIKHOAN.<br>**Cấu hình:**<br>- Chọn cột = `MA_KH` + `THANG`<br>→ Có 2 dòng cùng MA_KH + THANG → vi phạm. |
-| **Khớp với dữ liệu chuẩn** | Chính xác | Cột | So sánh giá trị trong cột với bảng/cột tham chiếu đã xác thực (master data).<br>**Trường cấu hình:**<br>- **Cột so sánh (nguồn)**: cột trong bảng hiện tại<br>- **Bảng chuẩn**: bảng master data<br>- **Cột chuẩn**: cột trong bảng chuẩn để so khớp | **Bài toán:** Mã tỉnh phải khớp danh mục tỉnh thành.<br>**Cấu hình:**<br>- Cột nguồn = `MA_TINH`<br>- Bảng chuẩn = `DM_TINH_THANH`<br>- Cột chuẩn = `MA_TINH`<br>→ Mã tỉnh không tồn tại trong danh mục → vi phạm. |
-| **Thống kê trong khoảng (Statistics Bound)** | Chính xác | Cột | Kiểm tra chỉ số thống kê phải nằm trong khoảng cho phép — phát hiện outlier hoặc drift phân phối.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Loại thống kê**: chọn từ dropdown — Min, Max, Mean, Stddev, P25, P50 (median), P75<br>- **Khoảng tối thiểu**: giới hạn dưới<br>- **Khoảng tối đa**: giới hạn trên | **Bài toán:** Trung bình số dư tài khoản phải trong 10M–500M.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Loại thống kê = `Mean`<br>- Min = `10000000`<br>- Max = `500000000`<br>→ Mean đột ngột = 0 → phát hiện bảng bị zero-out. |
-| **Tổng cột trong khoảng (Sum Range)** | Chính xác | Cột | Kiểm tra SUM toàn bộ giá trị của cột phải nằm trong khoảng [min, max].<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Tổng tối thiểu**: giới hạn dưới<br>- **Tổng tối đa**: giới hạn trên | **Bài toán:** Tổng doanh thu ngày phải từ 1 tỷ đến 100 tỷ.<br>**Cấu hình:**<br>- Cột = `SO_TIEN`<br>- Min = `1000000000`<br>- Max = `100000000000`<br>→ Tổng = 0 → bảng thiếu dữ liệu. |
-| **Biểu thức cross-column có % pass** | Chính xác | Cột | Biểu thức SparkSQL phải đúng cho ≥ X% số dòng — kiểm tra cross-column với ngưỡng cho phép sai số.<br>**Trường cấu hình:**<br>- **Cột**: cột chính liên quan<br>- **Biểu thức SparkSQL**: trả về true/false cho từng dòng<br>- **% dòng phải pass tối thiểu**: ngưỡng pass rate | **Bài toán:** Thành tiền = đơn giá × số lượng, cho phép 1% sai số do làm tròn.<br>**Cấu hình:**<br>- Biểu thức = `THANH_TIEN = DON_GIA * SO_LUONG`<br>- % pass = `99` |
-| **Kích thước bảng trong khoảng** | Chính xác | Bảng | Kiểm tra dung lượng bảng/partition phải trong khoảng cho phép. Phát hiện partition size bất thường.<br>**Trường cấu hình:**<br>- **Kích thước tối thiểu**: giới hạn dưới<br>- **Kích thước tối đa**: giới hạn trên<br>- **Đơn vị**: chọn MB hoặc GB | **Bài toán:** Partition hàng ngày GD_GIAODICH phải từ 100MB đến 50GB.<br>**Cấu hình:**<br>- Min = `100`<br>- Max = `50000`<br>- Đơn vị = `MB`<br>→ Partition hôm nay chỉ 1MB → thiếu dữ liệu. |
-| **Đúng hạn (SLA)** | Kịp thời | Cột | Dữ liệu phải có mặt trước thời hạn SLA.<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp ghi nhận thời gian load/tạo<br>- **Thời hạn SLA (HH:MM)**: giờ deadline mỗi ngày<br>- **Cửa sổ cảnh báo (phút)**: cảnh báo sớm bao nhiêu phút trước deadline | **Bài toán:** Dữ liệu GD ngày hôm trước phải có trước 06:00 sáng.<br>**Cấu hình:**<br>- Cột = `NGAY_LOAD`<br>- SLA = `06:00`<br>- Cửa sổ cảnh báo = `30`<br>→ Cảnh báo lúc 05:30 nếu chưa có dữ liệu. |
-| **Tươi mới (Freshness)** | Kịp thời | Cột | Dữ liệu phải được cập nhật trong khoảng thời gian quy định — phát hiện bảng "chết".<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp cập nhật cuối<br>- **Dữ liệu tươi trong**: số lượng<br>- **Đơn vị thời gian**: Phút / Giờ / Ngày | **Bài toán:** Bảng KH phải được cập nhật trong 24 giờ gần nhất.<br>**Cấu hình:**<br>- Cột = `UPDATED_AT`<br>- Tươi trong = `24`<br>- Đơn vị = `Giờ`<br>→ Dòng gần nhất cập nhật 3 ngày trước → vi phạm. |
-| **Khớp số dòng BC vs Nguồn** 🆕 | Đầy đủ | Bảng | So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn liên kết — phát hiện mất dữ liệu trong quá trình tổng hợp báo cáo.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: chọn bảng nguồn (chỉ hiển thị bảng loại "Bảng nguồn") | **Bài toán:** Báo cáo ngày phải có đủ dòng so với bảng giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>→ BC có 900 dòng, nguồn 1.000 dòng → thiếu 10% → cảnh báo. |
-| **Đủ kỳ dữ liệu KPI** 🆕 | Đầy đủ | Bảng | Kiểm tra KPI phải có đủ dữ liệu theo chu kỳ — phát hiện thiếu kỳ báo cáo chỉ tiêu.<br>**Trường cấu hình:**<br>- **Chu kỳ**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% kỳ phải có dữ liệu**: VD 95% = trong 12 tháng phải có ít nhất 11 tháng | **Bài toán:** KPI kinh doanh phải có đủ 12 tháng gần nhất.<br>**Cấu hình:**<br>- Chu kỳ = `Tháng`<br>- Khoảng kiểm = `365`<br>- % kỳ phải có = `95`<br>→ Thiếu 2 tháng trong 12 tháng (83%) → không đạt. |
-| **Tổng chéo nguồn (Cross-Source)** 🆕 | Nhất quán | Bảng | So sánh tổng giá trị giữa báo cáo/KPI và bảng nguồn — phát hiện sai lệch khi tổng hợp dữ liệu từ nhiều bảng.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: chọn bảng nguồn để so sánh<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép | **Bài toán:** Tổng rủi ro trên báo cáo phải khớp với tổng từ bảng nguồn.<br>**Cấu hình:**<br>- Bảng BC = `QUAN_LY_RUI_RO`<br>- Bảng nguồn = `KH_KHACHHANG`<br>- Sai lệch tối đa = `5`<br>→ BC tổng = 100, nguồn = 110 → lệch 9.1% → vi phạm. |
-| **Khớp KPI cha-con** 🆕 | Nhất quán | Bảng | Tổng giá trị các KPI con phải bằng KPI cha — phát hiện sai lệch trong cây chỉ tiêu kinh doanh.<br>**Trường cấu hình:**<br>- **Cột KPI cha**: cột chứa giá trị KPI tổng<br>- **Biểu thức tổng KPI con**: biểu thức tính tổng các KPI con<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép | **Bài toán:** KPI doanh thu tổng = tổng doanh thu các chi nhánh.<br>**Cấu hình:**<br>- Cột KPI cha = `TONG_GD`<br>- Tổng KPI con = `SUM(sub_kpi_value)`<br>- Sai lệch tối đa = `5`<br>→ KPI cha = 100, tổng con = 108 → lệch 8% → vi phạm. |
-| **Đối soát tổng hợp BC** 🆕 | Chính xác | Bảng | So sánh giá trị cột tổng hợp trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: bảng gốc chứa dữ liệu chi tiết<br>- **Cột tổng hợp trên BC**: cột trên bảng BC chứa giá trị đã tổng hợp<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép giữa SUM nguồn và giá trị BC | **Bài toán:** Cột THUC_TE trên báo cáo phải khớp SUM(SO_TIEN) từ giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>- Cột BC = `THUC_TE`<br>- Sai lệch tối đa = `1`<br>→ BC THUC_TE = 100M, SUM giao dịch = 102M → lệch 2% → vi phạm. |
-| **Biến động KPI so kỳ trước** 🆕 | Chính xác | Bảng | Giá trị KPI không được thay đổi quá X% so với kỳ trước — phát hiện bất thường như tăng/giảm đột biến không giải thích được.<br>**Trường cấu hình:**<br>- **Biến động tối đa so kỳ trước (%)**: ngưỡng % thay đổi cho phép | **Bài toán:** KPI doanh thu tháng không được tăng/giảm quá 30%.<br>**Cấu hình:**<br>- Bảng KPI = `KPI_KINHDOANH`<br>- Biến động tối đa = `30`<br>→ Tháng trước 100M, tháng này 55M → giảm 45% → vi phạm. |
+| Metric (tên trên dropdown) | Chiều | Cấp | Mô tả chi tiết — mục đích & các trường cấu hình | Ví dụ thực tế — bài toán & cách cấu hình | Minh họa: Cấu hình → SQL → Kết quả |
+|---|---|---|---|---|---|
+| **Không được rỗng (NOT NULL)** | Đầy đủ | Cột | Kiểm tra một cột không được chứa giá trị NULL.<br>**Trường cấu hình:**<br>- **Cột**: chọn cột cần kiểm tra từ dropdown (hoặc nhập tay)<br>Hệ thống đếm % dòng có giá trị NOT NULL → so với ngưỡng W/C. | **Bài toán:** Mọi khách hàng phải có số CMND.<br>**Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `SO_CMND`<br>- Ngưỡng W=95, C=90<br>→ Dưới 90% có CMND = không đạt. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `SO_CMND`<br>- W = 95, C = 90<br>**SQL:**<br>`SELECT COUNT(SO_CMND) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 97.3% → ≥W(95) → **Đạt** |
+| **Tỷ lệ điền đủ (Fill Rate)** | Đầy đủ | Cột | Tương tự NOT NULL nhưng cho phép set ngưỡng % tối thiểu linh hoạt hơn.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Tỷ lệ điền tối thiểu (%)**: bao nhiêu % dòng phải có giá trị (không NULL, không rỗng) | **Bài toán:** Không bắt buộc 100% KH có email, nhưng cần ít nhất 80%.<br>**Cấu hình:**<br>- Cột = `EMAIL`<br>- Tỷ lệ điền tối thiểu = `80` | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `EMAIL`<br>- Tỷ lệ tối thiểu = 80%<br>- W = 85, C = 75<br>**SQL:**<br>`SELECT COUNT(EMAIL) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 82.5% → ≥C(75) nhưng <W(85) → **Cảnh báo** |
+| **% Null theo chu kỳ** | Đầy đủ | Cột | Theo dõi tỷ lệ NULL trong từng chu kỳ thời gian — phát hiện trend null tăng dần.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Cột thời gian**: cột DATE/TIMESTAMP để group by<br>- **Độ chi tiết**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% Null tối đa mỗi chu kỳ**: mỗi ngày/tuần/tháng không được vượt X% null | **Bài toán:** Theo dõi null của cột SO_DU theo ngày, mỗi ngày không quá 5%.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Cột thời gian = `NGAY_CAP_NHAT`<br>- Độ chi tiết = `Ngày`<br>- Khoảng kiểm = `30`<br>- % Null tối đa = `5` | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `SO_DU`, Cột thời gian = `NGAY_GD`<br>- Chu kỳ = Ngày, Khoảng kiểm = 30 ngày<br>- Null tối đa = 5%, W = 95, C = 90<br>**SQL:**<br>`SELECT DATE_TRUNC('day', NGAY_GD) AS period, (COUNT(*) - COUNT(SO_DU)) * 100.0 / COUNT(*) AS null_pct FROM GD_GIAODICH GROUP BY 1`<br>Score = 100 - max(null_pct)<br>**Kết quả:** max null_pct = 8% → score = 92 → **Cảnh báo** |
+| **NOT NULL có điều kiện** | Đầy đủ | Cột | Cột chỉ bắt buộc NOT NULL khi thỏa mãn một điều kiện SQL.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Điều kiện SQL WHERE**: khi điều kiện đúng thì cột phải có giá trị | **Bài toán:** SO_DU chỉ bắt buộc khi tài khoản đang ACTIVE.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Điều kiện = `TRANG_THAI = 'ACTIVE'`<br>→ Nếu TRANG_THAI='ACTIVE' mà SO_DU là NULL → vi phạm. | **Cấu hình:**<br>- Bảng = `TK_VIENPAY`<br>- Cột = `SO_DU`<br>- Điều kiện = `TRANG_THAI = 'ACTIVE'`<br>- W = 98, C = 95<br>**SQL:**<br>`SELECT COUNT(SO_DU) * 100.0 / COUNT(*) AS score FROM TK_VIENPAY WHERE TRANG_THAI = 'ACTIVE'`<br>**Kết quả:** score = 99.2% → ≥W(98) → **Đạt** |
+| **Số dòng trong khoảng** | Đầy đủ | Bảng | Kiểm tra tổng số dòng trong bảng phải nằm trong khoảng [min, max]. Phát hiện bảng bị truncate hoặc tăng đột biến.<br>**Trường cấu hình:**<br>- **Số dòng tối thiểu**: giới hạn dưới<br>- **Số dòng tối đa**: giới hạn trên | **Bài toán:** Bảng GD_GIAODICH bình thường có 1M–50M dòng.<br>**Cấu hình:**<br>- Min = `1000000`<br>- Max = `50000000`<br>→ Nếu đột ngột còn 100 dòng → không đạt. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Min = 1000000, Max = 50000000<br>- W = 90, C = 80<br>**SQL:**<br>`SELECT COUNT(*) AS total_rows FROM GD_GIAODICH`<br>Đánh giá: total_rows trong [min, max] → score = 100<br>**Kết quả:** total_rows = 2.500.000 → trong khoảng → **Đạt** |
+| **Phủ thời gian (Time Coverage)** | Đầy đủ | Bảng | Kiểm tra chuỗi thời gian liên tục không bị thiếu khoảng. **Áp dụng cho cả bảng nguồn, báo cáo và chỉ tiêu KPI.**<br>**Trường cấu hình:**<br>- **Cột thời gian**: cột DATE để group<br>- **Độ chi tiết**: Ngày / Tuần / Tháng<br>- **Khoảng kiểm (số ngày)**: quét bao nhiêu ngày gần nhất<br>- **% chu kỳ phải có dữ liệu**: VD 95% = trong 30 ngày phải có dữ liệu ít nhất 28-29 ngày | **Bài toán:** Bảng GD_GIAODICH phải có giao dịch mỗi ngày.<br>**Cấu hình:**<br>- Cột thời gian = `NGAY_GD`<br>- Độ chi tiết = `Ngày`<br>- Khoảng kiểm = `30`<br>- % phủ = `95`<br>→ Thiếu 3 ngày trong 30 ngày (90%) → cảnh báo. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột thời gian = `NGAY_GD`<br>- Chu kỳ = Ngày, Khoảng kiểm = 30<br>- Phủ tối thiểu = 95%, W = 95, C = 90<br>**SQL:**<br>`SELECT COUNT(DISTINCT DATE_TRUNC('day', NGAY_GD)) * 100.0 / 30 AS score FROM GD_GIAODICH WHERE NGAY_GD >= DATE_SUB(CURRENT_DATE, 30)`<br>**Kết quả:** 28 ngày có dữ liệu → score = 93.3% → **Cảnh báo** |
+| **Thay đổi khối lượng (Volume Change)** | Đầy đủ | Bảng | So sánh số dòng hiện tại với trung bình N ngày trước — phát hiện biến động bất thường.<br>**Trường cấu hình:**<br>- **Nhìn lại N ngày trước**: so sánh với trung bình bao nhiêu ngày<br>- **% thay đổi tối đa cho phép**: vượt X% là cảnh báo<br>- **Cột thời gian**: cột DATE để phân chia dữ liệu theo ngày | **Bài toán:** Số dòng GD_GIAODICH không nên biến động quá 30%.<br>**Cấu hình:**<br>- Nhìn lại = `7` ngày<br>- % thay đổi tối đa = `30`<br>- Cột thời gian = `NGAY_GD`<br>→ Hôm nay 100K dòng, 7 ngày trước TB 200K → giảm 50% → vi phạm. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột thời gian = `NGAY_GD`<br>- Nhìn lại = 7 ngày, Thay đổi tối đa = 30%<br>- W = 80, C = 60<br>**SQL:**<br>So COUNT hôm nay vs AVG 7 ngày:<br>`WITH today AS (...), hist AS (SELECT AVG(cnt) ...) SELECT ABS(today.cnt - hist.avg_cnt) * 100.0 / hist.avg_cnt AS change_pct`<br>Score = 100 - change_pct<br>**Kết quả:** change_pct = 15% → score = 85 → **Đạt** |
+| **Đúng định dạng — Whitelist Regex** | Hợp lệ | Cột | Giá trị trong cột PHẢI khớp biểu thức chính quy (regex).<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Biểu thức chính quy**: pattern mà giá trị phải match<br>Hệ thống đếm % dòng match regex → so với ngưỡng. | **Bài toán:** Số điện thoại phải đúng format VN 10 số.<br>**Cấu hình:**<br>- Cột = `SO_DIEN_THOAI`<br>- Regex = `^(03\|07\|08\|09)\d{8}$`<br>- Ngưỡng W=95, C=90 | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `SO_DIEN_THOAI`<br>- Regex = `^0[0-9]{9}$`<br>- W = 95, C = 90<br>**SQL:**<br>`SELECT COUNT(CASE WHEN SO_DIEN_THOAI RLIKE '^0[0-9]{9}$' THEN 1 END) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 96.8% → ≥W(95) → **Đạt** |
+| **Không chứa giá trị rác — Blacklist** | Hợp lệ | Cột | Ngược lại Whitelist — giá trị KHÔNG ĐƯỢC khớp pattern. Dùng `\|` để OR nhiều pattern.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Pattern blacklist (regex)**: giá trị khớp sẽ bị coi là rác | **Bài toán:** Cột HO_TEN không được chứa giá trị test/rác.<br>**Cấu hình:**<br>- Cột = `HO_TEN`<br>- Blacklist = `TEST\|FAKE\|N/A\|NULL\|^\\s*$`<br>→ Dòng có HO_TEN = "TEST" hoặc "N/A" → vi phạm. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `EMAIL`<br>- Blacklist = `TEST\|FAKE\|N/A`<br>- W = 98, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN EMAIL NOT RLIKE 'TEST\|FAKE\|N/A' THEN 1 END) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 99.1% → ≥W(98) → **Đạt** |
+| **Trong khoảng giá trị** | Hợp lệ | Cột | Giá trị số phải nằm trong khoảng [min, max]. Để trống 1 đầu = chỉ kiểm tra 1 chiều.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Giá trị tối thiểu**: giới hạn dưới<br>- **Giá trị tối đa**: giới hạn trên | **Bài toán:** Tuổi khách hàng phải hợp lệ (18–120).<br>**Cấu hình:**<br>- Cột = `TUOI`<br>- Min = `18`<br>- Max = `120`<br>→ Tuổi = 0 hoặc 200 → vi phạm. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `SO_TIEN`<br>- Min = 1000, Max = 500000000<br>- W = 98, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN SO_TIEN BETWEEN 1000 AND 500000000 THEN 1 END) * 100.0 / COUNT(*) AS score FROM GD_GIAODICH`<br>**Kết quả:** score = 99.5% → ≥W(98) → **Đạt** |
+| **Trong danh sách hợp lệ (Whitelist)** | Hợp lệ | Cột | Giá trị phải thuộc tập hợp cho phép (enum).<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Danh sách giá trị hợp lệ**: nhập các giá trị cách nhau bằng dấu phẩy | **Bài toán:** Giới tính chỉ chấp nhận 3 giá trị.<br>**Cấu hình:**<br>- Cột = `GIOI_TINH`<br>- Danh sách = `NAM, NU, KHAC`<br>→ Giá trị "Male" hoặc "1" → vi phạm. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `LOAI_GD`<br>- Danh sách = NAP_TIEN, RUT_TIEN, CHUYEN_KHOAN, THANH_TOAN, HOAN_TIEN<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN LOAI_GD IN ('NAP_TIEN','RUT_TIEN','CHUYEN_KHOAN','THANH_TOAN','HOAN_TIEN') THEN 1 END) * 100.0 / COUNT(*) AS score FROM GD_GIAODICH`<br>**Kết quả:** score = 99.8% → ≥W(99) → **Đạt** |
+| **Biểu thức SQL tùy chỉnh** | Hợp lệ | Bảng | Điều kiện WHERE SQL áp dụng trên toàn bảng — metric linh hoạt nhất, dùng khi các metric khác không đủ. **Bao gồm cả kiểm tra nhất quán chéo cột** (VD: `NGAY_DONG > NGAY_MO`).<br>**Trường cấu hình:**<br>- **Điều kiện kiểm tra**: biểu thức SQL (không cần từ khóa WHERE)<br>Hệ thống đếm % dòng thỏa mãn điều kiện. | **Bài toán:** Mọi tài khoản tín dụng/tiết kiệm phải có lãi suất > 0.<br>**Cấu hình:**<br>- Biểu thức = `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0`<br>→ Dòng nào không thỏa = vi phạm. | **Cấu hình:**<br>- Bảng = `TK_VIENPAY`<br>- Biểu thức = `TRANG_THAI != 'ACTIVE' OR SO_DU >= 0`<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN TRANG_THAI != 'ACTIVE' OR SO_DU >= 0 THEN 1 END) * 100.0 / COUNT(*) AS score FROM TK_VIENPAY`<br>**Kết quả:** score = 100% → ≥W(99) → **Đạt** |
+| **Kiểu dữ liệu cố định** | Nhất quán | Cột | Tất cả giá trị trong cột phải đúng kiểu dữ liệu chỉ định. Phát hiện dữ liệu bị lẫn kiểu.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Kiểu dữ liệu bắt buộc**: chọn từ dropdown — STRING, INTEGER, DECIMAL, DATE, TIMESTAMP | **Bài toán:** Cột NGAY_SINH phải là kiểu DATE, không lẫn string.<br>**Cấu hình:**<br>- Cột = `NGAY_SINH`<br>- Kiểu = `DATE`<br>→ Dòng chứa "01-01-1990" dạng string thay vì date → vi phạm. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `NGAY_SINH`<br>- Kiểu = DATE<br>- W = 98, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN TRY_CAST(NGAY_SINH AS DATE) IS NOT NULL THEN 1 END) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 97.2% → ≥C(95) nhưng <W(98) → **Cảnh báo** |
+| **Giá trị phổ biến nhất (Mode)** | Nhất quán | Cột | Kiểm tra giá trị xuất hiện nhiều nhất (mode) có chiếm đủ tỷ lệ không — phát hiện dữ liệu bị "pha tạp".<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Giá trị mode kỳ vọng**: tùy chọn, để trống = chỉ kiểm tra tần suất<br>- **Tần suất tối thiểu (%)**: mode phải chiếm ≥ X% tổng số dòng | **Bài toán:** ≥80% KH phải có quốc tịch VN.<br>**Cấu hình:**<br>- Cột = `QUOC_TICH`<br>- Mode kỳ vọng = `VN`<br>- Tần suất tối thiểu = `80`<br>→ Nếu đột ngột giảm còn 50% → có thể lẫn nguồn lạ. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `QUOC_TICH`<br>- Mode kỳ vọng = VN<br>- Tần suất tối thiểu = 80%<br>- W = 85, C = 75<br>**SQL:**<br>`SELECT COUNT(CASE WHEN QUOC_TICH = 'VN' THEN 1 END) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 92% → ≥W(85) → **Đạt** |
+| **Toàn vẹn tham chiếu (FK)** | Nhất quán | Cột | Kiểm tra giá trị trong cột phải tồn tại ở bảng tham chiếu (foreign key check).<br>**Trường cấu hình:**<br>- **Cột nguồn**: cột cần kiểm tra<br>- **Bảng tham chiếu**: chọn bảng chứa dữ liệu chuẩn<br>- **Cột tham chiếu**: cột trong bảng tham chiếu để so khớp | **Bài toán:** MA_KH trong giao dịch phải tồn tại trong bảng KH.<br>**Cấu hình:**<br>- Cột nguồn = `MA_KH`<br>- Bảng tham chiếu = `KH_KHACHHANG`<br>- Cột tham chiếu = `MA_KH`<br>→ Giao dịch có MA_KH không tồn tại → vi phạm. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `MA_KH`<br>- Bảng tham chiếu = `KH_KHACHHANG`<br>- Cột tham chiếu = `MA_KH`<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN g.MA_KH IN (SELECT MA_KH FROM KH_KHACHHANG) THEN 1 END) * 100.0 / COUNT(*) AS score FROM GD_GIAODICH g`<br>**Kết quả:** score = 99.7% → ≥W(99) → **Đạt** |
+| **Không trùng lặp (1 cột)** | Duy nhất | Cột | Kiểm tra giá trị trong một cột là duy nhất (unique).<br>**Trường cấu hình:**<br>- **Cột**: chọn cột cần kiểm tra<br>Hệ thống đếm % giá trị distinct → so với ngưỡng. | **Bài toán:** Mỗi KH phải có số CMND duy nhất.<br>**Cấu hình:**<br>- Cột = `SO_CMND`<br>→ Có 2 KH cùng số CMND → vi phạm. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột = `SO_CMND`<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(DISTINCT SO_CMND) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG`<br>**Kết quả:** score = 99.9% → ≥W(99) → **Đạt** |
+| **Không trùng lặp (nhiều cột)** | Duy nhất | Bảng | Kiểm tra tổ hợp nhiều cột là duy nhất (composite unique key).<br>**Trường cấu hình:**<br>- **Danh sách cột**: chọn nhiều cột từ checkbox (cần chọn ≥ 2 cột) | **Bài toán:** Mỗi KH chỉ có 1 bản ghi/tháng trong TK_TAIKHOAN.<br>**Cấu hình:**<br>- Chọn cột = `MA_KH` + `THANG`<br>→ Có 2 dòng cùng MA_KH + THANG → vi phạm. | **Cấu hình:**<br>- Bảng = `BAO_CAO_THANG`<br>- Các cột = MA_KH, THANG<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(DISTINCT CONCAT(MA_KH, '\|', THANG)) * 100.0 / COUNT(*) AS score FROM BAO_CAO_THANG`<br>**Kết quả:** score = 100% → ≥W(99) → **Đạt** |
+| **Khớp với dữ liệu chuẩn** | Chính xác | Cột | So sánh giá trị trong cột với bảng/cột tham chiếu đã xác thực (master data).<br>**Trường cấu hình:**<br>- **Cột so sánh (nguồn)**: cột trong bảng hiện tại<br>- **Bảng chuẩn**: bảng master data<br>- **Cột chuẩn**: cột trong bảng chuẩn để so khớp | **Bài toán:** Mã tỉnh phải khớp danh mục tỉnh thành.<br>**Cấu hình:**<br>- Cột nguồn = `MA_TINH`<br>- Bảng chuẩn = `DM_TINH_THANH`<br>- Cột chuẩn = `MA_TINH`<br>→ Mã tỉnh không tồn tại trong danh mục → vi phạm. | **Cấu hình:**<br>- Bảng = `KH_KHACHHANG`<br>- Cột nguồn = `MA_TINH`<br>- Bảng chuẩn = `DM_TINH_THANH`<br>- Cột chuẩn = `MA_TINH`<br>- W = 98, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN k.MA_TINH IN (SELECT MA_TINH FROM DM_TINH_THANH) THEN 1 END) * 100.0 / COUNT(*) AS score FROM KH_KHACHHANG k`<br>**Kết quả:** score = 99.5% → ≥W(98) → **Đạt** |
+| **Thống kê trong khoảng (Statistics Bound)** | Chính xác | Cột | Kiểm tra chỉ số thống kê phải nằm trong khoảng cho phép — phát hiện outlier hoặc drift phân phối.<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Loại thống kê**: chọn từ dropdown — Min, Max, Mean, Stddev, P25, P50 (median), P75<br>- **Khoảng tối thiểu**: giới hạn dưới<br>- **Khoảng tối đa**: giới hạn trên | **Bài toán:** Trung bình số dư tài khoản phải trong 10M–500M.<br>**Cấu hình:**<br>- Cột = `SO_DU`<br>- Loại thống kê = `Mean`<br>- Min = `10000000`<br>- Max = `500000000`<br>→ Mean đột ngột = 0 → phát hiện bảng bị zero-out. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `SO_TIEN`<br>- Loại = Mean, Min = 10000, Max = 5000000<br>- W = 90, C = 80<br>**SQL:**<br>`SELECT AVG(SO_TIEN) AS stat_value FROM GD_GIAODICH`<br>Đánh giá: stat_value trong [min, max] → score = 100<br>**Kết quả:** mean = 350.000 → trong khoảng → **Đạt** |
+| **Tổng cột trong khoảng (Sum Range)** | Chính xác | Cột | Kiểm tra SUM toàn bộ giá trị của cột phải nằm trong khoảng [min, max].<br>**Trường cấu hình:**<br>- **Cột**: cột cần kiểm tra<br>- **Tổng tối thiểu**: giới hạn dưới<br>- **Tổng tối đa**: giới hạn trên | **Bài toán:** Tổng doanh thu ngày phải từ 1 tỷ đến 100 tỷ.<br>**Cấu hình:**<br>- Cột = `SO_TIEN`<br>- Min = `1000000000`<br>- Max = `100000000000`<br>→ Tổng = 0 → bảng thiếu dữ liệu. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `SO_TIEN`<br>- Tổng min = 1000000000, Tổng max = 100000000000<br>- W = 90, C = 80<br>**SQL:**<br>`SELECT SUM(SO_TIEN) AS total FROM GD_GIAODICH`<br>Đánh giá: total trong [min, max] → score = 100<br>**Kết quả:** total = 15 tỷ → trong khoảng → **Đạt** |
+| **Biểu thức cross-column có % pass** | Chính xác | Cột | Biểu thức SparkSQL phải đúng cho ≥ X% số dòng — kiểm tra cross-column với ngưỡng cho phép sai số.<br>**Trường cấu hình:**<br>- **Cột**: cột chính liên quan<br>- **Biểu thức SparkSQL**: trả về true/false cho từng dòng<br>- **% dòng phải pass tối thiểu**: ngưỡng pass rate | **Bài toán:** Thành tiền = đơn giá × số lượng, cho phép 1% sai số do làm tròn.<br>**Cấu hình:**<br>- Biểu thức = `THANH_TIEN = DON_GIA * SO_LUONG`<br>- % pass = `99` | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Biểu thức = `SO_TIEN > 0 AND MA_KH IS NOT NULL`<br>- Pass tối thiểu = 99%<br>- W = 99, C = 95<br>**SQL:**<br>`SELECT COUNT(CASE WHEN SO_TIEN > 0 AND MA_KH IS NOT NULL THEN 1 END) * 100.0 / COUNT(*) AS score FROM GD_GIAODICH`<br>**Kết quả:** score = 99.5% → ≥W(99) → **Đạt** |
+| **Kích thước bảng trong khoảng** | Chính xác | Bảng | Kiểm tra dung lượng bảng/partition phải trong khoảng cho phép. Phát hiện partition size bất thường.<br>**Trường cấu hình:**<br>- **Kích thước tối thiểu**: giới hạn dưới<br>- **Kích thước tối đa**: giới hạn trên<br>- **Đơn vị**: chọn MB hoặc GB | **Bài toán:** Partition hàng ngày GD_GIAODICH phải từ 100MB đến 50GB.<br>**Cấu hình:**<br>- Min = `100`<br>- Max = `50000`<br>- Đơn vị = `MB`<br>→ Partition hôm nay chỉ 1MB → thiếu dữ liệu. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Min = 100, Max = 50000, Đơn vị = MB<br>- W = 90, C = 80<br>**SQL:**<br>Metadata query — lấy kích thước bảng từ hệ thống:<br>`DESCRIBE EXTENDED GD_GIAODICH`<br>Đánh giá: size_mb trong [100, 50000] → score = 100<br>**Kết quả:** 2.500 MB → trong khoảng → **Đạt** |
+| **Đúng hạn (SLA)** | Kịp thời | Cột | Dữ liệu phải có mặt trước thời hạn SLA.<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp ghi nhận thời gian load/tạo<br>- **Thời hạn SLA (HH:MM)**: giờ deadline mỗi ngày<br>- **Cửa sổ cảnh báo (phút)**: cảnh báo sớm bao nhiêu phút trước deadline | **Bài toán:** Dữ liệu GD ngày hôm trước phải có trước 06:00 sáng.<br>**Cấu hình:**<br>- Cột = `NGAY_LOAD`<br>- SLA = `06:00`<br>- Cửa sổ cảnh báo = `30`<br>→ Cảnh báo lúc 05:30 nếu chưa có dữ liệu. | **Cấu hình:**<br>- Bảng = `GD_GIAODICH`<br>- Cột = `NGAY_TAO`<br>- SLA = 08:00, Cửa sổ = 30 phút<br>- W = 90, C = 80<br>**SQL:**<br>`SELECT CASE WHEN MAX(NGAY_TAO) >= CURRENT_DATE THEN 100 ELSE 0 END AS score FROM GD_GIAODICH`<br>**Kết quả:** dữ liệu có lúc 07:45 → trước SLA → score = 100 → **Đạt** |
+| **Tươi mới (Freshness)** | Kịp thời | Cột | Dữ liệu phải được cập nhật trong khoảng thời gian quy định — phát hiện bảng "chết".<br>**Trường cấu hình:**<br>- **Cột**: cột timestamp cập nhật cuối<br>- **Dữ liệu tươi trong**: số lượng<br>- **Đơn vị thời gian**: Phút / Giờ / Ngày | **Bài toán:** Bảng KH phải được cập nhật trong 24 giờ gần nhất.<br>**Cấu hình:**<br>- Cột = `UPDATED_AT`<br>- Tươi trong = `24`<br>- Đơn vị = `Giờ`<br>→ Dòng gần nhất cập nhật 3 ngày trước → vi phạm. | **Cấu hình:**<br>- Bảng = `TK_VIENPAY`<br>- Cột = `NGAY_CAP_NHAT`<br>- Tươi trong = 5, Đơn vị = Phút<br>- W = 90, C = 80<br>**SQL:**<br>`SELECT (UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(MAX(NGAY_CAP_NHAT))) / 60 AS age_minutes FROM TK_VIENPAY`<br>Đánh giá: age <= maxAge → score = 100<br>**Kết quả:** age = 3 phút → trong ngưỡng → **Đạt** |
+| **Khớp số dòng BC vs Nguồn** 🆕 | Đầy đủ | Bảng | So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn liên kết — phát hiện mất dữ liệu trong quá trình tổng hợp báo cáo.<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: chọn bảng nguồn (chỉ hiển thị bảng loại "Bảng nguồn")<br>- **Sai lệch tối đa (%)**: phần trăm chênh lệch cho phép | **Bài toán:** Báo cáo ngày phải có đủ dòng so với bảng giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>- Sai lệch tối đa = `5`<br>→ BC có 900 dòng, nguồn 1.000 dòng → thiếu 10% → vi phạm. | **Cấu hình:**<br>- BC = `BAO_CAO_NGAY`<br>- Nguồn = `GD_GIAODICH`<br>- Sai lệch tối đa = 5%<br>- W = 95, C = 90<br>**SQL:**<br>`SELECT (SELECT COUNT(*) FROM BAO_CAO_NGAY) AS bc_count, (SELECT COUNT(*) FROM GD_GIAODICH) AS src_count`<br>Score = 100 - ABS(bc_count - src_count) * 100 / src_count<br>**Kết quả:** BC = 950, Nguồn = 1000 → lệch 5% → score = 95 → **Đạt** (vừa đúng ngưỡng W) |
+| **Khớp KPI cha-con** 🆕 | Nhất quán | Bảng | Tổng giá trị các KPI con phải bằng KPI cha — phát hiện sai lệch trong cây chỉ tiêu kinh doanh.<br>**Trường cấu hình:**<br>- **Cột KPI cha**: cột chứa giá trị KPI tổng<br>- **Biểu thức tổng KPI con**: biểu thức tính tổng các KPI con<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép | **Bài toán:** KPI doanh thu tổng = tổng doanh thu các chi nhánh.<br>**Cấu hình:**<br>- Cột KPI cha = `TONG_GD`<br>- Tổng KPI con = `SUM(sub_kpi_value)`<br>- Sai lệch tối đa = `5`<br>→ KPI cha = 100, tổng con = 108 → lệch 8% → vi phạm. | **Cấu hình:**<br>- Bảng = `KPI_KINHDOANH`<br>- Cột KPI cha = `TONG_GD`<br>- Tổng con = `SUM(sub_kpi_value)`<br>- Sai lệch = 5%, W = 95, C = 90<br>**SQL:**<br>`SELECT TONG_GD AS parent_val, (SELECT SUM(sub_kpi_value) FROM KPI_CON) AS child_sum FROM KPI_KINHDOANH`<br>Score = 100 - ABS(parent - child) / parent * 100<br>**Kết quả:** cha = 1.000.000, con = 1.060.000 → lệch 6% → score = 94 → **Cảnh báo** |
+| **Đối soát tổng hợp BC** 🆕 | Chính xác | Bảng | So sánh giá trị cột tổng hợp trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate. **Bao gồm cả đối soát chéo nguồn.**<br>**Trường cấu hình:**<br>- **Bảng nguồn liên kết**: bảng gốc chứa dữ liệu chi tiết<br>- **Cột tổng hợp trên BC**: cột trên bảng BC chứa giá trị đã tổng hợp<br>- **Cột nguồn (SUM)**: cột trong bảng nguồn để tính SUM so sánh<br>- **Sai lệch tối đa (%)**: % chênh lệch cho phép giữa SUM nguồn và giá trị BC | **Bài toán:** Cột THUC_TE trên báo cáo phải khớp SUM(SO_TIEN) từ giao dịch.<br>**Cấu hình:**<br>- Bảng BC = `BAO_CAO_NGAY`<br>- Bảng nguồn = `GD_GIAODICH`<br>- Cột BC = `THUC_TE`<br>- Cột nguồn = `SO_TIEN`<br>- Sai lệch tối đa = `1`<br>→ BC THUC_TE = 100M, SUM giao dịch = 102M → lệch 2% → vi phạm. | **Cấu hình:**<br>- BC = `BAO_CAO_NGAY`, Nguồn = `GD_GIAODICH`<br>- Cột BC = `THUC_TE`, Cột nguồn = `SO_TIEN`<br>- Sai lệch = 1%, W = 99, C = 95<br>**SQL:**<br>`SELECT SUM(THUC_TE) AS bc_sum FROM BAO_CAO_NGAY` vs `SELECT SUM(SO_TIEN) AS src_sum FROM GD_GIAODICH`<br>Score = 100 - ABS(bc - src) / src * 100<br>**Kết quả:** BC = 100 tỷ, Nguồn = 102 tỷ → lệch 2% → score = 98 → **Cảnh báo** |
+| **Biến động KPI so kỳ trước** 🆕 | Chính xác | Bảng | Giá trị KPI không được thay đổi quá X% so với kỳ trước — phát hiện bất thường như tăng/giảm đột biến không giải thích được.<br>**Trường cấu hình:**<br>- **Cột chỉ tiêu KPI**: cột chứa giá trị KPI cần theo dõi<br>- **Cột thời gian**: cột DATE để xác định kỳ<br>- **Chu kỳ so sánh**: Ngày / Tuần / Tháng<br>- **Biến động tối đa so kỳ trước (%)**: ngưỡng % thay đổi cho phép | **Bài toán:** KPI doanh thu tháng không được tăng/giảm quá 30%.<br>**Cấu hình:**<br>- Bảng KPI = `KPI_KINHDOANH`<br>- Cột KPI = `DOANH_THU`<br>- Cột thời gian = `THANG`<br>- Chu kỳ = `Tháng`<br>- Biến động tối đa = `30`<br>→ Tháng trước 100M, tháng này 55M → giảm 45% → vi phạm. | **Cấu hình:**<br>- Bảng = `KPI_KINHDOANH`<br>- Cột KPI = `DOANH_THU`, Cột thời gian = `THANG`<br>- Chu kỳ = Tháng, Biến động tối đa = 30%<br>- W = 80, C = 60<br>**SQL:**<br>`SELECT cur.DOANH_THU, prev.DOANH_THU, ABS(cur.DOANH_THU - prev.DOANH_THU) * 100.0 / prev.DOANH_THU AS variance_pct FROM KPI_KINHDOANH cur JOIN KPI_KINHDOANH prev ON prev.THANG = ADD_MONTHS(cur.THANG, -1)`<br>Score = 100 - variance_pct<br>**Kết quả:** Tháng trước 100 tỷ, tháng này 55 tỷ → giảm 45% → score = 55 → **Không đạt** |
 
-### 6.1 Cấp Bảng (Table-level) — 13 metrics
+### 6.1 Cấp Bảng (Table-level) — 10 metrics
 
 | # | Metric | Chiều | Mô tả | Tham số cần nhập | Ví dụ |
 |---|---|---|---|---|---|
 | 1 | `row_count` | Đầy đủ | Số dòng bảng phải nằm trong [min, max] — phát hiện bảng bị truncate hoặc explode | min rows, max rows | `GD_GIAODICH` có 1.000 – 5.000.000 dòng |
-| 2 | `time_coverage` | Đầy đủ | Chuỗi thời gian không bị gián đoạn trong N ngày gần nhất | Cột thời gian, granularity (ngày/tuần/tháng), số ngày, % phủ tối thiểu | `NGAY_GD` liên tục 30 ngày ≥ 95% |
-| 3 | `volume_change` | Đầy đủ | % thay đổi số dòng so với N ngày trước không vượt ngưỡng | Số ngày nhìn lại, % thay đổi tối đa | Số dòng không thay đổi quá 30% so với 7 ngày trước |
-| 4 | `report_row_count_match` | Đầy đủ | Số dòng BC phải khớp bảng nguồn — phát hiện mất dữ liệu khi tổng hợp | Bảng nguồn liên kết | `BAO_CAO_NGAY` vs `GD_GIAODICH` |
-| 5 | `period_completeness` | Đầy đủ | KPI phải có đủ dữ liệu theo chu kỳ — phát hiện thiếu kỳ | Chu kỳ, khoảng kiểm (ngày), % kỳ phải có | `KPI_KINHDOANH` đủ 12 tháng ≥ 95% |
-| 6 | `table_size` | Chính xác | Kích thước bảng/partition trong khoảng cho phép | min size, max size, đơn vị (MB/GB) | Bảng chiếm 1–500 GB |
-| 7 | `aggregate_reconciliation` | Chính xác | Đối soát cột tổng hợp BC vs SUM từ bảng nguồn | Bảng nguồn, cột BC, sai lệch tối đa (%) | `THUC_TE` vs SUM(`SO_TIEN`) ± 1% |
-| 8 | `kpi_variance` | Chính xác | Biến động KPI so kỳ trước không quá X% | Biến động tối đa (%) | KPI tháng thay đổi ≤ 30% |
-| 9 | `custom_expression` | Hợp lệ | Điều kiện SQL WHERE tùy chỉnh cho toàn bảng | Biểu thức SQL | `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0` |
-| 10 | `cross_column` | Nhất quán | Ràng buộc logic giữa 2+ cột | Biểu thức SQL boolean | `NGAY_DONG > NGAY_MO` |
-| 11 | `cross_source_sum` | Nhất quán | Tổng chéo nguồn BC vs bảng gốc | Bảng nguồn, sai lệch tối đa (%) | `QUAN_LY_RR` vs `KH_KHACHHANG` ± 5% |
-| 12 | `parent_child_match` | Nhất quán | Tổng KPI con phải bằng KPI cha | Cột KPI cha, biểu thức tổng con, sai lệch (%) | `TONG_GD` = SUM(sub_kpi) ± 5% |
-| 13 | `duplicate_composite` | Duy nhất | Tổ hợp nhiều cột phải unique | Danh sách cột | `(MA_KH, THANG)` không trùng |
+| 2 | `time_coverage` | Đầy đủ | Chuỗi thời gian không bị gián đoạn trong N ngày gần nhất. Áp dụng cho cả bảng nguồn, báo cáo và chỉ tiêu KPI | Cột thời gian, granularity (ngày/tuần/tháng), số ngày, % phủ tối thiểu | `NGAY_GD` liên tục 30 ngày ≥ 95% |
+| 3 | `volume_change` | Đầy đủ | % thay đổi số dòng so với N ngày trước không vượt ngưỡng | Cột thời gian, số ngày nhìn lại, % thay đổi tối đa | Số dòng không thay đổi quá 30% so với 7 ngày trước |
+| 4 | `report_row_count_match` | Đầy đủ | Số dòng BC phải khớp bảng nguồn — phát hiện mất dữ liệu khi tổng hợp | Bảng nguồn liên kết, sai lệch tối đa (%) | `BAO_CAO_NGAY` vs `GD_GIAODICH` ± 5% |
+| 5 | `table_size` | Chính xác | Kích thước bảng/partition trong khoảng cho phép | min size, max size, đơn vị (MB/GB) | Bảng chiếm 1–500 GB |
+| 6 | `aggregate_reconciliation` | Chính xác | Đối soát cột tổng hợp BC vs SUM từ bảng nguồn. Bao gồm cả đối soát chéo nguồn | Bảng nguồn, cột BC, cột nguồn (SUM), sai lệch tối đa (%) | `THUC_TE` vs SUM(`SO_TIEN`) ± 1% |
+| 7 | `kpi_variance` | Chính xác | Biến động KPI so kỳ trước không quá X% | Cột chỉ tiêu KPI, cột thời gian, chu kỳ so sánh, biến động tối đa (%) | KPI tháng thay đổi ≤ 30% |
+| 8 | `custom_expression` | Hợp lệ | Điều kiện SQL WHERE tùy chỉnh cho toàn bảng. Bao gồm cả kiểm tra nhất quán chéo cột | Biểu thức SQL | `LOAI_TK IN ('TD','TK') AND LAI_SUAT > 0` |
+| 9 | `parent_child_match` | Nhất quán | Tổng KPI con phải bằng KPI cha | Cột KPI cha, biểu thức tổng con, sai lệch (%) | `TONG_GD` = SUM(sub_kpi) ± 5% |
+| 10 | `duplicate_composite` | Duy nhất | Tổ hợp nhiều cột phải unique | Danh sách cột | `(MA_KH, THANG)` không trùng |
 
 ### 6.2 Cấp Cột (Column-level) — 18 metrics
 
@@ -392,7 +383,7 @@ Hệ thống hỗ trợ **31 metric type** chia thành 2 nhóm: **cấp cột** 
 | 17 | `on_time` | Kịp thời | Dữ liệu phải có mặt trước thời hạn SLA | Cột timestamp, giờ SLA, cửa sổ cảnh báo (phút) | `NGAY_TAO` trước 08:00 ± 30 phút |
 | 18 | `freshness` | Kịp thời | Cột timestamp phải được cập nhật trong X thời gian | Cột timestamp, thời gian tối đa, đơn vị | `NGAY_CAP_NHAT` trong vòng 5 phút qua |
 
-### 6.3 Hướng dẫn chi tiết tất cả 31 Metric
+### 6.3 Hướng dẫn chi tiết tất cả 28 Metric
 
 > Ví dụ trong phần này lấy từ hệ sinh thái **fintech / ví điện tử** — bao gồm các bảng: `KH_KHACHHANG`, `GD_GIAODICH`, `TK_VIENPAY`, `CTKM_KHUYENMAI`, `DV_DICH_VU`, `SP_SANPHAM`, `DIEM_TICH_LUY`, `DM_TINH_THANH`.
 
@@ -424,6 +415,37 @@ Bảng TK_VIENPAY, cột TRANG_THAI
 
 > **Khi nào dùng `not_null` thay `fill_rate`:** Dùng `not_null` khi ngưỡng = 100% (zero tolerance). Dùng `fill_rate` khi cho phép một tỷ lệ nhỏ bị thiếu (VD: email không bắt buộc).
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra cột `SO_CMND` không được NULL.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `SO_CMND` |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(SO_CMND) * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+-- Đếm % dòng có SO_CMND không NULL
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 97.3%
+
+So sánh:
+  score (97.3) ≥ W (95) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 97.3% KH đã có CMND, 2.7% cần bổ sung nhưng vẫn trong ngưỡng cho phép.
+```
+
 ---
 
 #### `fill_rate` — Tỷ lệ điền đủ tối thiểu
@@ -450,6 +472,40 @@ Bảng DV_DICH_VU, cột MO_TA_DICH_VU, minFillRate=90%
 
 Bảng CTKM_KHUYENMAI, cột DIEU_KIEN_AP_DUNG, minFillRate=100%
 → Mọi CTKM đều phải ghi rõ điều kiện áp dụng — tránh tranh chấp khách hàng
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra cột `EMAIL` có tỷ lệ điền đủ ≥ 80%.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `EMAIL` |
+| Tỷ lệ điền tối thiểu (%) | 80 |
+| Ngưỡng cảnh báo (W) | 85 |
+| Ngưỡng không đạt (C) | 75 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(EMAIL) * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+-- Đếm % dòng có EMAIL (không NULL, không rỗng)
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 82.5%
+
+So sánh:
+  score (82.5) ≥ minFillPct (80) → Đạt ngưỡng tối thiểu ✓
+  score (82.5) < W (85)          → Cảnh báo ⚠️
+  score (82.5) ≥ C (75)          → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: 17.5% KH thiếu email, ảnh hưởng gửi thông báo giao dịch qua email.
 ```
 
 ---
@@ -481,6 +537,38 @@ Bảng CTKM_KHUYENMAI, cột MA_CTKM, pattern=^CTKM[0-9]{6}(Q[1-4])?$
 
 Bảng TK_VIENPAY, cột SO_TK, pattern=^VP[0-9]{10}$
 → Số tài khoản ví: VP + 10 số — phát hiện account test từ môi trường staging
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra SĐT đúng format 10 số bắt đầu bằng 0.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `SO_DIEN_THOAI` |
+| Biểu thức chính quy | `^0[0-9]{9}$` |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN SO_DIEN_THOAI RLIKE '^0[0-9]{9}$' THEN 1 END) * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+-- Đếm % dòng có SĐT khớp pattern 10 số bắt đầu bằng 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 96.8%
+
+So sánh:
+  score (96.8) ≥ W (95) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 3.2% SĐT sai format (có thể +84..., có dấu gạch, thiếu số) — cần làm sạch.
 ```
 
 ---
@@ -516,6 +604,39 @@ Bảng DV_DICH_VU, cột GIA_DICH_VU, min=0
 → Giá dịch vụ số không âm — dịch vụ miễn phí thì = 0
 ```
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra số tiền giao dịch trong khoảng 1.000đ – 500 triệu.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `SO_TIEN` |
+| Giá trị tối thiểu | 1000 |
+| Giá trị tối đa | 500000000 |
+| Ngưỡng cảnh báo (W) | 98 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN SO_TIEN BETWEEN 1000 AND 500000000 THEN 1 END) * 100.0 / COUNT(*) AS score
+FROM GD_GIAODICH
+-- Đếm % giao dịch có số tiền trong khoảng hợp lệ
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.5%
+
+So sánh:
+  score (99.5) ≥ W (98) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.5% GD ngoài khoảng — có thể là GD adjustment hoặc test cần review.
+```
+
 ---
 
 #### `allowed_values` — Giá trị phải thuộc tập cho phép
@@ -544,6 +665,39 @@ Bảng CTKM_KHUYENMAI, cột HINH_THUC_UU_DAI, values=CASHBACK,GIAM_GIA,QUA_TANG
 
 Bảng DV_DICH_VU, cột TRANG_THAI_DV, values=DANG_KY,DANG_SU_DUNG,TAM_DUNG,DA_HUY,HET_HAN
 → Dịch vụ số phải ở một trong 5 trạng thái vòng đời
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra loại giao dịch thuộc danh sách hợp lệ.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `LOAI_GD` |
+| Danh sách giá trị hợp lệ | `NAP_TIEN, RUT_TIEN, CHUYEN_KHOAN, THANH_TOAN, HOAN_TIEN` |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN LOAI_GD IN ('NAP_TIEN','RUT_TIEN','CHUYEN_KHOAN','THANH_TOAN','HOAN_TIEN') THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM GD_GIAODICH
+-- Đếm % giao dịch có loại thuộc danh sách cho phép
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.8%
+
+So sánh:
+  score (99.8) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.2% GD có loại lạ — có thể mã deprecated hoặc import từ hệ thống cũ.
 ```
 
 ---
@@ -578,6 +732,40 @@ Bảng DIEM_TICH_LUY, cột MA_KH → bảng KH_KHACHHANG, cột MA_KH
 
 > **Lưu ý hiệu năng:** Metric này chạy JOIN giữa 2 bảng — với bảng lớn (>100M dòng), nên schedule vào giờ thấp điểm.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra MA_KH phải tồn tại trong bảng khách hàng.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột nguồn (FK) | `MA_KH` |
+| Bảng tham chiếu | `KH_KHACHHANG` |
+| Cột tham chiếu (PK) | `MA_KH` |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN g.MA_KH IN (SELECT MA_KH FROM KH_KHACHHANG) THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM GD_GIAODICH g
+-- Đếm % giao dịch có mã KH tồn tại trong bảng khách hàng
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.7%
+
+So sánh:
+  score (99.7) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.3% GD có mã KH orphan — KH có thể đã bị xóa nhưng GD vẫn còn.
+```
+
 ---
 
 #### `duplicate_single` — Giá trị trong cột phải unique
@@ -606,6 +794,38 @@ Bảng CTKM_KHUYENMAI, cột MA_CTKM
 ```
 
 > **Phân biệt với `duplicate_composite`:** `duplicate_single` kiểm tra 1 cột; `duplicate_composite` kiểm tra tổ hợp nhiều cột.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra SO_CMND không trùng lặp.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `SO_CMND` |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(DISTINCT SO_CMND) * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+-- 100% = mọi SO_CMND là duy nhất
+-- < 100% = có giá trị trùng lặp
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.9%
+
+So sánh:
+  score (99.9) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.1% trùng — có thể KH đăng ký 2 tài khoản ví cùng CMND (nghi vấn fraud).
+```
 
 ---
 
@@ -638,11 +858,45 @@ Bảng CTKM_KHUYENMAI, cột MA_DOI_TAC → bảng DM_DOI_TAC, cột MA_DOI_TAC
 
 > **Phân biệt với `referential_integrity`:** `referential_integrity` kiểm tra FK trong mô hình dữ liệu; `reference_match` kiểm tra khớp với danh mục nghiệp vụ bên ngoài (có thể khác schema/DB).
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra mã tỉnh khớp danh mục hành chính.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột nguồn | `MA_TINH` |
+| Bảng chuẩn | `DM_TINH_THANH` |
+| Cột chuẩn | `MA_TINH` |
+| Ngưỡng cảnh báo (W) | 98 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN k.MA_TINH IN (SELECT MA_TINH FROM DM_TINH_THANH) THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG k
+-- Đếm % KH có mã tỉnh tồn tại trong danh mục hành chính chuẩn
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.5%
+
+So sánh:
+  score (99.5) ≥ W (98) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.5% KH có mã tỉnh không hợp lệ — có thể tỉnh mới chưa cập nhật danh mục.
+```
+
 ---
 
 #### `custom_expression` — Biểu thức SQL tùy chỉnh toàn bảng
 
-**Mục đích:** Kiểm tra **ràng buộc tổng hợp toàn bảng** bằng SQL aggregate — khi không có metric chuẩn nào đáp ứng yêu cầu nghiệp vụ phức tạp. Biểu thức trả về `TRUE/FALSE`.
+**Mục đích:** Kiểm tra **ràng buộc tổng hợp toàn bảng** bằng SQL aggregate — khi không có metric chuẩn nào đáp ứng yêu cầu nghiệp vụ phức tạp. Biểu thức trả về `TRUE/FALSE`. **Bao gồm cả kiểm tra nhất quán chéo cột** (VD: `NGAY_DONG > NGAY_MO`).
 
 **Tham số:**
 | Tham số | Bắt buộc | Giải thích |
@@ -669,44 +923,45 @@ Kiểm tra số ví mới trong ngày hợp lý (anti-fraud):
 → Số tài khoản mở mới trong 1 ngày: 100–50.000 (ngoài dải → nghi vấn bot)
 ```
 
-> **Khi nào dùng `custom_expression`:** Khi logic aggregate phức tạp (CASE WHEN, cross-condition). Khi logic đơn lẻ từng dòng → dùng `expression_pct`.
+> **Khi nào dùng `custom_expression`:** Khi logic aggregate phức tạp (CASE WHEN, cross-condition), hoặc khi cần kiểm tra nhất quán chéo cột (quan hệ logic giữa 2+ cột trong cùng 1 dòng). Khi logic đơn lẻ từng dòng và cần đặt ngưỡng % → dùng `expression_pct`.
+>
+> **Ví dụ kiểm tra chéo cột (cross-column):**
+> - `NGAY_DONG > NGAY_MO` — ngày đóng TK phải sau ngày mở
+> - `LOAI_KH != 'CA_NHAN' OR (SO_CMND IS NOT NULL AND NGAY_SINH IS NOT NULL)` — KH cá nhân bắt buộc có CMND + ngày sinh
+> - `TRANG_THAI != 'ACTIVE' OR HAN_MUC_NGAY > 0` — TK ACTIVE phải có hạn mức > 0
 
----
+**Minh họa: Cấu hình → SQL → Kết quả**
 
-#### `cross_column` — Ràng buộc logic giữa nhiều cột
+> Ví dụ: Bảng `TK_VIENPAY`, kiểm tra ví ACTIVE phải có số dư ≥ 0.
 
-**Mục đích:** Kiểm tra **quan hệ logic giữa 2+ cột trong cùng 1 dòng** — như ngày bắt đầu phải trước ngày kết thúc, số tiền phải khớp với loại giao dịch, v.v.
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `TK_VIENPAY` |
+| Biểu thức SQL | `TRANG_THAI != 'ACTIVE' OR SO_DU >= 0` |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
 
-**Tham số:**
-| Tham số | Bắt buộc | Giải thích |
-|---|---|---|
-| Biểu thức SQL boolean | ✅ | Điều kiện boolean kiểm tra từng dòng (như WHERE) |
-
-**Ví dụ fintech:**
-```
-Bảng CTKM_KHUYENMAI:
-  NGAY_KET_THUC > NGAY_BAT_DAU AND NGAY_KET_THUC > CURRENT_DATE - 365
-→ Ngày kết thúc sau ngày bắt đầu, không phải CTKM cũ hơn 1 năm chưa dọn
-
-Bảng GD_GIAODICH:
-  (LOAI_GD = 'NAP_TIEN' AND SO_TIEN > 0) OR (LOAI_GD = 'RUT_TIEN' AND SO_TIEN < 0)
-  hoặc (đơn giản hơn): LOAI_GD != 'RUT_TIEN' OR SO_TIEN <= 0
-→ Giao dịch rút tiền phải có chiều âm (debit)
-
-Bảng DV_DICH_VU:
-  (TRANG_THAI = 'HET_HAN' AND NGAY_HET_HAN IS NOT NULL) OR TRANG_THAI != 'HET_HAN'
-→ Dịch vụ hết hạn phải ghi ngày hết hạn
-
-Bảng KH_KHACHHANG:
-  LOAI_KH != 'CA_NHAN' OR (SO_CMND IS NOT NULL AND NGAY_SINH IS NOT NULL)
-→ KH cá nhân bắt buộc phải có CMND và ngày sinh (quy định KYC)
-
-Bảng TK_VIENPAY:
-  TRANG_THAI != 'ACTIVE' OR HAN_MUC_NGAY > 0
-→ Tài khoản ACTIVE phải có hạn mức ngày > 0
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN TRANG_THAI != 'ACTIVE' OR SO_DU >= 0 THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM TK_VIENPAY
+-- Đếm % dòng thỏa điều kiện: ví không ACTIVE HOẶC có số dư ≥ 0
+-- Tức là: mọi ví ACTIVE đều phải có SO_DU ≥ 0
 ```
 
-> **Phân biệt với `expression_pct`:** `cross_column` yêu cầu **100% dòng** thỏa; `expression_pct` cho phép đặt ngưỡng X% (linh hoạt hơn).
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 100%
+
+So sánh:
+  score (100) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Tất cả ví ACTIVE đều có số dư hợp lệ, không có ví nào bị âm.
+```
 
 ---
 
@@ -736,6 +991,38 @@ Bảng DIEM_TICH_LUY, cột (MA_KH, MA_GD)
 Bảng HAN_MUC_DICH_VU, cột (MA_KH, MA_DV, THANG)
 → Hạn mức sử dụng dịch vụ của 1 KH trong 1 tháng chỉ có 1 record
 → Trùng → apply sai hạn mức khi check eligibility
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `BAO_CAO_THANG`, mỗi KH chỉ có 1 bản ghi/tháng.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `BAO_CAO_THANG` |
+| Danh sách cột | `MA_KH`, `THANG` |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(DISTINCT CONCAT(MA_KH, '|', THANG)) * 100.0 / COUNT(*) AS score
+FROM BAO_CAO_THANG
+-- 100% = mỗi tổ hợp (MA_KH, THANG) là duy nhất
+-- < 100% = có bản ghi trùng composite key
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 100%
+
+So sánh:
+  score (100) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Không có KH nào bị trùng bản ghi trong cùng tháng — dữ liệu BC sạch.
 ```
 
 ---
@@ -769,11 +1056,44 @@ Bảng SNAPSHOT_SO_DU (chụp cuối ngày), min=100000, max=10000000
 
 > **Lưu ý:** Đây là metric **cấp bảng** — không chọn cột.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra số dòng trong khoảng 1M–50M.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Số dòng tối thiểu | 1000000 |
+| Số dòng tối đa | 50000000 |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT COUNT(*) AS total_rows FROM GD_GIAODICH
+-- So sánh total_rows với khoảng [1.000.000, 50.000.000]
+-- Trong khoảng → score = 100
+-- Ngoài khoảng → score = 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: total_rows = 2.500.000
+
+So sánh:
+  2.500.000 nằm trong [1.000.000, 50.000.000] → score = 100
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Bảng có đủ dữ liệu, không bị truncate hay data explosion.
+```
+
 ---
 
 #### `time_coverage` — Phủ chuỗi thời gian
 
-**Mục đích:** Đảm bảo dữ liệu time-series **không bị gap** — phát hiện ngày/tuần/tháng bị thiếu.
+**Mục đích:** Đảm bảo dữ liệu time-series **không bị gap** — phát hiện ngày/tuần/tháng bị thiếu. **Áp dụng cho cả bảng nguồn, báo cáo và chỉ tiêu KPI.**
 
 **Tham số:**
 | Tham số | Bắt buộc | Giải thích |
@@ -797,6 +1117,43 @@ Bảng DIEM_TICH_LUY, cột NGAY_TINH, granularity=Tháng, lookback=180, minCove
 → Bảng tích lũy điểm phải có dữ liệu đủ 6 tháng gần nhất (cho báo cáo loyalty)
 ```
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra 30 ngày qua có dữ liệu ≥ 95% số ngày.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột thời gian | `NGAY_GD` |
+| Độ chi tiết | Ngày |
+| Khoảng kiểm (số ngày) | 30 |
+| % chu kỳ phải có dữ liệu | 95 |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(DISTINCT DATE_TRUNC('day', NGAY_GD)) * 100.0 / 30 AS score
+FROM GD_GIAODICH
+WHERE NGAY_GD >= DATE_SUB(CURRENT_DATE, 30)
+-- Đếm số ngày distinct có giao dịch trong 30 ngày qua
+-- 30/30 = 100%, 28/30 = 93.3%, 27/30 = 90%
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: 28 ngày có dữ liệu → score = 93.3%
+
+So sánh:
+  score (93.3) < W (95)  → Cảnh báo ⚠️
+  score (93.3) ≥ C (90)  → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: Thiếu 2 ngày — có thể Thứ 7 + Chủ nhật pipeline không chạy.
+```
+
 ---
 
 #### `volume_change` — Biến động khối lượng
@@ -806,12 +1163,13 @@ Bảng DIEM_TICH_LUY, cột NGAY_TINH, granularity=Tháng, lookback=180, minCove
 **Tham số:**
 | Tham số | Bắt buộc | Giải thích |
 |---|---|---|
+| Cột thời gian | ✅ | Cột DATE để phân chia dữ liệu theo ngày |
 | Số ngày nhìn lại | ✅ | So sánh với trung bình N ngày trước (VD: 7) |
 | % thay đổi tối đa | ✅ | Cho phép biến động tối đa X% (VD: 30%) |
 
 **Ví dụ fintech:**
 ```
-Bảng GD_GIAODICH, lookbackPeriod=7, maxChangePct=30%
+Bảng GD_GIAODICH, timeColumn=NGAY_GD, lookbackPeriod=7, maxChangePct=30%
 → Trung bình 7 ngày qua: 150.000 GD/ngày
 → Hôm nay: 20.000 GD → giảm -87% → FAIL → nghĩ đến: switch bank ngừng API, Tết nghỉ, pipeline chết
 
@@ -825,6 +1183,50 @@ Bảng KH_KHACHHANG, lookbackPeriod=7, maxChangePct=50%
 ```
 
 > **Phân biệt với `row_count`:** `row_count` kiểm tra giá trị tuyệt đối (min/max cứng); `volume_change` kiểm tra % biến động tương đối so với lịch sử.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra số dòng không biến động quá 30% so với 7 ngày trước.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột thời gian | `NGAY_GD` |
+| Nhìn lại N ngày trước | 7 |
+| % thay đổi tối đa cho phép | 30 |
+| Ngưỡng cảnh báo (W) | 80 |
+| Ngưỡng không đạt (C) | 60 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+WITH daily_counts AS (
+  SELECT DATE_TRUNC('day', NGAY_GD) AS ngay, COUNT(*) AS cnt
+  FROM GD_GIAODICH
+  WHERE NGAY_GD >= DATE_SUB(CURRENT_DATE, 7)
+  GROUP BY 1
+),
+avg_hist AS (
+  SELECT AVG(cnt) AS avg_cnt FROM daily_counts WHERE ngay < CURRENT_DATE
+)
+SELECT
+  ABS(today.cnt - hist.avg_cnt) * 100.0 / hist.avg_cnt AS change_pct
+FROM daily_counts today, avg_hist hist
+WHERE today.ngay = CURRENT_DATE
+-- score = 100 - change_pct (tối thiểu 0)
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: Hôm nay = 180.000 GD, TB 7 ngày = 150.000 → change_pct = 20%
+→ score = 100 - 20 = 80
+
+So sánh:
+  score (80) ≥ W (80) → Đạt ✓ (vừa đúng ngưỡng)
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Biến động 20% — có thể do ngày lương, chấp nhận được.
+```
 
 ---
 
@@ -853,6 +1255,41 @@ Bảng SNAPSHOT_SO_DU, min=1MB, unit=MB
 → Snapshot số dư ví phải có ít nhất 1MB — bảng rỗng → job chưa chạy
 ```
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra dung lượng partition trong khoảng 100MB–5GB.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Kích thước tối thiểu | 100 |
+| Kích thước tối đa | 5000 |
+| Đơn vị | MB |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+-- Lấy dung lượng bảng từ metadata hệ thống (Hive/Spark):
+DESCRIBE EXTENDED GD_GIAODICH
+-- Hoặc: SHOW TABLE EXTENDED LIKE 'GD_GIAODICH'
+-- So sánh size_mb với khoảng [100, 5000]
+-- Trong khoảng → score = 100; Ngoài khoảng → score = 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: size = 2.500 MB
+
+So sánh:
+  2.500 MB nằm trong [100, 5000] → score = 100
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Dung lượng bảng bình thường, không bị truncate hay phình to.
+```
+
 ---
 
 #### `null_rate_by_period` — Tỷ lệ null theo chu kỳ
@@ -876,6 +1313,48 @@ Cột EMAIL, timeColumn=NGAY_TAO, granularity=Tháng, lookback=90 ngày, maxNull
 ```
 
 > **Phân biệt với `fill_rate`:** `fill_rate` snapshot tại thời điểm hiện tại; `null_rate_by_period` phân tích xu hướng theo thời gian.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Theo dõi % null cột `SO_DU` theo ngày trong 30 ngày, mỗi ngày ≤ 5%.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `SO_DU` |
+| Cột thời gian | `NGAY_GD` |
+| Độ chi tiết | Ngày |
+| Khoảng kiểm (số ngày) | 30 |
+| % Null tối đa mỗi chu kỳ | 5 |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  DATE_TRUNC('day', NGAY_GD) AS period,
+  (COUNT(*) - COUNT(SO_DU)) * 100.0 / COUNT(*) AS null_pct
+FROM GD_GIAODICH
+WHERE NGAY_GD >= DATE_SUB(CURRENT_DATE, 30)
+GROUP BY 1
+ORDER BY 1
+-- Mỗi dòng = 1 ngày + % null của ngày đó
+-- Lấy MAX(null_pct) → score = 100 - max_null_pct
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: Ngày 15/03 có null_pct = 8% (cao nhất)
+→ score = 100 - 8 = 92
+
+So sánh:
+  score (92) < W (95)  → Cảnh báo ⚠️
+  score (92) ≥ C (90)  → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: Ngày 15/03 thiếu SO_DU nhiều hơn bình thường — kiểm tra upstream.
+```
 
 ---
 
@@ -909,6 +1388,40 @@ Bảng DANG_KY_DICH_VU, cột NGAY_HET_HAN, điều kiện: LOAI_THUE = 'CO_HAN'
 
 > **Tip:** Điều kiện viết như SQL WHERE không có từ khóa WHERE: `TRANG_THAI = 'ACTIVE' AND LOAI_KH = 'CN'`
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `TK_VIENPAY`, ví ACTIVE phải có SO_DU không NULL.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `TK_VIENPAY` |
+| Cột | `SO_DU` |
+| Điều kiện SQL WHERE | `TRANG_THAI = 'ACTIVE'` |
+| Ngưỡng cảnh báo (W) | 98 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(SO_DU) * 100.0 / COUNT(*) AS score
+FROM TK_VIENPAY
+WHERE TRANG_THAI = 'ACTIVE'
+-- Chỉ kiểm tra các ví ACTIVE
+-- Ví CLOSED/INACTIVE: SO_DU = NULL được chấp nhận
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.2%
+
+So sánh:
+  score (99.2) ≥ W (98) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.8% ví ACTIVE thiếu SO_DU — có thể lỗi onboarding, cần kiểm tra.
+```
+
 ---
 
 #### `blacklist_pattern` — Giá trị không được match pattern
@@ -938,6 +1451,40 @@ Bảng SP_SANPHAM, cột TEN_SP, pattern=^test|^demo|lorem ipsum|placeholder|TOD
 
 > **Phân biệt với `format_regex`:** `format_regex` kiểm tra dữ liệu **PHẢI** match pattern; `blacklist_pattern` kiểm tra dữ liệu **KHÔNG ĐƯỢC** match pattern.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra EMAIL không chứa giá trị rác.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `EMAIL` |
+| Pattern blacklist (regex) | `TEST\|FAKE\|N/A\|example\.com` |
+| Ngưỡng cảnh báo (W) | 98 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN EMAIL NOT RLIKE 'TEST|FAKE|N/A|example\\.com' THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+WHERE EMAIL IS NOT NULL
+-- Đếm % email KHÔNG chứa giá trị rác
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.1%
+
+So sánh:
+  score (99.1) ≥ W (98) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.9% email rác (test@test.com, N/A) cần làm sạch.
+```
+
 ---
 
 #### `fixed_datatype` — Kiểu dữ liệu cố định
@@ -964,6 +1511,42 @@ Bảng CTKM_KHUYENMAI, cột NGAY_BAT_DAU, dataType=DATE
 
 Bảng DIEM_TICH_LUY, cột SO_DIEM, dataType=INTEGER
 → Phát hiện: SO_DIEM = '100.5' (decimal lọt vào cột integer điểm)
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra NGAY_SINH phải là kiểu DATE.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `NGAY_SINH` |
+| Kiểu dữ liệu bắt buộc | `DATE` |
+| Ngưỡng cảnh báo (W) | 98 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN TRY_CAST(NGAY_SINH AS DATE) IS NOT NULL THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+WHERE NGAY_SINH IS NOT NULL
+-- TRY_CAST: thử ép kiểu sang DATE
+-- Parse được → đúng kiểu, trả NULL → sai kiểu (vi phạm)
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 97.2%
+
+So sánh:
+  score (97.2) < W (98) → Cảnh báo ⚠️
+  score (97.2) ≥ C (95) → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: 2.8% NGAY_SINH không parse được — format sai hoặc giá trị text.
 ```
 
 ---
@@ -994,6 +1577,40 @@ Bảng TK_VIENPAY, cột TIEN_TE, modeValue='VND', minFreqPct=95%
 
 Bảng DV_DICH_VU, cột MA_NHOM_DV (để trống modeValue), minFreqPct=5%
 → Mỗi nhóm dịch vụ phải chiếm ít nhất 5% — nếu 1 nhóm = 99% là data skew
+```
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `KH_KHACHHANG`, kiểm tra ≥80% KH có quốc tịch VN.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KH_KHACHHANG` |
+| Cột | `QUOC_TICH` |
+| Giá trị mode kỳ vọng | `VN` |
+| Tần suất tối thiểu (%) | 80 |
+| Ngưỡng cảnh báo (W) | 85 |
+| Ngưỡng không đạt (C) | 75 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN QUOC_TICH = 'VN' THEN 1 END) * 100.0 / COUNT(*) AS score
+FROM KH_KHACHHANG
+-- Nếu không chỉ định mode: hệ thống tự lấy giá trị có COUNT(*) cao nhất
+-- score = tần suất (%) của mode value
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 92%
+
+So sánh:
+  score (92) ≥ W (85) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 92% KH có quốc tịch VN — phù hợp mô hình B2C nội địa.
 ```
 
 ---
@@ -1030,6 +1647,44 @@ Cột LAI_SUAT, statisticType=p99, max=0.25
 → 99th percentile lãi suất không quá 25%/năm (phát hiện dữ liệu nhập sai)
 ```
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, kiểm tra trung bình SO_TIEN trong khoảng 10K–5M.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `SO_TIEN` |
+| Loại thống kê | Mean |
+| Giá trị tối thiểu | 10000 |
+| Giá trị tối đa | 5000000 |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT AVG(SO_TIEN) AS stat_value FROM GD_GIAODICH
+-- Thay AVG bằng hàm tương ứng tùy loại thống kê:
+--   Min → MIN(col), Max → MAX(col), Mean → AVG(col)
+--   Stddev → STDDEV(col), P25 → PERCENTILE(col, 0.25)
+--   P50 → PERCENTILE(col, 0.50), P75 → PERCENTILE(col, 0.75)
+-- So sánh stat_value với khoảng [10.000, 5.000.000]
+-- Trong khoảng → score = 100; Ngoài → score = 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: stat_value (mean) = 350.000đ
+
+So sánh:
+  350.000 nằm trong [10.000, 5.000.000] → score = 100
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Giá trị GD trung bình hợp lý, không có hiện tượng sai đơn vị.
+```
+
 ---
 
 #### `sum_range` — Tổng cột nằm trong khoảng
@@ -1061,6 +1716,39 @@ Bảng HOAN_TIEN_CTKM, cột SO_TIEN_HOAN, min=0, max=10000000000 (10 tỷ)
 ```
 
 > **Phân biệt với `statistics_bound`:** `sum_range` kiểm tra SUM tổng cộng toàn bảng; `statistics_bound` kiểm tra đặc trưng thống kê phân phối (mean/stddev/percentile).
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, tổng SO_TIEN trong ngày phải từ 1 tỷ đến 100 tỷ.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `SO_TIEN` |
+| Tổng tối thiểu | 1000000000 |
+| Tổng tối đa | 100000000000 |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT SUM(SO_TIEN) AS total_sum FROM GD_GIAODICH
+-- So sánh total_sum với khoảng [1 tỷ, 100 tỷ]
+-- Trong khoảng → score = 100; Ngoài → score = 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: total_sum = 15.000.000.000 (15 tỷ)
+
+So sánh:
+  15 tỷ nằm trong [1 tỷ, 100 tỷ] → score = 100
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Tổng giao dịch trong ngày bình thường, không bị zero-out.
+```
 
 ---
 
@@ -1099,6 +1787,41 @@ Bảng DIEM_TICH_LUY:
 
 > **Phân biệt với `custom_expression`:** `custom_expression` kiểm tra **toàn bảng** (1 điều kiện tổng hợp dạng aggregate); `expression_pct` kiểm tra **từng dòng** và tính % pass.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, ≥99% dòng phải có SO_TIEN > 0 và MA_KH không NULL.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Biểu thức SQL | `SO_TIEN > 0 AND MA_KH IS NOT NULL` |
+| % dòng pass tối thiểu | 99 |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  COUNT(CASE WHEN SO_TIEN > 0 AND MA_KH IS NOT NULL THEN 1 END)
+    * 100.0 / COUNT(*) AS score
+FROM GD_GIAODICH
+-- Đếm % dòng thỏa mãn biểu thức
+-- score phải ≥ minPassPct (99%)
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: score = 99.5%
+
+So sánh:
+  score (99.5) ≥ minPassPct (99) → Đạt ngưỡng tối thiểu ✓
+  score (99.5) ≥ W (99) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: 0.5% dòng vi phạm — có thể là GD adjustment đặc biệt.
+```
+
 ---
 
 #### `on_time` — Dữ liệu phải có mặt đúng SLA
@@ -1133,6 +1856,45 @@ Bảng CTKM_DIEU_KIEN, cột NGAY_HIEU_LUC, slaTime=00:05, alertWindow=10
 ```
 
 > **Lưu ý:** `on_time` kiểm tra **thời điểm có mặt** của dữ liệu trong ngày. Để kiểm tra dữ liệu có còn mới không (không bị stale), dùng `freshness`.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `GD_GIAODICH`, dữ liệu phải có trước 08:00 sáng.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `GD_GIAODICH` |
+| Cột | `NGAY_TAO` |
+| Thời hạn SLA | `08:00` |
+| Cửa sổ cảnh báo (phút) | 30 |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  CASE
+    WHEN MAX(NGAY_TAO) >= CURRENT_DATE THEN 100  -- Có dữ liệu hôm nay → đúng hạn
+    ELSE 0                                        -- Chưa có dữ liệu → trễ SLA
+  END AS score
+FROM GD_GIAODICH
+-- Kiểm tra tại thời điểm SLA (08:00):
+--   Có dữ liệu ngày hôm nay → score = 100 (đúng hạn)
+--   Chưa có → score = 0 (trễ SLA)
+-- Cửa sổ 30 phút: lúc 07:30 chưa có dữ liệu → gửi warning sớm
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: Lúc 07:45, dữ liệu đã có → score = 100
+
+So sánh:
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Dữ liệu đến trước SLA 15 phút — pipeline chạy đúng giờ.
+```
 
 ---
 
@@ -1172,6 +1934,43 @@ Bảng CHOT_SO_NGAY, cột NGAY_CHOT, maxAge=1, unit=ngày
 
 > **Phân biệt với `on_time`:** `on_time` kiểm tra dữ liệu có đến đúng giờ SLA không (một thời điểm cụ thể); `freshness` kiểm tra dữ liệu có còn trong khoảng thời gian tươi không (khoảng rolling).
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `TK_VIENPAY`, số dư ví phải được cập nhật trong 5 phút gần nhất.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `TK_VIENPAY` |
+| Cột | `NGAY_CAP_NHAT` |
+| Dữ liệu tươi trong | 5 |
+| Đơn vị thời gian | Phút |
+| Ngưỡng cảnh báo (W) | 90 |
+| Ngưỡng không đạt (C) | 80 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  (UNIX_TIMESTAMP(CURRENT_TIMESTAMP) - UNIX_TIMESTAMP(MAX(NGAY_CAP_NHAT))) / 60
+    AS age_minutes
+FROM TK_VIENPAY
+-- age_minutes = tuổi dữ liệu tính bằng phút
+-- age ≤ maxAge (5 phút) → score = 100
+-- age > maxAge → score = 0
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: age_minutes = 3 phút
+
+So sánh:
+  3 phút ≤ maxAge (5 phút) → score = 100
+  score (100) ≥ W (90) → Đạt ✓
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Số dư ví sync bình thường, dữ liệu còn tươi.
+```
+
 ---
 
 #### `report_row_count_match` — Khớp số dòng BC vs Nguồn 🆕
@@ -1182,12 +1981,13 @@ Bảng CHOT_SO_NGAY, cột NGAY_CHOT, maxAge=1, unit=ngày
 | Tham số | Bắt buộc | Giải thích |
 |---|---|---|
 | Bảng nguồn liên kết | ✅ | Bảng gốc (loại "Bảng nguồn") chứa dữ liệu chi tiết — dropdown chỉ hiển thị bảng loại nguồn |
+| Sai lệch tối đa (%) | ✅ | Phần trăm chênh lệch cho phép giữa COUNT BC và COUNT nguồn |
 
 **Ví dụ fintech:**
 ```
-Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH
+Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, tolerancePct=5
 → Báo cáo ngày phải có số dòng tương đương bảng giao dịch (sau khi group)
-→ BC có 900 dòng chi nhánh, nguồn có 1.000 group → thiếu 10% → cảnh báo
+→ BC có 900 dòng chi nhánh, nguồn có 1.000 group → thiếu 10% → vi phạm (vượt 5%)
 → Nguyên nhân: job ETL bị timeout, một số chi nhánh chưa được tổng hợp
 
 Bảng QUAN_LY_RUI_RO, sourceTable=KH_KHACHHANG
@@ -1201,66 +2001,52 @@ Bảng BAO_CAO_DOI_SOAT, sourceTable=GD_GIAODICH
 
 > **Lưu ý:** Metric này so sánh **số lượng dòng**, không so sánh giá trị. Để đối soát giá trị tổng hợp, dùng `aggregate_reconciliation`.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Bảng `BAO_CAO_NGAY` phải có đủ dòng so với bảng `GD_GIAODICH`.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng báo cáo | `BAO_CAO_NGAY` |
+| Bảng nguồn liên kết | `GD_GIAODICH` |
+| Sai lệch tối đa (%) | 5 |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  (SELECT COUNT(*) FROM BAO_CAO_NGAY)  AS bc_count,
+  (SELECT COUNT(*) FROM GD_GIAODICH)   AS src_count,
+  ABS((SELECT COUNT(*) FROM BAO_CAO_NGAY) - (SELECT COUNT(*) FROM GD_GIAODICH))
+    * 100.0 / (SELECT COUNT(*) FROM GD_GIAODICH) AS diff_pct
+-- score = 100 - diff_pct
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: BC = 950 dòng, Nguồn = 1.000 dòng → diff_pct = 5%
+→ score = 100 - 5 = 95
+
+So sánh:
+  score (95) ≥ W (95) → Đạt ✓ (vừa đúng ngưỡng)
+
+→ Kết quả cuối cùng: ĐẠT
+→ Ý nghĩa: Thiếu 50 dòng (5%) — cần kiểm tra job ETL có timeout không.
+```
+
 ---
 
-#### `period_completeness` — Đủ kỳ dữ liệu KPI 🆕
+#### ~~`period_completeness`~~ — Đã gom vào `time_coverage`
 
-**Mục đích:** Kiểm tra bảng KPI có **đủ dữ liệu theo chu kỳ** (ngày/tuần/tháng) hay không — phát hiện thiếu kỳ báo cáo chỉ tiêu. Metric này dành cho bảng loại **Chỉ tiêu (KPI)**, đảm bảo chuỗi thời gian KPI liên tục.
-
-**Tham số:**
-| Tham số | Bắt buộc | Giải thích |
-|---|---|---|
-| Chu kỳ | ✅ | Ngày / Tuần / Tháng — đơn vị chu kỳ của KPI |
-| Khoảng kiểm (số ngày) | ✅ | Quét bao nhiêu ngày gần nhất |
-| % kỳ phải có dữ liệu | ✅ | VD: 95% = trong 12 tháng phải có ít nhất ~11 tháng |
-
-**Ví dụ fintech:**
-```
-Bảng KPI_KINHDOANH, granularity=Tháng, coverageDays=365, minCoveragePct=95
-→ KPI doanh thu hàng tháng phải có đủ 12/12 tháng gần nhất
-→ Thiếu tháng 8 (chỉ có 11/12 = 91.7%) → không đạt 95% → cảnh báo
-→ Nguyên nhân: job tính KPI tháng 8 bị fail, chưa được re-run
-
-Bảng KPI_KINHDOANH, granularity=Ngày, coverageDays=30, minCoveragePct=90
-→ KPI hàng ngày 30 ngày gần nhất phải có ≥ 27 ngày
-→ Thiếu 5 ngày cuối tuần (không có dữ liệu) → cần xem lại logic tính KPI ngày nghỉ
-
-Bảng KPI_CHIEN_LUOC, granularity=Tháng, coverageDays=365, minCoveragePct=100
-→ KPI chiến lược bắt buộc 100% tháng phải có — zero tolerance
-→ Thiếu 1 tháng → dashboard ban lãnh đạo hiển thị gap → ảnh hưởng đánh giá
-```
-
-> **Phân biệt với `time_coverage`:** `time_coverage` dùng cho bảng nguồn (kiểm tra chuỗi thời gian giao dịch liên tục); `period_completeness` dùng cho bảng KPI (kiểm tra đủ kỳ báo cáo chỉ tiêu).
+> **Phiên bản 1.3:** Metric `period_completeness` (Đủ kỳ dữ liệu KPI) đã được gom vào `time_coverage`. Sử dụng `time_coverage` với cấu hình phù hợp cho bảng KPI (granularity = Tháng, % phủ tối thiểu theo yêu cầu).
 
 ---
 
-#### `cross_source_sum` — Tổng chéo nguồn (Cross-Source) 🆕
+#### ~~`cross_source_sum`~~ — Đã gom vào `aggregate_reconciliation`
 
-**Mục đích:** So sánh **tổng giá trị** giữa bảng báo cáo/KPI với bảng nguồn gốc — phát hiện sai lệch khi tổng hợp dữ liệu từ nhiều bảng. Khác với `report_row_count_match` (so số dòng), metric này so sánh **giá trị aggregate**.
-
-**Tham số:**
-| Tham số | Bắt buộc | Giải thích |
-|---|---|---|
-| Bảng nguồn liên kết | ✅ | Bảng gốc để cross-check tổng giá trị |
-| Sai lệch tối đa (%) | ✅ | % chênh lệch cho phép giữa hai tổng |
-
-**Ví dụ fintech:**
-```
-Bảng QUAN_LY_RUI_RO, sourceTable=KH_KHACHHANG, tolerancePct=5
-→ Tổng điểm rủi ro trên BC phải khớp SUM(DIEM_RR) từ bảng KH
-→ BC tổng = 45.000, nguồn tổng = 50.000 → lệch 10% → vi phạm (vượt 5%)
-→ Nguyên nhân: filter condition trên BC loại bỏ nhầm một số KH
-
-Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, tolerancePct=1
-→ Tổng THUC_TE trên BC phải khớp SUM(SO_TIEN) giao dịch ± 1%
-→ Lệch > 1% → ETL aggregate sai logic GROUP BY hoặc thiếu partition
-
-Bảng BAO_CAO_TONG_HOP_THANG, sourceTable=BAO_CAO_NGAY, tolerancePct=0.5
-→ BC tháng phải khớp SUM các BC ngày ± 0.5%
-→ Chain verification: nguồn → BC ngày → BC tháng
-```
-
-> **Khi nào dùng `cross_source_sum` thay `aggregate_reconciliation`:** Dùng `cross_source_sum` khi chỉ cần so tổng chung toàn bảng. Dùng `aggregate_reconciliation` khi cần chỉ định cụ thể cột nào trên BC cần đối soát.
+> **Phiên bản 1.3:** Metric `cross_source_sum` (Tổng chéo nguồn) đã được gom vào `aggregate_reconciliation`. Sử dụng `aggregate_reconciliation` với field "Cột nguồn (SUM)" để thực hiện đối soát chéo nguồn.
 
 ---
 
@@ -1291,38 +2077,81 @@ Bảng KPI_CHIEN_LUOC, parentKpiColumn=CAC_CHI_TIEU, childSumExpression=SUM(CHI_
 → Bất kỳ sai lệch nào → dashboard ban giám đốc hiển thị số sai → rủi ro quyết định
 ```
 
-> **Lưu ý:** Metric này kiểm tra tính nhất quán **dọc** (vertical consistency) của cây KPI. Để kiểm tra tính nhất quán **ngang** (horizontal — giữa BC và nguồn), dùng `cross_source_sum` hoặc `aggregate_reconciliation`.
+> **Lưu ý:** Metric này kiểm tra tính nhất quán **dọc** (vertical consistency) của cây KPI. Để kiểm tra tính nhất quán **ngang** (horizontal — giữa BC và nguồn), dùng `aggregate_reconciliation`.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: KPI tổng giao dịch toàn hệ thống = tổng giao dịch các chi nhánh.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KPI_KINHDOANH` |
+| Cột KPI cha | `TONG_GD` |
+| Biểu thức tổng KPI con | `SUM(sub_kpi_value)` |
+| Sai lệch tối đa (%) | 5 |
+| Ngưỡng cảnh báo (W) | 95 |
+| Ngưỡng không đạt (C) | 90 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  k.TONG_GD AS parent_val,
+  (SELECT SUM(sub_kpi_value) FROM KPI_CHI_NHANH) AS child_sum,
+  ABS(k.TONG_GD - (SELECT SUM(sub_kpi_value) FROM KPI_CHI_NHANH))
+    * 100.0 / k.TONG_GD AS diff_pct
+FROM KPI_KINHDOANH k
+-- score = 100 - diff_pct
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: parent = 1.000.000, child_sum = 1.060.000 → diff_pct = 6%
+→ score = 100 - 6 = 94
+
+So sánh:
+  score (94) < W (95)  → Cảnh báo ⚠️
+  score (94) ≥ C (90)  → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: Tổng KPI con vượt KPI cha 6% — có thể chi nhánh mới chưa map vào cây cha.
+```
 
 ---
 
 #### `aggregate_reconciliation` — Đối soát tổng hợp BC 🆕
 
-**Mục đích:** So sánh **giá trị cột tổng hợp** cụ thể trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate, hoặc chạy trùng. Đây là metric đối soát chi tiết nhất, chỉ định rõ **cột nào** trên BC cần kiểm tra.
+**Mục đích:** So sánh **giá trị cột tổng hợp** cụ thể trên báo cáo với SUM tương ứng từ bảng nguồn — phát hiện sai lệch do lỗi logic ETL, mất dữ liệu khi aggregate, hoặc chạy trùng. Đây là metric đối soát chi tiết nhất, chỉ định rõ **cột nào** trên BC cần kiểm tra. **Bao gồm cả đối soát chéo nguồn** (thay thế metric `cross_source_sum` cũ).
 
 **Tham số:**
 | Tham số | Bắt buộc | Giải thích |
 |---|---|---|
 | Bảng nguồn liên kết | ✅ | Bảng gốc chứa dữ liệu chi tiết (dropdown chỉ hiển thị bảng loại nguồn) |
 | Cột tổng hợp trên BC | ✅ | Cột trên bảng BC chứa giá trị đã tổng hợp (VD: `THUC_TE`, `TONG_DOANH_THU`) |
+| Cột nguồn (SUM) | ✅ | Cột trong bảng nguồn để tính SUM so sánh (VD: `SO_TIEN`, `DIEM_RR`) |
 | Sai lệch tối đa (%) | ✅ | % chênh lệch cho phép giữa SUM nguồn và giá trị BC |
 
 **Ví dụ fintech:**
 ```
-Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, reportColumn=THUC_TE, tolerancePct=1
+Bảng BAO_CAO_NGAY, sourceTable=GD_GIAODICH, reportColumn=THUC_TE, sourceColumn=SO_TIEN, tolerancePct=1
 → Cột THUC_TE trên BC phải khớp SUM(SO_TIEN) từ GD_GIAODICH
 → BC THUC_TE = 100 tỷ, SUM giao dịch = 102 tỷ → lệch 2% → vi phạm (vượt 1%)
 → Nguyên nhân: job tổng hợp dùng NGAY_GD ≠ NGAY_TAO → lọt giao dịch cuối ngày
 
-Bảng BAO_CAO_NGAY, sourceTable=TK_TAIKHOAN, reportColumn=MUC_TIEU, tolerancePct=5
+Bảng BAO_CAO_NGAY, sourceTable=TK_TAIKHOAN, reportColumn=MUC_TIEU, sourceColumn=SO_DU_MUC_TIEU, tolerancePct=5
 → Cột MUC_TIEU trên BC phải khớp SUM(SO_DU_MUC_TIEU) từ tài khoản
 → Sai lệch hợp lý ≤ 5% do làm tròn — vượt → xem lại mapping cột
 
-Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, tolerancePct=0
-→ Zero tolerance — tổng số GD trên BC tuần phải khớp chính xác với COUNT(*) nguồn
+Bảng QUAN_LY_RUI_RO, sourceTable=KH_KHACHHANG, reportColumn=TONG_DIEM_RR, sourceColumn=DIEM_RR, tolerancePct=5
+→ Đối soát chéo nguồn: tổng điểm rủi ro trên BC phải khớp SUM(DIEM_RR) từ bảng KH
+→ BC tổng = 45.000, nguồn tổng = 50.000 → lệch 10% → vi phạm (vượt 5%)
+
+Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, sourceColumn=SO_TIEN, tolerancePct=0
+→ Zero tolerance — tổng số GD trên BC tuần phải khớp chính xác với nguồn
 → Sai 1 giao dịch → đối soát fail → cần review ETL pipeline
 ```
 
-> **Phân biệt với `cross_source_sum`:** `aggregate_reconciliation` chỉ định **cột cụ thể** trên BC để đối soát (VD: đối soát cột `THUC_TE`). `cross_source_sum` so sánh tổng chéo **toàn bảng** mà không chỉ định cột.
+> **Lưu ý:** Metric này thay thế cả `cross_source_sum` (phiên bản cũ). Chỉ định cụ thể cả **cột BC** và **cột nguồn** để đối soát chính xác.
 
 ---
 
@@ -1333,11 +2162,14 @@ Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, tolerance
 **Tham số:**
 | Tham số | Bắt buộc | Giải thích |
 |---|---|---|
+| Cột chỉ tiêu KPI | ✅ | Cột chứa giá trị KPI cần theo dõi (VD: `DOANH_THU`, `SO_KH_MOI`) |
+| Cột thời gian | ✅ | Cột DATE để xác định kỳ (VD: `THANG`, `NGAY`) |
+| Chu kỳ so sánh | ✅ | Ngày / Tuần / Tháng — đơn vị chu kỳ so sánh |
 | Biến động tối đa so kỳ trước (%) | ✅ | Ngưỡng % thay đổi cho phép. VD: 30 = KPI tăng/giảm ≤ 30% |
 
 **Ví dụ fintech:**
 ```
-Bảng KPI_KINHDOANH, maxVariancePct=30
+Bảng KPI_KINHDOANH, kpiColumn=DOANH_THU, timeColumn=THANG, period=Tháng, maxVariancePct=30
 → KPI doanh thu tháng không được tăng/giảm quá 30% so với tháng trước
 → Tháng trước 100 tỷ, tháng này 55 tỷ → giảm 45% → vi phạm
 → Nguyên nhân: mất dữ liệu 2 tuần cuối tháng, không phải suy giảm thực sự
@@ -1357,7 +2189,7 @@ Bảng KPI_KINHDOANH, maxVariancePct=10
 → Nguyên nhân: hệ thống thanh toán gặp sự cố 3 ngày → impact KPI
 ```
 
-> **Lưu ý:** Metric này kiểm tra **biến động giữa 2 kỳ liên tiếp**. Để kiểm tra KPI có đủ kỳ dữ liệu hay không, dùng `period_completeness`.
+> **Lưu ý:** Metric này kiểm tra **biến động giữa 2 kỳ liên tiếp**. Để kiểm tra KPI có đủ kỳ dữ liệu hay không, dùng `time_coverage`.
 
 ---
 
@@ -1669,7 +2501,7 @@ Dropdown chỉ hiện các metric phù hợp với dimension đã chọn. Có to
 
 **Bước 4 — Điền tham số kiểm tra** (tùy metric type)
 
-Xem [Phần 6 — 31 Loại Metric](#6-31-loại-metric-chi-tiết) để biết tham số cụ thể.
+Xem [Phần 6 — 28 Loại Metric](#6-28-loại-metric-chi-tiết) để biết tham số cụ thể.
 
 **Bước 5 — Ngưỡng W/C**
 
@@ -2148,7 +2980,6 @@ Không — có **7 metric type** dành cho **toàn bảng** (không gắn với 
 | `time_coverage` | Chuỗi thời gian không bị gap |
 | `volume_change` | % biến động số dòng so với kỳ trước |
 | `table_size` | Dung lượng vật lý bảng |
-| `cross_column` | Ràng buộc logic giữa 2+ cột |
 | `duplicate_composite` | Khóa duy nhất tổ hợp nhiều cột |
 | `custom_expression` | Điều kiện SQL WHERE bất kỳ |
 
@@ -2228,4 +3059,4 @@ Vào **Thông báo** (`/notifications`) → Thêm cấu hình:
 
 ---
 
-*Hết tài liệu — Phiên bản 1.2 | Data Quality System | Cập nhật 2026-04-03 — 31 metric types*
+*Hết tài liệu — Phiên bản 1.3 | Data Quality System | Cập nhật 2026-04-07 — 28 metric types*

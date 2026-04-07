@@ -31,15 +31,12 @@ export type MetricType =
   | 'volume_change'
   | 'table_size'
   | 'custom_expression'
-  | 'cross_column'
   | 'duplicate_composite'
   // Report-specific
   | 'aggregate_reconciliation'
-  | 'cross_source_sum'
   | 'report_row_count_match'
   // KPI-specific
   | 'kpi_variance'
-  | 'period_completeness'
   | 'parent_child_match'
 
 export interface MetricConfig {
@@ -107,7 +104,7 @@ export interface MetricConfig {
   childSumExpression?: string
 }
 export type DataSourceType = 'database' | 'sql' | 'file' | 'api'
-export type DataSourceStatus = 'active' | 'inactive' | 'error'
+export type DataSourceStatus = 'active' | 'inactive' | 'error' | 'waiting_data' | 'revalidating'
 export type ModuleType = 'source' | 'report' | 'kpi'
 export type PeriodType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
 export type RuleStatus = 'active' | 'inactive'
@@ -230,6 +227,50 @@ export interface NotificationConfig {
   emailBody?: string
 }
 
+export interface CascadeEvent {
+  id: string;
+  chainId: string;                    // Groups related events into one cascade chain
+  triggerIssueId: string;             // The original issue that started the cascade
+  sourceTableId: string;              // DataSource that failed
+  sourceTableName: string;
+  affectedTableId: string;            // Downstream DataSource affected
+  affectedTableName: string;
+  affectedType: ModuleType;           // 'source' | 'report' | 'kpi'
+  eventType: 'cascade_triggered' | 'status_changed' | 'notification_sent' | 'revalidation_started' | 'resolved' | 'chain_completed';
+  previousStatus?: DataSourceStatus;
+  newStatus?: DataSourceStatus;
+  notificationRecipient?: string;     // Name of the person notified
+  notificationChannel?: 'email' | 'sms' | 'webhook';
+  message: string;                    // Human-readable description
+  timestamp: string;                  // ISO date string
+}
+
+export interface CascadeChain {
+  id: string;
+  rootIssueId: string;
+  rootTableId: string;
+  rootTableName: string;
+  affectedEntities: Array<{
+    tableId: string;
+    tableName: string;
+    type: ModuleType;
+    status: DataSourceStatus;
+  }>;
+  status: 'active' | 'partially_resolved' | 'resolved';
+  startedAt: string;
+  resolvedAt?: string;
+  totalEvents: number;
+}
+
+export interface CascadeConfig {
+  notifyDownstream: boolean;
+  autoWaitingData: boolean;     // Auto-set downstream to waiting_data
+  autoRerun: boolean;           // Auto-trigger re-run when upstream recovers
+  autoResolve: boolean;         // Auto-resolve cascade issues when all OK
+  cascadeDepth: number;         // Max cascade levels (1=report only, 2=report+kpi, 0=unlimited)
+  cascadeSummary: boolean;      // Send summary notification when chain resolves
+}
+
 export type JobType = 'etl'
 export type JobTechnology = 'Spark' | 'Airflow' | 'Python' | 'SSIS' | 'Kafka' | 'Custom'
 export type JobRunStatus = 'success' | 'failed' | 'partial'
@@ -307,4 +348,37 @@ export interface DashboardStats {
   criticalIssues: number
   rulesActive: number
   lastUpdated: string
+}
+
+export interface ReconciliationResult {
+  id: string
+  ruleId: string
+  ruleName: string
+  metricType: string
+  reportTableId: string
+  reportTableName: string
+  reportColumn: string
+  sourceTableId: string
+  sourceTableName: string
+  sourceColumn: string
+  reportValue: number
+  sourceValue: number
+  variance: number
+  tolerancePct: number
+  result: 'pass' | 'warning' | 'fail'
+  qualityScore: number
+  checkedAt: string
+}
+
+export interface KpiPeriodResult {
+  kpiId: string
+  period: string          // e.g., '2026-01', '2026-02', 'Q1-2026'
+  qualityScore: number    // 0-100, điểm chất lượng DQ
+  previousScore?: number  // Điểm kỳ trước
+  ruleResults: {
+    ruleId: string
+    ruleName: string
+    score: number
+    result: 'pass' | 'warning' | 'fail'
+  }[]
 }

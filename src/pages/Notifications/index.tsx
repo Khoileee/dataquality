@@ -10,9 +10,9 @@ import { Dialog } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
-import { mockNotifications, mockDataSources, getDownstreamJobs } from '@/data/mockData'
-import type { NotificationConfig } from '@/types'
-import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle } from 'lucide-react'
+import { mockNotifications, mockDataSources, getDownstreamJobs, cascadeConfig as defaultCascadeConfig } from '@/data/mockData'
+import type { NotificationConfig, CascadeConfig } from '@/types'
+import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle, Link2 } from 'lucide-react'
 
 const TYPE_ICONS: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
   email: { icon: Mail, bg: 'bg-blue-100', color: 'text-blue-600' },
@@ -39,6 +39,7 @@ export function Notifications() {
     emailSubject: '', emailBody: '',
   })
   const [testSent, setTestSent] = useState<string | null>(null)
+  const [cascadeCfg, setCascadeCfg] = useState<CascadeConfig>({ ...defaultCascadeConfig })
 
   const openAdd = () => {
     setEditingId(null)
@@ -186,6 +187,85 @@ export function Notifications() {
             </Card>
           )
         })}
+      </div>
+
+      {/* Cascade Settings */}
+      <div className="mt-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <Link2 className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Cài đặt lan truyền cảnh báo</h3>
+                <p className="text-sm text-gray-500">Cấu hình hành vi tự động khi phát hiện lỗi lan truyền từ bảng nguồn đến báo cáo và chỉ tiêu.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+              {/* notifyDownstream */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <Switch checked={cascadeCfg.notifyDownstream} onCheckedChange={v => setCascadeCfg(c => ({ ...c, notifyDownstream: v }))} />
+                <div>
+                  <div className="text-sm font-medium text-gray-800">Thông báo downstream</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Tự động gửi cảnh báo đến owner BC/KPI khi bảng nguồn lỗi</div>
+                </div>
+              </div>
+
+              {/* autoWaitingData */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <Switch checked={cascadeCfg.autoWaitingData} onCheckedChange={v => setCascadeCfg(c => ({ ...c, autoWaitingData: v }))} />
+                <div>
+                  <div className="text-sm font-medium text-gray-800">Tự động chuyển "Chờ dữ liệu"</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Tự động cập nhật trạng thái downstream khi upstream lỗi</div>
+                </div>
+              </div>
+
+              {/* autoRerun */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <Switch checked={cascadeCfg.autoRerun} onCheckedChange={v => setCascadeCfg(c => ({ ...c, autoRerun: v }))} />
+                <div>
+                  <div className="text-sm font-medium text-gray-800">Tự động chạy lại</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Tự động trigger chạy lại BC/KPI khi bảng nguồn phục hồi</div>
+                </div>
+              </div>
+
+              {/* autoResolve */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <Switch checked={cascadeCfg.autoResolve} onCheckedChange={v => setCascadeCfg(c => ({ ...c, autoResolve: v }))} />
+                <div>
+                  <div className="text-sm font-medium text-gray-800">Tự động đóng cảnh báo</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Tự động resolve cascade issues khi tất cả tầng đã OK</div>
+                </div>
+              </div>
+
+              {/* cascadeSummary */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <Switch checked={cascadeCfg.cascadeSummary} onCheckedChange={v => setCascadeCfg(c => ({ ...c, cascadeSummary: v }))} />
+                <div>
+                  <div className="text-sm font-medium text-gray-800">Thông báo tóm tắt</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Gửi notification tóm tắt khi toàn bộ chuỗi phục hồi</div>
+                </div>
+              </div>
+
+              {/* cascadeDepth */}
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-800 mb-1.5">Độ sâu cascade</div>
+                  <Select
+                    value={String(cascadeCfg.cascadeDepth)}
+                    onChange={e => setCascadeCfg(c => ({ ...c, cascadeDepth: Number(e.target.value) }))}
+                  >
+                    <option value="1">1 tầng (chỉ báo cáo)</option>
+                    <option value="2">2 tầng (báo cáo + chỉ tiêu)</option>
+                    <option value="0">Không giới hạn</option>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Dialog */}

@@ -4,7 +4,7 @@ import {
   ResponsiveContainer, Area, AreaChart,
 } from 'recharts'
 import {
-  Database, BarChart2, AlertTriangle, CheckCircle, FileBarChart, Target,
+  Database, BarChart2, AlertTriangle, CheckCircle, FileBarChart, Target, Link2,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -15,7 +15,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
-import { mockDataSources, mockIssues, mockTrendData, mockRules } from '@/data/mockData'
+import { mockDataSources, mockIssues, mockTrendData, mockRules, cascadeChains } from '@/data/mockData'
 import type { QualityDimension, ModuleType } from '@/types'
 
 const MODULE_LABELS: Record<ModuleType, string> = {
@@ -66,7 +66,7 @@ export function Dashboard() {
       />
 
       {/* Row 1 - KPI cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Card 1 */}
         <Card>
           <CardContent className="pt-6">
@@ -143,6 +143,31 @@ export function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Card 5 — Cascade chains */}
+        {(() => {
+          const activeCascades = cascadeChains.filter(c => c.status === 'active').length
+          const hasActive = activeCascades > 0
+          return (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Chuỗi cảnh báo</p>
+                    <p className={`text-3xl font-bold mt-1 ${hasActive ? 'text-red-600' : 'text-green-600'}`}>{activeCascades}</p>
+                    <p className={`text-xs mt-2 flex items-center gap-1 ${hasActive ? 'text-red-500' : 'text-green-600'}`}>
+                      <span>{hasActive ? '!' : '-'}</span>
+                      <span>{hasActive ? 'đang xử lý' : 'Không có'}</span>
+                    </p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${hasActive ? 'bg-red-100' : 'bg-green-100'}`}>
+                    <Link2 className={`w-6 h-6 ${hasActive ? 'text-red-600' : 'text-green-600'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })()}
       </div>
 
       {/* Row 2 - 3 columns */}

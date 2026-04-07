@@ -19,6 +19,8 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'outli
   high: { label: 'Cao', variant: 'warning' },
   medium: { label: 'Trung bình', variant: 'default' },
   low: { label: 'Thấp', variant: 'secondary' },
+  waiting_data: { label: 'Chờ dữ liệu', variant: 'warning' },
+  revalidating: { label: 'Đang kiểm tra', variant: 'default' },
   paused: { label: 'Tạm dừng', variant: 'warning' },
   running: { label: 'Đang chạy', variant: 'default' },
   completed: { label: 'Hoàn thành', variant: 'success' },

@@ -3,21 +3,24 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import {
   AlertCircle, AlertTriangle, Clock, CheckCircle2,
   Database, Eye, Download, Search,
+  CheckCircle, Layers, RefreshCw, Bell, Play, Shield, ChevronDown, ChevronUp,
 } from 'lucide-react'
+import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { Tabs } from '@/components/ui/tabs'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { DimensionBadge } from '@/components/common/DimensionBadge'
 import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { formatDateTime } from '@/lib/utils'
-import { mockIssues, mockDataSources, getDownstreamJobs } from '@/data/mockData'
+import { mockIssues, mockDataSources, getDownstreamJobs, cascadeChains, cascadeEvents } from '@/data/mockData'
 import { _ruleGeneratedIssues } from '@/pages/Rules'
-import type { Issue, ModuleType } from '@/types'
+import type { Issue, ModuleType, CascadeChain, CascadeEvent } from '@/types'
 
 const MODULE_LABELS: Record<ModuleType, string> = {
   source: 'Bảng nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu',
@@ -88,6 +91,176 @@ function DownstreamImpactBadge({ tableId }: { tableId: string }) {
   )
 }
 
+const EVENT_ICON_CONFIG: Record<CascadeEvent['eventType'], { icon: React.ElementType; color: string; bg: string }> = {
+  cascade_triggered: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100' },
+  status_changed: { icon: RefreshCw, color: 'text-amber-600', bg: 'bg-amber-100' },
+  notification_sent: { icon: Bell, color: 'text-blue-600', bg: 'bg-blue-100' },
+  revalidation_started: { icon: Play, color: 'text-cyan-600', bg: 'bg-cyan-100' },
+  resolved: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-100' },
+  chain_completed: { icon: Shield, color: 'text-green-600', bg: 'bg-green-100' },
+}
+
+const TYPE_BADGE_COLORS: Record<ModuleType, string> = {
+  source: 'bg-blue-50 text-blue-700 border-blue-200',
+  report: 'bg-amber-50 text-amber-700 border-amber-200',
+  kpi: 'bg-purple-50 text-purple-700 border-purple-200',
+}
+const TYPE_BADGE_LABELS: Record<ModuleType, string> = {
+  source: 'Nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu',
+}
+
+const CHAIN_STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  active: { label: 'Đang xử lý', cls: 'bg-red-100 text-red-700 border-red-200' },
+  partially_resolved: { label: 'Xử lý 1 phần', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+  resolved: { label: 'Đã giải quyết', cls: 'bg-green-100 text-green-700 border-green-200' },
+}
+
+function CascadeChainCard({ chain }: { chain: CascadeChain }) {
+  const [expanded, setExpanded] = useState(false)
+  const events = cascadeEvents
+    .filter(e => e.chainId === chain.id)
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+  const statusBadge = CHAIN_STATUS_BADGE[chain.status]
+
+  return (
+    <Card className="overflow-hidden">
+      <div
+        className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-red-100 flex items-center justify-center">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">{chain.rootTableName}</div>
+              <div className="text-xs text-gray-500">
+                {format(new Date(chain.startedAt), 'dd/MM HH:mm')}
+                {chain.resolvedAt && ` — ${format(new Date(chain.resolvedAt), 'dd/MM HH:mm')}`}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${statusBadge.cls}`}>
+              {statusBadge.label}
+            </span>
+            {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-gray-500 mr-1">Ảnh hưởng:</span>
+          {chain.affectedEntities.map(ent => (
+            <div key={ent.tableId} className="flex items-center gap-1">
+              <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_BADGE_COLORS[ent.type]}`}>
+                {TYPE_BADGE_LABELS[ent.type]}
+              </span>
+              <span className="text-xs text-gray-700 font-medium">{ent.tableName}</span>
+              <StatusBadge status={ent.status} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50/50 p-4">
+          <div className="relative pl-6">
+            <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-200" />
+            {events.map((evt, idx) => {
+              const cfg = EVENT_ICON_CONFIG[evt.eventType]
+              const Icon = cfg.icon
+              return (
+                <div key={evt.id} className="relative flex gap-3 pb-4 last:pb-0">
+                  <div className={`absolute left-[-17px] top-0.5 h-6 w-6 rounded-full ${cfg.bg} flex items-center justify-center z-10`}>
+                    <Icon className={`h-3.5 w-3.5 ${cfg.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs text-gray-400 font-mono">
+                        {format(new Date(evt.timestamp), 'dd/MM HH:mm')}
+                      </span>
+                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_BADGE_COLORS[evt.affectedType]}`}>
+                        {evt.affectedTableName}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700">{evt.message}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function CascadeTimelineTab() {
+  const activeChains = cascadeChains.filter(c => c.status === 'active')
+  const resolvedChains = cascadeChains.filter(c => c.status === 'resolved')
+  const totalAffected = activeChains.reduce((sum, c) => sum + c.affectedEntities.length, 0)
+
+  return (
+    <div className="space-y-6">
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Chuỗi đang xử lý</p>
+                <p className="text-3xl font-bold text-red-600 mt-1">{activeChains.length}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Đã giải quyết</p>
+                <p className="text-3xl font-bold text-green-600 mt-1">{resolvedChains.length}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Thực thể bị ảnh hưởng</p>
+                <p className="text-3xl font-bold text-amber-600 mt-1">{totalAffected}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-amber-50 flex items-center justify-center">
+                <Layers className="h-6 w-6 text-amber-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Chain list */}
+      <div className="space-y-4">
+        {cascadeChains.map(chain => (
+          <CascadeChainCard key={chain.id} chain={chain} />
+        ))}
+        {cascadeChains.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            Không có chuỗi cảnh báo nào
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Issues() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -132,14 +305,8 @@ export function Issues() {
   const handleSearch = () => setPage(1)
 
 
-  return (
+  const issueListContent = (
     <div className="space-y-6">
-      <PageHeader
-        title="Vấn đề & Sự cố"
-        description="Vấn đề được TỰ ĐỘNG tạo khi rule kiểm tra thất bại qua Lịch chạy. Mỗi rule fail = 1 Issue mới (trạng thái 'Mới'). Gán cho người xử lý → Đang xử lý → Đã giải quyết → Đóng."
-        breadcrumbs={[{ label: 'Vấn đề & Sự cố' }]}
-      />
-
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
@@ -444,6 +611,24 @@ export function Issues() {
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Vấn đề & Sự cố"
+        description="Vấn đề được TỰ ĐỘNG tạo khi rule kiểm tra thất bại qua Lịch chạy. Mỗi rule fail = 1 Issue mới (trạng thái 'Mới'). Gán cho người xử lý -> Đang xử lý -> Đã giải quyết -> Đóng."
+        breadcrumbs={[{ label: 'Vấn đề & Sự cố' }]}
+      />
+
+      <Tabs
+        tabs={[
+          { id: 'list', label: 'Danh sách', content: issueListContent },
+          { id: 'cascade', label: 'Chuỗi cảnh báo', content: <CascadeTimelineTab /> },
+        ]}
+        defaultTab="list"
+      />
     </div>
   )
 }

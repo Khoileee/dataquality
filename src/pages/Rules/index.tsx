@@ -113,7 +113,6 @@ const METRICS_BY_DIMENSION: Record<QualityDimension, MetricDef[]> = {
     { value: 'time_coverage', label: 'Phủ thời gian (Time Coverage) [Bảng]', hint: 'Kiểm tra chuỗi thời gian không bị thiếu khoảng — phát hiện ngày/tuần/tháng bị missing data' },
     { value: 'volume_change', label: 'Thay đổi khối lượng (Volume Change) [Bảng]', hint: 'Số dòng không được thay đổi quá X% so với lần chạy trước trong N ngày — phát hiện mất/thêm dữ liệu bất thường' },
     { value: 'report_row_count_match', label: 'Khớp số dòng BC vs Nguồn [Bảng]', hint: 'Số dòng báo cáo phải khớp với bảng nguồn liên kết — phát hiện mất dữ liệu khi tổng hợp' },
-    { value: 'period_completeness', label: 'Đủ kỳ dữ liệu KPI [Bảng]', hint: 'KPI phải có đủ dữ liệu theo chu kỳ (ngày/tuần/tháng) — phát hiện thiếu kỳ báo cáo' },
   ],
   validity: [
     { value: 'format_regex', label: 'Đúng định dạng — Whitelist Regex [Cột]', hint: 'Giá trị PHẢI khớp biểu thức chính quy. VD: số điện thoại ^0[0-9]{9}$' },
@@ -125,9 +124,7 @@ const METRICS_BY_DIMENSION: Record<QualityDimension, MetricDef[]> = {
   consistency: [
     { value: 'fixed_datatype', label: 'Kiểu dữ liệu cố định [Cột]', hint: 'Tất cả giá trị trong cột phải đúng kiểu dữ liệu chỉ định. VD: cột DATE không được có giá trị dạng STRING' },
     { value: 'mode_check', label: 'Giá trị phổ biến nhất (Mode) [Cột]', hint: 'Giá trị xuất hiện nhiều nhất phải chiếm ≥ X% — phát hiện dữ liệu bị "pha tạp" bởi nguồn lạ' },
-    { value: 'cross_column', label: 'Nhất quán chéo cột [Bảng]', hint: 'Biểu thức logic giữa 2+ cột. VD: NGAY_KET_THUC > NGAY_HIEU_LUC' },
     { value: 'referential_integrity', label: 'Toàn vẹn tham chiếu (FK) [Cột]', hint: 'Giá trị cột phải tồn tại trong bảng tham chiếu' },
-    { value: 'cross_source_sum', label: 'Tổng chéo nguồn (Cross-Source) [Bảng]', hint: 'So sánh tổng giá trị giữa báo cáo và bảng nguồn — phát hiện chênh lệch khi tổng hợp' },
     { value: 'parent_child_match', label: 'Khớp KPI cha-con [Bảng]', hint: 'Tổng KPI con phải bằng KPI cha — phát hiện sai lệch cây chỉ tiêu' },
   ],
   uniqueness: [
@@ -154,10 +151,10 @@ function getMetricLabel(dim: QualityDimension, mt: MetricType): string {
 }
 
 const TABLE_LEVEL_METRICS: MetricType[] = [
-  'cross_column', 'custom_expression', 'duplicate_composite',
+  'custom_expression', 'duplicate_composite',
   'row_count', 'time_coverage', 'volume_change', 'table_size',
-  'aggregate_reconciliation', 'cross_source_sum', 'report_row_count_match',
-  'kpi_variance', 'period_completeness', 'parent_child_match',
+  'aggregate_reconciliation', 'report_row_count_match',
+  'kpi_variance', 'parent_child_match',
 ]
 
 function getScopeLabel(rule: QualityRule): string {
@@ -175,7 +172,6 @@ function metricSummary(cfg: MetricConfig, dim: QualityDimension): string {
     case 'value_range': return `${cfg.column ?? '—'} ∈ [${cfg.minValue ?? '?'}, ${cfg.maxValue ?? '?'}]`
     case 'allowed_values': return `${cfg.column ?? '—'} ∈ {${(cfg.allowedValues ?? []).slice(0, 3).join(', ')}${(cfg.allowedValues?.length ?? 0) > 3 ? '…' : ''}}`
     case 'custom_expression': return `Biểu thức: ${(cfg.expression ?? '').slice(0, 40)}…`
-    case 'cross_column': return `Chéo cột: ${cfg.expression ?? '—'}`
     case 'referential_integrity': return `${cfg.column ?? '—'} → ${cfg.refTable ?? '?'}.${cfg.refColumn ?? '?'}`
     case 'duplicate_single': return `Duy nhất: ${cfg.column ?? '—'}`
     case 'duplicate_composite': return `Duy nhất: (${(cfg.columns ?? []).join(', ')})`
@@ -197,10 +193,8 @@ function metricSummary(cfg: MetricConfig, dim: QualityDimension): string {
     case 'table_size': return `Size ∈ [${cfg.tableSizeMin ?? '?'}, ${cfg.tableSizeMax ?? '?'}] ${cfg.tableSizeUnit ?? 'MB'}`
     // Report/KPI metrics
     case 'aggregate_reconciliation': return `Đối soát: ${cfg.reportColumn ?? '—'} vs SUM nguồn (±${cfg.tolerancePct ?? '?'}%)`
-    case 'cross_source_sum': return `Tổng chéo nguồn (±${cfg.tolerancePct ?? '?'}%)`
     case 'report_row_count_match': return `Khớp số dòng BC vs Nguồn`
     case 'kpi_variance': return `Biến động KPI ≤ ${cfg.maxVariancePct ?? '?'}%`
-    case 'period_completeness': return `Đủ kỳ ${cfg.granularity ?? '?'} (${cfg.coverageDays ?? '?'} ngày)`
     case 'parent_child_match': return `KPI cha ${cfg.parentKpiColumn ?? '—'} = ∑ con (±${cfg.tolerancePct ?? '?'}%)`
     default: return getMetricLabel(dim, cfg.metricType)
   }
@@ -424,18 +418,18 @@ function MetricConfigFields({
         </div>
       )}
 
-      {/* Custom expression / cross-column */}
-      {(mt === 'custom_expression' || mt === 'cross_column') && (
+      {/* Custom expression */}
+      {mt === 'custom_expression' && (
         <div className="space-y-1">
           <Label className="text-sm">Điều kiện kiểm tra <span className="text-red-500">*</span></Label>
           <Textarea
             rows={3}
             value={form.expression}
             onChange={set('expression')}
-            placeholder={mt === 'cross_column' ? 'Ví dụ: NGAY_DONG > NGAY_MO' : 'Ví dụ: TRANG_THAI IN (1,2,3) AND MA_KH IS NOT NULL'}
+            placeholder="Ví dụ: TRANG_THAI IN (1,2,3) AND MA_KH IS NOT NULL"
             className="font-mono text-xs"
           />
-          <p className="text-xs text-gray-500">Nhập điều kiện WHERE (không bao gồm từ khóa WHERE)</p>
+          <p className="text-xs text-gray-500">Nhập điều kiện WHERE (không bao gồm từ khóa WHERE). Hỗ trợ cả biểu thức chéo cột, VD: NGAY_KET_THUC &gt; NGAY_HIEU_LUC</p>
         </div>
       )}
 
@@ -725,17 +719,23 @@ function MetricConfigFields({
 
       {/* Volume change (table-level) */}
       {mt === 'volume_change' && (
-        <div className="grid grid-cols-2 gap-3">
+        <>
           <div className="space-y-1">
-            <Label className="text-sm">Nhìn lại N ngày trước <span className="text-red-500">*</span></Label>
-            <Input type="number" min={1} value={form.lookbackPeriod} onChange={set('lookbackPeriod')} placeholder="7" />
-            <p className="text-xs text-gray-500">So sánh số dòng với trung bình N ngày gần nhất</p>
+            <Label className="text-sm">Cột thời gian</Label>
+            <Input value={form.timeColumn} onChange={set('timeColumn')} placeholder="VD: NGAY_GD" />
           </div>
-          <div className="space-y-1">
-            <Label className="text-sm">% thay đổi tối đa cho phép <span className="text-red-500">*</span></Label>
-            <Input type="number" min={1} max={100} value={form.maxChangePct} onChange={set('maxChangePct')} placeholder="30" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-sm">Nhìn lại N ngày trước <span className="text-red-500">*</span></Label>
+              <Input type="number" min={1} value={form.lookbackPeriod} onChange={set('lookbackPeriod')} placeholder="7" />
+              <p className="text-xs text-gray-500">So sánh số dòng với trung bình N ngày gần nhất</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm">% thay đổi tối đa cho phép <span className="text-red-500">*</span></Label>
+              <Input type="number" min={1} max={100} value={form.maxChangePct} onChange={set('maxChangePct')} placeholder="30" />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Table size (table-level) */}
@@ -771,6 +771,10 @@ function MetricConfigFields({
               {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
             </Select>
           </div>
+          <div className="space-y-1">
+            <Label className="text-sm">Cột nguồn (SUM)</Label>
+            <Input value={form.sourceColumn} onChange={set('sourceColumn')} placeholder="VD: SO_TIEN" />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-sm">Cột tổng hợp trên BC <span className="text-red-500">*</span></Label>
@@ -791,64 +795,52 @@ function MetricConfigFields({
         </>
       )}
 
-      {/* Cross source sum (report/consistency) */}
-      {mt === 'cross_source_sum' && (
-        <div className="grid grid-cols-2 gap-3">
+      {/* Report row count match */}
+      {mt === 'report_row_count_match' && (
+        <>
           <div className="space-y-1">
             <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
             <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
               <option value="">-- Chọn bảng nguồn --</option>
               {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
             </Select>
+            <p className="text-xs text-gray-500">So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn</p>
           </div>
           <div className="space-y-1">
             <Label className="text-sm">Sai lệch tối đa (%)</Label>
-            <Input type="number" min={0} max={100} value={form.tolerancePct} onChange={set('tolerancePct')} placeholder="5" />
+            <Input type="number" min={0} max={100} value={form.tolerancePct} onChange={set('tolerancePct')} placeholder="VD: 5" />
           </div>
-        </div>
-      )}
-
-      {/* Report row count match */}
-      {mt === 'report_row_count_match' && (
-        <div className="space-y-1">
-          <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
-          <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
-            <option value="">-- Chọn bảng nguồn --</option>
-            {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
-          </Select>
-          <p className="text-xs text-gray-500">So sánh COUNT(*) giữa bảng báo cáo và bảng nguồn</p>
-        </div>
+        </>
       )}
 
       {/* KPI variance */}
       {mt === 'kpi_variance' && (
-        <div className="space-y-1">
-          <Label className="text-sm">Biến động tối đa so kỳ trước (%) <span className="text-red-500">*</span></Label>
-          <Input type="number" min={0} max={100} value={form.maxVariancePct} onChange={set('maxVariancePct')} placeholder="30" />
-          <p className="text-xs text-gray-500">KPI thay đổi vượt ngưỡng này sẽ bị cảnh báo</p>
-        </div>
-      )}
-
-      {/* Period completeness (KPI) */}
-      {mt === 'period_completeness' && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1">
-            <Label className="text-sm">Chu kỳ</Label>
-            <Select value={form.granularity} onChange={set('granularity')}>
-              <option value="day">Ngày</option>
-              <option value="week">Tuần</option>
-              <option value="month">Tháng</option>
-            </Select>
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label className="text-sm">Cột chỉ tiêu KPI</Label>
+              <Input value={form.column} onChange={set('column')} placeholder="VD: TONG_TIEN" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm">Cột thời gian</Label>
+              <Input value={form.timeColumn} onChange={set('timeColumn')} placeholder="VD: NGAY" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-sm">Chu kỳ so sánh</Label>
+              <Select value={form.granularity} onChange={set('granularity')}>
+                <option value="">-- Chọn --</option>
+                <option value="day">Ngày</option>
+                <option value="week">Tuần</option>
+                <option value="month">Tháng</option>
+              </Select>
+            </div>
           </div>
           <div className="space-y-1">
-            <Label className="text-sm">Khoảng kiểm (ngày)</Label>
-            <Input type="number" min={1} value={form.coverageDays} onChange={set('coverageDays')} placeholder="30" />
+            <Label className="text-sm">Biến động tối đa so kỳ trước (%) <span className="text-red-500">*</span></Label>
+            <Input type="number" min={0} max={100} value={form.maxVariancePct} onChange={set('maxVariancePct')} placeholder="30" />
+            <p className="text-xs text-gray-500">KPI thay đổi vượt ngưỡng này sẽ bị cảnh báo</p>
           </div>
-          <div className="space-y-1">
-            <Label className="text-sm">% kỳ phải có <span className="text-red-500">*</span></Label>
-            <Input type="number" min={1} max={100} value={form.minCoveragePct} onChange={set('minCoveragePct')} placeholder="95" />
-          </div>
-        </div>
+        </>
       )}
 
       {/* Parent-child match (KPI) */}
@@ -894,7 +886,6 @@ function formToMetricConfig(form: RuleForm): MetricConfig | undefined {
     case 'value_range': return { ...base, column: form.column, minValue: Number(form.minValue), maxValue: Number(form.maxValue) }
     case 'allowed_values': return { ...base, column: form.column, allowedValues: form.allowedValues.split(',').map(s => s.trim()).filter(Boolean) }
     case 'custom_expression': return { ...base, expression: form.expression }
-    case 'cross_column': return { ...base, expression: form.expression }
     case 'referential_integrity': return { ...base, column: form.column, refTable: form.refTable, refColumn: form.refColumn }
     case 'duplicate_single': return { ...base, column: form.column }
     case 'duplicate_composite': return { ...base, columns: form.columns }
@@ -912,14 +903,12 @@ function formToMetricConfig(form: RuleForm): MetricConfig | undefined {
     case 'expression_pct': return { ...base, expression: form.expression, minPassPct: Number(form.minPassPct) }
     case 'row_count': return { ...base, minRows: form.minRows ? Number(form.minRows) : undefined, maxRows: form.maxRows ? Number(form.maxRows) : undefined }
     case 'time_coverage': return { ...base, timeColumn: form.timeColumn, granularity: form.granularity, coverageDays: Number(form.coverageDays), minCoveragePct: Number(form.minCoveragePct) }
-    case 'volume_change': return { ...base, lookbackPeriod: Number(form.lookbackPeriod), maxChangePct: Number(form.maxChangePct) }
+    case 'volume_change': return { ...base, timeColumn: form.timeColumn, lookbackPeriod: Number(form.lookbackPeriod), maxChangePct: Number(form.maxChangePct) }
     case 'table_size': return { ...base, tableSizeMin: form.tableSizeMin ? Number(form.tableSizeMin) : undefined, tableSizeMax: form.tableSizeMax ? Number(form.tableSizeMax) : undefined, tableSizeUnit: form.tableSizeUnit }
     // Report/KPI metrics
-    case 'aggregate_reconciliation': return { ...base, sourceTableId: form.sourceTableId, reportColumn: form.reportColumn, tolerancePct: Number(form.tolerancePct) }
-    case 'cross_source_sum': return { ...base, sourceTableId: form.sourceTableId, tolerancePct: Number(form.tolerancePct) }
-    case 'report_row_count_match': return { ...base, sourceTableId: form.sourceTableId }
-    case 'kpi_variance': return { ...base, maxVariancePct: Number(form.maxVariancePct) }
-    case 'period_completeness': return { ...base, granularity: form.granularity, coverageDays: Number(form.coverageDays), minCoveragePct: Number(form.minCoveragePct) }
+    case 'aggregate_reconciliation': return { ...base, sourceTableId: form.sourceTableId, sourceColumn: form.sourceColumn, reportColumn: form.reportColumn, tolerancePct: Number(form.tolerancePct) }
+    case 'report_row_count_match': return { ...base, sourceTableId: form.sourceTableId, tolerancePct: form.tolerancePct ? Number(form.tolerancePct) : undefined }
+    case 'kpi_variance': return { ...base, column: form.column, timeColumn: form.timeColumn, granularity: form.granularity, maxVariancePct: Number(form.maxVariancePct) }
     case 'parent_child_match': return { ...base, parentKpiColumn: form.parentKpiColumn, childSumExpression: form.childSumExpression || undefined, tolerancePct: Number(form.tolerancePct) }
     default: return base
   }
@@ -1200,20 +1189,55 @@ Mỗi rule thuộc 1 chiều." /></Label>
           <MetricConfigFields form={form} setForm={setForm} tableColumns={tableColumns} />
         )}
 
-        {/* Thresholds */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>Ngưỡng cảnh báo — W (%)</Label>
-            <div className="relative">
-              <Input type="number" min={0} max={100} value={form.warningThreshold} onChange={set('warningThreshold')} className="pr-7 border-amber-300 focus-visible:ring-amber-400" />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-amber-500 font-bold">W</span>
+        {/* Thresholds — Dual Range Slider */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Ngưỡng đánh giá</Label>
+          {/* Slider */}
+          <div className="relative h-10 select-none">
+            {/* Color zones bar */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 rounded-full overflow-hidden flex">
+              <div className="bg-red-400 transition-all duration-150" style={{ width: `${Number(form.criticalThreshold)}%` }} />
+              <div className="bg-amber-400 transition-all duration-150" style={{ width: `${Number(form.warningThreshold) - Number(form.criticalThreshold)}%` }} />
+              <div className="bg-green-400 transition-all duration-150" style={{ width: `${100 - Number(form.warningThreshold)}%` }} />
             </div>
+            {/* Critical handle */}
+            <input
+              type="range" min={0} max={100}
+              value={form.criticalThreshold}
+              onChange={e => {
+                const v = +e.target.value
+                if (v < Number(form.warningThreshold)) setForm(f => ({ ...f, criticalThreshold: String(v) }))
+              }}
+              className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-red-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
+              style={{ zIndex: Number(form.criticalThreshold) > 50 ? 2 : 1 }}
+            />
+            {/* Warning handle */}
+            <input
+              type="range" min={0} max={100}
+              value={form.warningThreshold}
+              onChange={e => {
+                const v = +e.target.value
+                if (v > Number(form.criticalThreshold)) setForm(f => ({ ...f, warningThreshold: String(v) }))
+              }}
+              className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-amber-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
+              style={{ zIndex: Number(form.warningThreshold) < 50 ? 2 : 1 }}
+            />
           </div>
-          <div className="space-y-1.5">
-            <Label>Ngưỡng không đạt — C (%)</Label>
-            <div className="relative">
-              <Input type="number" min={0} max={100} value={form.criticalThreshold} onChange={set('criticalThreshold')} className="pr-7 border-red-300 focus-visible:ring-red-400" />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-red-500 font-bold">C</span>
+          {/* Legend */}
+          <div className="flex items-center justify-between text-xs px-1">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-red-400" />
+              <span className="text-red-700 font-semibold">C = {form.criticalThreshold}%</span>
+              <span className="text-gray-400">Không đạt</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-amber-400" />
+              <span className="text-amber-700 font-semibold">W = {form.warningThreshold}%</span>
+              <span className="text-gray-400">Cảnh báo</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-green-400" />
+              <span className="text-gray-400">Đạt</span>
             </div>
           </div>
         </div>

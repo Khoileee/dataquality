@@ -134,8 +134,8 @@ export function Thresholds() {
             <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-gray-500 uppercase tracking-wide pb-2 border-b">
               <div className="col-span-3">Chiều dữ liệu</div>
               <div className="col-span-5">Phân vùng điểm</div>
-              <div className="col-span-2 text-center">Ngưỡng cảnh báo (W)</div>
               <div className="col-span-2 text-center">Ngưỡng không đạt (C)</div>
+              <div className="col-span-2 text-center">Ngưỡng cảnh báo (W)</div>
             </div>
 
             {DIMENSIONS.map(dim => {
@@ -177,16 +177,6 @@ export function Thresholds() {
                     </div>
                   </div>
 
-                  {/* Warning input */}
-                  <div className="col-span-2">
-                    <Input
-                      type="number" min={0} max={100}
-                      value={vals.warning}
-                      onChange={e => setGlobalThresholds(prev => ({ ...prev, [dim]: { ...prev[dim], warning: +e.target.value } }))}
-                      className="h-8 text-center border-amber-300 focus-visible:ring-amber-400"
-                    />
-                  </div>
-
                   {/* Critical input */}
                   <div className="col-span-2">
                     <Input
@@ -194,6 +184,16 @@ export function Thresholds() {
                       value={vals.critical}
                       onChange={e => setGlobalThresholds(prev => ({ ...prev, [dim]: { ...prev[dim], critical: +e.target.value } }))}
                       className="h-8 text-center border-red-300 focus-visible:ring-red-400"
+                    />
+                  </div>
+
+                  {/* Warning input */}
+                  <div className="col-span-2">
+                    <Input
+                      type="number" min={0} max={100}
+                      value={vals.warning}
+                      onChange={e => setGlobalThresholds(prev => ({ ...prev, [dim]: { ...prev[dim], warning: +e.target.value } }))}
+                      className="h-8 text-center border-amber-300 focus-visible:ring-amber-400"
                     />
                   </div>
                 </div>
@@ -226,8 +226,8 @@ export function Thresholds() {
                 <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
                 <TableHead>Chiều DL</TableHead>
-                <TableHead className="text-center">Ngưỡng cảnh báo (W)</TableHead>
                 <TableHead className="text-center">Ngưỡng không đạt (C)</TableHead>
+                <TableHead className="text-center">Ngưỡng cảnh báo (W)</TableHead>
                 <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
@@ -240,13 +240,13 @@ export function Thresholds() {
                   <TableCell className="font-medium">{t.tableName}</TableCell>
                   <TableCell><DimensionBadge dimension={t.dimension} /></TableCell>
                   <TableCell className="text-center">
-                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-sm font-medium">
-                      {t.warningThreshold}%
+                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-sm font-medium">
+                      {t.criticalThreshold}%
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-sm font-medium">
-                      {t.criticalThreshold}%
+                    <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-sm font-medium">
+                      {t.warningThreshold}%
                     </span>
                   </TableCell>
                   <TableCell className="text-center sticky right-0 z-10 sticky-right">
@@ -291,12 +291,12 @@ export function Thresholds() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-amber-700">Ngưỡng cảnh báo — W (%)</Label>
-              <Input type="number" className="mt-1 border-amber-300" value={form.warning} onChange={e => setForm(f => ({ ...f, warning: +e.target.value }))} />
-            </div>
-            <div>
               <Label className="text-red-700">Ngưỡng không đạt — C (%)</Label>
               <Input type="number" className="mt-1 border-red-300" value={form.critical} onChange={e => setForm(f => ({ ...f, critical: +e.target.value }))} />
+            </div>
+            <div>
+              <Label className="text-amber-700">Ngưỡng cảnh báo — W (%)</Label>
+              <Input type="number" className="mt-1 border-amber-300" value={form.warning} onChange={e => setForm(f => ({ ...f, warning: +e.target.value }))} />
             </div>
           </div>
           <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-800 space-y-0.5">

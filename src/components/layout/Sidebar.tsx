@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Database, BarChart2, BookOpen, Calendar, Sliders,
-  AlertTriangle, FileBarChart, Bell, Settings, Shield, ChevronRight, GitBranch
+  AlertTriangle, FileBarChart, Bell, Settings, Shield, ChevronRight, GitBranch,
 } from 'lucide-react'
 import { useState } from 'react'
 

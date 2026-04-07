@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { Tabs } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog } from '@/components/ui/dialog'
 import {
@@ -212,31 +213,18 @@ export function DataCatalog() {
       />
 
       {/* Module Type Tabs */}
-      <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-        {MODULE_TABS.map(tab => {
-          const isActive = activeTab === tab.key
-          return (
-            <button
-              key={tab.key}
-              onClick={() => { setActiveTab(tab.key); setPage(1); setSelected([]) }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              <Badge variant={isActive ? 'default' : 'secondary'} className={`ml-1 text-xs ${isActive ? 'bg-blue-500 text-white' : ''}`}>
-                {countByModule[tab.key]}
-              </Badge>
-            </button>
-          )
-        })}
-        <div className="ml-auto px-3 text-xs text-gray-400">
-          {MODULE_TABS.find(t => t.key === activeTab)?.description}
-        </div>
-      </div>
+      <Tabs
+        tabs={MODULE_TABS.map(tab => ({
+          id: tab.key,
+          label: tab.label,
+          icon: tab.icon,
+          badge: countByModule[tab.key],
+          content: <></>,
+        }))}
+        activeTab={activeTab}
+        onTabChange={(id) => { setActiveTab(id as ModuleType); setPage(1); setSelected([]) }}
+        description={MODULE_TABS.find(t => t.key === activeTab)?.description}
+      />
 
       {/* Filter */}
       <Card>
