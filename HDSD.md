@@ -2153,6 +2153,44 @@ Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, sourceCol
 
 > **Lưu ý:** Metric này thay thế cả `cross_source_sum` (phiên bản cũ). Chỉ định cụ thể cả **cột BC** và **cột nguồn** để đối soát chính xác.
 
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: Cột THUC_TE trên báo cáo phải khớp SUM(SO_TIEN) từ bảng giao dịch.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng báo cáo | `BAO_CAO_NGAY` |
+| Bảng nguồn liên kết | `GD_GIAODICH` |
+| Cột tổng hợp trên BC | `THUC_TE` |
+| Cột nguồn (SUM) | `SO_TIEN` |
+| Sai lệch tối đa (%) | 1 |
+| Ngưỡng cảnh báo (W) | 99 |
+| Ngưỡng không đạt (C) | 95 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  (SELECT SUM(THUC_TE) FROM BAO_CAO_NGAY)  AS bc_sum,
+  (SELECT SUM(SO_TIEN) FROM GD_GIAODICH)   AS src_sum,
+  ABS((SELECT SUM(THUC_TE) FROM BAO_CAO_NGAY) - (SELECT SUM(SO_TIEN) FROM GD_GIAODICH))
+    * 100.0 / (SELECT SUM(SO_TIEN) FROM GD_GIAODICH) AS diff_pct
+-- score = 100 - diff_pct
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: BC THUC_TE = 100 tỷ, SUM GD = 102 tỷ → diff_pct = 1.96%
+→ score = 100 - 1.96 = 98.04
+
+So sánh:
+  score (98.04) < W (99) → Cảnh báo ⚠️
+  score (98.04) ≥ C (95) → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: Sai lệch 2 tỷ — có thể do job tổng hợp bỏ sót giao dịch cuối ngày.
+```
+
 ---
 
 #### `kpi_variance` — Biến động KPI so kỳ trước 🆕
@@ -2190,6 +2228,48 @@ Bảng KPI_KINHDOANH, maxVariancePct=10
 ```
 
 > **Lưu ý:** Metric này kiểm tra **biến động giữa 2 kỳ liên tiếp**. Để kiểm tra KPI có đủ kỳ dữ liệu hay không, dùng `time_coverage`.
+
+**Minh họa: Cấu hình → SQL → Kết quả**
+
+> Ví dụ: KPI doanh thu tháng không được tăng/giảm quá 30% so với tháng trước.
+
+**Bước 1 — Cấu hình trên giao diện:**
+| Trường | Giá trị nhập |
+|---|---|
+| Bảng | `KPI_KINHDOANH` |
+| Cột chỉ tiêu KPI | `DOANH_THU` |
+| Cột thời gian | `THANG` |
+| Chu kỳ so sánh | Tháng |
+| Biến động tối đa so kỳ trước (%) | 30 |
+| Ngưỡng cảnh báo (W) | 80 |
+| Ngưỡng không đạt (C) | 60 |
+
+**Bước 2 — SQL hệ thống sinh ra:**
+```sql
+SELECT
+  cur.DOANH_THU AS current_val,
+  prev.DOANH_THU AS prev_val,
+  ABS(cur.DOANH_THU - prev.DOANH_THU) * 100.0 / prev.DOANH_THU AS variance_pct
+FROM KPI_KINHDOANH cur
+JOIN KPI_KINHDOANH prev
+  ON prev.THANG = ADD_MONTHS(cur.THANG, -1)
+WHERE cur.THANG = '2026-03'
+-- variance_pct = % biến động giữa 2 kỳ liên tiếp
+-- score = 100 - variance_pct (tối thiểu 0)
+```
+
+**Bước 3 — Đánh giá kết quả:**
+```
+Kết quả: Tháng 2 = 100 tỷ, Tháng 3 = 55 tỷ → variance_pct = 45%
+→ score = 100 - 45 = 55
+
+So sánh:
+  score (55) < C (60) → Không đạt ✗
+
+→ Kết quả cuối cùng: KHÔNG ĐẠT (Critical)
+→ Ý nghĩa: Doanh thu giảm 45%, vượt xa ngưỡng 30%.
+  Cần kiểm tra: mất dữ liệu 2 tuần cuối tháng hay suy giảm thực sự?
+```
 
 ---
 

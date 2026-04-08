@@ -3703,7 +3703,67 @@ Bảng BAO_CAO_TUAN, sourceTable=GD_GIAODICH, reportColumn=TONG_SO_GD, sourceCol
 </code></pre><blockquote>
 <p><strong>Lưu ý:</strong> Metric này thay thế cả <code>cross_source_sum</code> (phiên bản cũ). Chỉ định cụ thể cả <strong>cột BC</strong> và <strong>cột nguồn</strong> để đối soát chính xác.</p>
 </blockquote>
-<hr>
+<p><strong>Minh họa: Cấu hình → SQL → Kết quả</strong></p>
+<blockquote>
+<p>Ví dụ: Cột THUC_TE trên báo cáo phải khớp SUM(SO_TIEN) từ bảng giao dịch.</p>
+</blockquote>
+<p><strong>Bước 1 — Cấu hình trên giao diện:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Giá trị nhập</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bảng báo cáo</td>
+<td><code>BAO_CAO_NGAY</code></td>
+</tr>
+<tr>
+<td>Bảng nguồn liên kết</td>
+<td><code>GD_GIAODICH</code></td>
+</tr>
+<tr>
+<td>Cột tổng hợp trên BC</td>
+<td><code>THUC_TE</code></td>
+</tr>
+<tr>
+<td>Cột nguồn (SUM)</td>
+<td><code>SO_TIEN</code></td>
+</tr>
+<tr>
+<td>Sai lệch tối đa (%)</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Ngưỡng cảnh báo (W)</td>
+<td>99</td>
+</tr>
+<tr>
+<td>Ngưỡng không đạt (C)</td>
+<td>95</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bước 2 — SQL hệ thống sinh ra:</strong></p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span>
+  <span class="token punctuation">(</span><span class="token keyword keyword-SELECT">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>THUC_TE<span class="token punctuation">)</span> <span class="token keyword keyword-FROM">FROM</span> BAO_CAO_NGAY<span class="token punctuation">)</span>  <span class="token keyword keyword-AS">AS</span> bc_sum<span class="token punctuation">,</span>
+  <span class="token punctuation">(</span><span class="token keyword keyword-SELECT">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>SO_TIEN<span class="token punctuation">)</span> <span class="token keyword keyword-FROM">FROM</span> GD_GIAODICH<span class="token punctuation">)</span>   <span class="token keyword keyword-AS">AS</span> src_sum<span class="token punctuation">,</span>
+  ABS<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword keyword-SELECT">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>THUC_TE<span class="token punctuation">)</span> <span class="token keyword keyword-FROM">FROM</span> BAO_CAO_NGAY<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token keyword keyword-SELECT">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>SO_TIEN<span class="token punctuation">)</span> <span class="token keyword keyword-FROM">FROM</span> GD_GIAODICH<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token operator">*</span> <span class="token number">100.0</span> <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token keyword keyword-SELECT">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>SO_TIEN<span class="token punctuation">)</span> <span class="token keyword keyword-FROM">FROM</span> GD_GIAODICH<span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> diff_pct
+<span class="token comment">-- score = 100 - diff_pct</span>
+</code></pre><p><strong>Bước 3 — Đánh giá kết quả:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Kết quả: BC THUC_TE = 100 tỷ, SUM GD = 102 tỷ → diff_pct = 1.96%
+→ score = 100 - 1.96 = 98.04
+
+So sánh:
+  score (98.04) &lt; W (99) → Cảnh báo ⚠️
+  score (98.04) ≥ C (95) → Không nghiêm trọng
+
+→ Kết quả cuối cùng: CẢNH BÁO (Warning)
+→ Ý nghĩa: Sai lệch 2 tỷ — có thể do job tổng hợp bỏ sót giao dịch cuối ngày.
+</code></pre><hr>
 <h4 id="kpi_variance--biến-động-kpi-so-kỳ-trước-"><code>kpi_variance</code> — Biến động KPI so kỳ trước 🆕 </h4>
 <p><strong>Mục đích:</strong> Kiểm tra giá trị KPI <strong>không thay đổi quá X%</strong> so với kỳ trước — phát hiện tăng/giảm đột biến không giải thích được. Metric này dành cho bảng loại <strong>Chỉ tiêu (KPI)</strong>, giúp cảnh báo sớm khi KPI biến động bất thường.</p>
 <p><strong>Tham số:</strong></p>
@@ -3760,7 +3820,71 @@ Bảng KPI_KINHDOANH, maxVariancePct=10
 </code></pre><blockquote>
 <p><strong>Lưu ý:</strong> Metric này kiểm tra <strong>biến động giữa 2 kỳ liên tiếp</strong>. Để kiểm tra KPI có đủ kỳ dữ liệu hay không, dùng <code>time_coverage</code>.</p>
 </blockquote>
-<hr>
+<p><strong>Minh họa: Cấu hình → SQL → Kết quả</strong></p>
+<blockquote>
+<p>Ví dụ: KPI doanh thu tháng không được tăng/giảm quá 30% so với tháng trước.</p>
+</blockquote>
+<p><strong>Bước 1 — Cấu hình trên giao diện:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Giá trị nhập</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bảng</td>
+<td><code>KPI_KINHDOANH</code></td>
+</tr>
+<tr>
+<td>Cột chỉ tiêu KPI</td>
+<td><code>DOANH_THU</code></td>
+</tr>
+<tr>
+<td>Cột thời gian</td>
+<td><code>THANG</code></td>
+</tr>
+<tr>
+<td>Chu kỳ so sánh</td>
+<td>Tháng</td>
+</tr>
+<tr>
+<td>Biến động tối đa so kỳ trước (%)</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Ngưỡng cảnh báo (W)</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Ngưỡng không đạt (C)</td>
+<td>60</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bước 2 — SQL hệ thống sinh ra:</strong></p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span>
+  cur<span class="token punctuation">.</span>DOANH_THU <span class="token keyword keyword-AS">AS</span> current_val<span class="token punctuation">,</span>
+  <span class="token keyword keyword-prev">prev</span><span class="token punctuation">.</span>DOANH_THU <span class="token keyword keyword-AS">AS</span> prev_val<span class="token punctuation">,</span>
+  ABS<span class="token punctuation">(</span>cur<span class="token punctuation">.</span>DOANH_THU <span class="token operator">-</span> <span class="token keyword keyword-prev">prev</span><span class="token punctuation">.</span>DOANH_THU<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">100.0</span> <span class="token operator">/</span> <span class="token keyword keyword-prev">prev</span><span class="token punctuation">.</span>DOANH_THU <span class="token keyword keyword-AS">AS</span> variance_pct
+<span class="token keyword keyword-FROM">FROM</span> KPI_KINHDOANH cur
+<span class="token keyword keyword-JOIN">JOIN</span> KPI_KINHDOANH <span class="token keyword keyword-prev">prev</span>
+  <span class="token keyword keyword-ON">ON</span> <span class="token keyword keyword-prev">prev</span><span class="token punctuation">.</span>THANG <span class="token operator">=</span> ADD_MONTHS<span class="token punctuation">(</span>cur<span class="token punctuation">.</span>THANG<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token keyword keyword-WHERE">WHERE</span> cur<span class="token punctuation">.</span>THANG <span class="token operator">=</span> <span class="token string">'2026-03'</span>
+<span class="token comment">-- variance_pct = % biến động giữa 2 kỳ liên tiếp</span>
+<span class="token comment">-- score = 100 - variance_pct (tối thiểu 0)</span>
+</code></pre><p><strong>Bước 3 — Đánh giá kết quả:</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>Kết quả: Tháng 2 = 100 tỷ, Tháng 3 = 55 tỷ → variance_pct = 45%
+→ score = 100 - 45 = 55
+
+So sánh:
+  score (55) &lt; C (60) → Không đạt ✗
+
+→ Kết quả cuối cùng: KHÔNG ĐẠT (Critical)
+→ Ý nghĩa: Doanh thu giảm 45%, vượt xa ngưỡng 30%.
+  Cần kiểm tra: mất dữ liệu 2 tuần cuối tháng hay suy giảm thực sự?
+</code></pre><hr>
 <h2 id="7-hướng-dẫn-từng-menu">7. Hướng dẫn từng menu </h2>
 <hr>
 <h3 id="71-dashboard">7.1 Dashboard </h3>
