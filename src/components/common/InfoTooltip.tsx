@@ -3,11 +3,12 @@ import { createPortal } from 'react-dom'
 import { Info } from 'lucide-react'
 
 interface InfoTooltipProps {
-  text: string
+  text: React.ReactNode
   className?: string
+  wide?: boolean
 }
 
-export function InfoTooltip({ text, className = '' }: InfoTooltipProps) {
+export function InfoTooltip({ text, className = '', wide = false }: InfoTooltipProps) {
   const [coords, setCoords] = useState<{ top: number; left: number; direction: 'top' | 'bottom' } | null>(null)
   const iconRef = useRef<HTMLSpanElement>(null)
 
@@ -43,7 +44,7 @@ export function InfoTooltip({ text, className = '' }: InfoTooltipProps) {
             pointerEvents: 'none',
           }}
         >
-          <div className="w-72 px-3 py-2 text-xs leading-relaxed text-white bg-gray-900 rounded-lg shadow-lg whitespace-pre-line">
+          <div className={`${wide ? 'w-96' : 'w-72'} px-3 py-2 text-xs leading-relaxed text-white bg-gray-900 rounded-lg shadow-lg whitespace-pre-line`}>
             {text}
             <div
               style={{

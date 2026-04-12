@@ -343,7 +343,7 @@ export function Dashboard() {
                 <TableHead>Mức độ</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
                 <TableHead>Loại</TableHead>
-                <TableHead>Chiều DL</TableHead>
+                <TableHead>Chiều dữ liệu</TableHead>
                 <TableHead>Phát hiện</TableHead>
                 <TableHead>Trạng thái</TableHead>
               </TableRow>

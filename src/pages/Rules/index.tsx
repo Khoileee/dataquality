@@ -1416,7 +1416,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
               <Input className="pl-8" placeholder="Tên quy tắc..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
             </div>
             <Select value={dimFilter} onChange={e => setDimFilter(e.target.value)}>
-              <option value="all">Chiều DL: Tất cả</option>
+              <option value="all">Chiều dữ liệu: Tất cả</option>
               {DIMENSIONS.map(d => <option key={d} value={d}>{getDimensionLabel(d)}</option>)}
             </Select>
             <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
@@ -1432,7 +1432,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
             <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="all">Trạng thái: Tất cả</option>
               <option value="active">Hoạt động</option>
-              <option value="inactive">Không HĐ</option>
+              <option value="inactive">Không hoạt động</option>
             </Select>
           </div>
           <div className="flex items-center justify-between mt-3">
@@ -1460,7 +1460,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
               <TableRow>
                 <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Tên quy tắc</TableHead>
-                <TableHead className="w-32">Chiều DL</TableHead>
+                <TableHead className="w-32">Chiều dữ liệu</TableHead>
                 <TableHead>Bảng · Chỉ số</TableHead>
                 <TableHead className="w-28">Phạm vi</TableHead>
                 <TableHead className="w-32">Ngưỡng</TableHead>

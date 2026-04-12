@@ -140,6 +140,13 @@ export interface DataSource {
   childKpiIds?: string[]
   periodType?: PeriodType
   kpiFormula?: string
+  // Threshold overrides per dimension (empty = inherit global defaults)
+  thresholdOverrides?: Partial<Record<QualityDimension, { warning: number; critical: number }>>
+  // SQLWF metadata
+  syncSource?: 'sqlwf' | 'manual'
+  partitionBy?: 'daily' | 'monthly' | 'none'
+  mode?: 'append' | 'overwrite'
+  area?: string
 }
 
 export interface QualityRule {

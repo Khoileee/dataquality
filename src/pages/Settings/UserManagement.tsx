@@ -204,7 +204,7 @@ export function UserManagement() {
             <div>
               <Label>Nhóm</Label>
               <Select className="mt-1" value={form.team} onChange={e => setForm(f => ({ ...f, team: e.target.value }))}>
-                {['Nhóm Khách hàng', 'Nhóm Giao dịch', 'Nhóm Sản phẩm', 'Nhóm Báo cáo', 'Nhóm Rủi ro', 'Nhóm Quản trị DL', 'Nhóm Bảo mật', 'Kiểm toán nội bộ', 'IT Operations'].map(t => (
+                {['Nhóm Khách hàng', 'Nhóm Giao dịch', 'Nhóm Sản phẩm', 'Nhóm Báo cáo', 'Nhóm Rủi ro', 'Nhóm Quản trị dữ liệu', 'Nhóm Bảo mật', 'Kiểm toán nội bộ', 'IT Operations'].map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </Select>

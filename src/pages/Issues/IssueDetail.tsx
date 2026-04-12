@@ -155,7 +155,7 @@ export function IssueDetail() {
                 <div className="flex gap-2"><span className="text-gray-500 w-36 shrink-0">Bảng dữ liệu:</span>
                   <span className="flex items-center gap-1.5"><Database className="h-3.5 w-3.5 text-gray-400" />{issue.tableName}</span>
                 </div>
-                <div className="flex gap-2"><span className="text-gray-500 w-36 shrink-0">Chiều DL:</span><DimensionBadge dimension={issue.dimension} /></div>
+                <div className="flex gap-2"><span className="text-gray-500 w-36 shrink-0">Chiều dữ liệu:</span><DimensionBadge dimension={issue.dimension} /></div>
                 {issue.ruleName && (
                   <div className="flex gap-2"><span className="text-gray-500 w-36 shrink-0">Quy tắc vi phạm:</span>
                     <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5 text-gray-400" />{issue.ruleName}</span>

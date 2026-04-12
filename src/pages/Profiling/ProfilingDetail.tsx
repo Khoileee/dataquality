@@ -56,7 +56,7 @@ export function ProfilingDetail() {
   }))
 
   const handleExportCSV = () => {
-    const header = ['Cột', 'Kiểu DL', 'Null%', 'Phân biệt%', 'Min', 'Max', 'Vấn đề']
+    const header = ['Cột', 'Kiểu dữ liệu', 'Null%', 'Phân biệt%', 'Min', 'Max', 'Vấn đề']
     const rows = result.columnProfiles.map(col => [
       col.columnName, col.dataType,
       col.nullRate.toFixed(1), col.distinctRate.toFixed(1),

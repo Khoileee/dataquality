@@ -34,7 +34,7 @@ const MODULE_COLORS: Record<ModuleType, string> = {
 const PAGE_SIZE = 10
 
 function exportCSV(issues: Issue[]) {
-  const header = ['STT', 'ID', 'Tiêu đề', 'Mức độ', 'Trạng thái', 'Bảng DL', 'Chiều DL', 'Phát hiện lúc', 'Gán cho']
+  const header = ['STT', 'ID', 'Tiêu đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
   const rows = issues.map((iss, i) => [
     i + 1,
     iss.id.toUpperCase(),

@@ -209,7 +209,7 @@ export function Thresholds() {
           <div>
             <CardTitle>Cấu hình riêng theo bảng</CardTitle>
             <p className="text-sm text-gray-500 mt-1">
-              Ghi đè ngưỡng toàn cục cho một bảng + chiều DL cụ thể · Không áp dụng ở cấp cột (dùng ngưỡng riêng trong từng Quy tắc)
+              Ghi đè ngưỡng toàn cục cho một bảng + chiều dữ liệu cụ thể · Không áp dụng ở cấp cột (dùng ngưỡng riêng trong từng Quy tắc)
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ export function Thresholds() {
               <TableRow>
                 <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
-                <TableHead>Chiều DL</TableHead>
+                <TableHead>Chiều dữ liệu</TableHead>
                 <TableHead className="text-center">Ngưỡng không đạt (C)</TableHead>
                 <TableHead className="text-center">Ngưỡng cảnh báo (W)</TableHead>
                 <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>

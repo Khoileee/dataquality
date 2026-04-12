@@ -7,7 +7,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'outli
   error: { label: 'Lỗi', variant: 'secondary' },
   pending: { label: 'Chờ xử lý', variant: 'default' },
   active: { label: 'Hoạt động', variant: 'success' },
-  inactive: { label: 'Không HĐ', variant: 'secondary' },
+  inactive: { label: 'Không hoạt động', variant: 'secondary' },
   draft: { label: 'Nháp', variant: 'outline' },
   new: { label: 'Mới', variant: 'default' },
   assigned: { label: 'Đã gán', variant: 'default' },

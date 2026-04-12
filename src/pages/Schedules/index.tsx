@@ -353,7 +353,7 @@ export function Schedules() {
             <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="all">Trạng thái: Tất cả</option>
               <option value="active">Hoạt động</option>
-              <option value="inactive">Không HĐ</option>
+              <option value="inactive">Không hoạt động</option>
             </Select>
           </div>
           <div className="flex items-center justify-between mt-3">

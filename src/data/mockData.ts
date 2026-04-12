@@ -62,7 +62,7 @@ export const mockDataSources: DataSource[] = [
   {
     id: 'ds-007', name: 'DM_TIENTE', type: 'database', schema: 'DM',
     tableName: 'DM_TIENTE', description: 'Danh mục tiền tệ và tỷ giá',
-    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Quản trị DL', category: 'DM',
+    status: 'active', owner: 'Lê Thị Hoa', team: 'Nhóm Quản trị dữ liệu', category: 'DM',
     rowCount: 180, lastProfiled: '2026-03-25T10:00:00', overallScore: 97,
     dimensionScores: { completeness: 100, validity: 98, consistency: 97, uniqueness: 100, accuracy: 96, timeliness: 93 },
     createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-25T10:00:00',
@@ -71,7 +71,7 @@ export const mockDataSources: DataSource[] = [
   {
     id: 'ds-008', name: 'DM_CHINHANH', type: 'database', schema: 'DM',
     tableName: 'DM_CHINHANH', description: 'Danh mục chi nhánh và phòng giao dịch',
-    status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Quản trị DL', category: 'DM',
+    status: 'active', owner: 'Phạm Quốc Hùng', team: 'Nhóm Quản trị dữ liệu', category: 'DM',
     rowCount: 320, lastProfiled: '2026-03-26T10:00:00', overallScore: 94,
     dimensionScores: { completeness: 97, validity: 95, consistency: 92, uniqueness: 100, accuracy: 91, timeliness: 90 },
     createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-26T10:00:00',
@@ -384,6 +384,41 @@ export const mockIssues: Issue[] = [
       { id: 'e2', type: 'resolved', user: 'Lê Thị Hoa', content: 'Đã xác nhận và điều chỉnh 3 bút toán lỗi', timestamp: '2026-03-16T11:00:00' },
     ]
   },
+  {
+    id: 'iss-011', title: 'Tỷ lệ null cột SO_DU tăng đột biến', description: 'Phát hiện 8.3% bản ghi TK_TAIKHOAN có SO_DU = NULL, tăng mạnh so với mức bình thường 0.5%. Nghi ngờ lỗi batch cập nhật số dư đêm qua.', severity: 'high', status: 'assigned',
+    tableId: 'ds-003', tableName: 'TK_TAIKHOAN', dimension: 'completeness', ruleId: 'r-005', ruleName: 'TK - Số dư bắt buộc khi ACTIVE',
+    detectedAt: '2026-04-09T06:30:00', assignedTo: 'Trần Văn Minh',
+    timeline: [
+      { id: 'e1', type: 'created', user: 'Hệ thống', content: 'Phát hiện 8.3% SO_DU = NULL trong TK_TAIKHOAN (ngưỡng: 1%)', timestamp: '2026-04-09T06:30:00' },
+      { id: 'e2', type: 'assigned', user: 'Admin', content: 'Gán cho Trần Văn Minh — Senior DBA', timestamp: '2026-04-09T07:15:00' },
+    ]
+  },
+  {
+    id: 'iss-012', title: 'BAO_CAO_NGAY trễ SLA 2 ngày liên tiếp', description: 'BAO_CAO_NGAY chưa được cập nhật đúng hạn 8:00 sáng trong 2 ngày liên tiếp (08/04 và 09/04). Ảnh hưởng đến báo cáo giao ban ban lãnh đạo.', severity: 'critical', status: 'new',
+    tableId: 'ds-006', tableName: 'BAO_CAO_NGAY', dimension: 'timeliness', ruleId: 'r-018', ruleName: 'BC - Báo cáo cập nhật đúng hạn',
+    detectedAt: '2026-04-09T09:05:00',
+    timeline: [
+      { id: 'e1', type: 'created', user: 'Hệ thống', content: 'BAO_CAO_NGAY trễ SLA 65 phút (09:05 vs SLA 08:00). Đây là lần thứ 2 liên tiếp.', timestamp: '2026-04-09T09:05:00' },
+    ]
+  },
+  {
+    id: 'iss-013', title: 'Mã sản phẩm trùng lặp trong SP_SANPHAM', description: 'Phát hiện 15 mã sản phẩm (MA_SP) bị trùng lặp sau đợt đồng bộ dữ liệu từ hệ thống Core Banking mới.', severity: 'medium', status: 'in_progress',
+    tableId: 'ds-004', tableName: 'SP_SANPHAM', dimension: 'uniqueness',
+    detectedAt: '2026-04-07T07:00:00', assignedTo: 'Lê Thị Hoa',
+    timeline: [
+      { id: 'e1', type: 'created', user: 'Hệ thống', content: 'Phát hiện 15 MA_SP trùng lặp trong SP_SANPHAM', timestamp: '2026-04-07T07:00:00' },
+      { id: 'e2', type: 'assigned', user: 'Admin', content: 'Gán cho Lê Thị Hoa', timestamp: '2026-04-07T08:30:00' },
+      { id: 'e3', type: 'comment', user: 'Lê Thị Hoa', content: 'Đang phối hợp team Core Banking xác định bản ghi gốc. Dự kiến xong trong ngày.', timestamp: '2026-04-08T10:00:00' },
+    ]
+  },
+  {
+    id: 'iss-014', title: 'Số dòng GD_GIAODICH giảm 45% so với tuần trước', description: 'Số dòng bảng GD_GIAODICH ngày 06/04 chỉ có 682.000/1.250.000 dòng (giảm 45%). Có thể do lỗi ETL nạp dữ liệu không đầy đủ.', severity: 'high', status: 'new',
+    tableId: 'ds-002', tableName: 'GD_GIAODICH', dimension: 'completeness',
+    detectedAt: '2026-04-06T05:30:00',
+    timeline: [
+      { id: 'e1', type: 'created', user: 'Hệ thống', content: 'Số dòng GD_GIAODICH = 682.000, giảm 45% so với trung bình 7 ngày (1.250.000)', timestamp: '2026-04-06T05:30:00' },
+    ]
+  },
 ]
 
 export const mockNotifications: NotificationConfig[] = [
@@ -552,7 +587,7 @@ export const mockPipelineJobs: PipelineJob[] = [
   {
     id: 'pj-012', name: 'ETL_DM_DANHMUC', description: 'Làm mới danh mục tiền tệ và chi nhánh, cập nhật vào bảng sản phẩm',
     jobType: 'etl', technology: 'Python', owner: 'Phạm Quốc Hùng', ownerEmail: 'hung@company.com',
-    team: 'Nhóm Quản trị DL', inputTableIds: ['ds-007', 'ds-008'], outputTableIds: ['ds-004'],
+    team: 'Nhóm Quản trị dữ liệu', inputTableIds: ['ds-007', 'ds-008'], outputTableIds: ['ds-004'],
     status: 'active', schedule: 'Hàng tháng ngày 1 01:00', lastRunAt: '2026-04-01T01:00:00', lastRunStatus: 'success',
   },
 ]
