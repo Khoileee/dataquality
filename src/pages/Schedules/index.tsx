@@ -466,38 +466,30 @@ export function Schedules() {
                         />
                       </TableCell>
                       <TableCell className="text-center">
-                        <button
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-purple-600" title="Xem vấn đề của bảng này"
                           onClick={() => navigate('/issues', { state: { tableId: schedule.tableId } })}
-                          className="p-1.5 rounded hover:bg-purple-50 text-gray-400 hover:text-purple-600 transition-colors"
-                          title="Xem vấn đề của bảng này"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                       </TableCell>
                       <TableCell className="text-center sticky right-0 z-10 sticky-right">
-                        <div className="flex items-center justify-center gap-0.5">
-                          <button
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Chạy ngay"
                             onClick={() => !isRunning && handleRunNow(schedule.id)}
                             disabled={isRunning}
-                            className="p-1.5 rounded hover:bg-green-50 text-gray-400 hover:text-green-600 disabled:opacity-40 transition-colors"
-                            title="Chạy ngay"
                           >
                             <Play className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Chỉnh sửa"
                             onClick={() => setEditSchedule(schedule)}
-                            className="p-1.5 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
-                            title="Chỉnh sửa"
                           >
                             <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa"
                             onClick={() => setDeleteSchedule(schedule)}
-                            className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
-                            title="Xóa"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -514,9 +506,9 @@ export function Schedules() {
                 {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} lịch chạy
               </p>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
                   <ChevronLeft className="h-4 w-4" />
-                </button>
+                </Button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                   <button key={n} onClick={() => setPage(n)}
                     className={`w-8 h-8 rounded text-sm font-medium transition-colors ${n === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}
@@ -524,9 +516,9 @@ export function Schedules() {
                     {n}
                   </button>
                 ))}
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40">
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}

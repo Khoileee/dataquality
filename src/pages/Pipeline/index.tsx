@@ -239,11 +239,11 @@ export function PipelinePage() {
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
                       <div className="flex items-center justify-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(job)}>
-                          <Pencil className="h-4 w-4 text-gray-500" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Chỉnh sửa" onClick={() => openEdit(job)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(job)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa" onClick={() => setDeleteTarget(job)}>
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </TableCell>

@@ -177,6 +177,39 @@ export interface RuleTemplate {
   metricConfig?: MetricConfig
   category: string
   usageCount: number
+  threshold: { warning: number; critical: number }
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+
+// Column Profile — gom nhiều metric templates cho 1 loại cột
+export interface ColumnProfileTemplate {
+  id: string
+  name: string
+  description: string
+  columnKeywords: string[]
+  metricTemplateIds: string[]
+  thresholdOverrides?: Partial<Record<QualityDimension, { warning: number; critical: number }>>
+  usageCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+// Table Profile — gom Column Profiles + table-level metrics cho 1 loại bảng
+export interface TableProfileTemplate {
+  id: string
+  name: string
+  description: string
+  tableType: ModuleType
+  mode: 'append' | 'overwrite'
+  partition: 'daily' | 'monthly' | 'none'
+  tableMetricTemplateIds: string[]
+  columnProfileIds: string[]
+  defaultThresholds?: Partial<Record<QualityDimension, { warning: number; critical: number }>>
+  usageCount: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Schedule {

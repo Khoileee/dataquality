@@ -556,14 +556,12 @@ export function Issues() {
                       <StatusBadge status={issue.status} />
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
-                      <div className="flex items-center justify-center">
-                        <button
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Xem chi tiết"
                           onClick={() => navigate(`/issues/${issue.id}`)}
-                          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
-                          title="Xem chi tiết"
                         >
-                          <Eye className="h-4 w-4" />
-                        </button>
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

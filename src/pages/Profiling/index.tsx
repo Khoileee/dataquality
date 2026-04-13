@@ -319,21 +319,17 @@ export function Profiling() {
                       </TableCell>
                       <TableCell className="sticky right-0 z-10 sticky-right">
                         <div className="flex items-center justify-center gap-1">
-                          <button
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Xem chi tiết"
                             onClick={() => navigate(`/profiling/${result.id}`)}
-                            className="p-1 rounded hover:bg-blue-50 hover:text-blue-600 text-gray-400 transition-colors"
-                            title="Xem chi tiết"
                           >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          <button
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Chạy lại"
                             onClick={() => !runningIds[result.id] && result.status !== 'running' && handleRerun(result)}
                             disabled={runningIds[result.id] || result.status === 'running'}
-                            className="p-1 rounded hover:bg-green-50 hover:text-green-600 text-gray-400 transition-colors disabled:opacity-40"
-                            title="Chạy lại"
                           >
-                            <RefreshCw className={`h-4 w-4 ${runningIds[result.id] ? 'animate-spin' : ''}`} />
-                          </button>
+                            <RefreshCw className={`h-3.5 w-3.5 ${runningIds[result.id] ? 'animate-spin' : ''}`} />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   BookOpen, LayoutGrid, Search, Plus, Edit, Trash2, X, Play,
   ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2,
-  History,
+  History, Copy,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,9 +20,10 @@ import { DimensionBadge, getDimensionLabel, DIMENSION_CONFIG } from '@/component
 import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { cn, formatDateTime } from '@/lib/utils'
-import { mockRules, mockRuleTemplates, mockDataSources } from '@/data/mockData'
+import { SearchableMultiSelect } from '@/components/common/SearchableMultiSelect'
+import { mockRules, mockRuleTemplates, mockDataSources, mockColumnProfiles, mockTableProfiles } from '@/data/mockData'
 import { getGlobalThreshold, getTableThreshold } from '@/pages/Thresholds'
-import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRule, RuleTemplate, IssueSeverity, Issue, ModuleType } from '@/types'
+import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRule, RuleTemplate, IssueSeverity, Issue, ModuleType, ColumnProfileTemplate, TableProfileTemplate } from '@/types'
 
 const DIMENSIONS: QualityDimension[] = ['completeness', 'validity', 'consistency', 'uniqueness', 'accuracy', 'timeliness']
 const PAGE_SIZE = 10
@@ -300,11 +301,12 @@ const EMPTY_FORM: RuleForm = {
 // ─── MetricConfigFields ───────────────────────────────────────────────────────
 
 function MetricConfigFields({
-  form, setForm, tableColumns,
+  form, setForm, tableColumns, templateMode = false,
 }: {
   form: RuleForm
   setForm: React.Dispatch<React.SetStateAction<RuleForm>>
   tableColumns: string[]
+  templateMode?: boolean
 }) {
   const set = (field: keyof RuleForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -326,8 +328,8 @@ function MetricConfigFields({
     <div className="space-y-3 border border-blue-100 bg-blue-50/40 rounded-lg p-4">
       <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Thông số kiểm tra</p>
 
-      {/* Single column picker */}
-      {['not_null','fill_rate','format_regex','blacklist_pattern','value_range','allowed_values',
+      {/* Single column picker — hidden in templateMode */}
+      {!templateMode && ['not_null','fill_rate','format_regex','blacklist_pattern','value_range','allowed_values',
         'null_rate_by_period','conditional_not_null','fixed_datatype','mode_check',
         'duplicate_single','statistics_bound','sum_range','on_time','freshness'].includes(mt) && (
         <div className="space-y-1">
@@ -343,8 +345,8 @@ function MetricConfigFields({
         </div>
       )}
 
-      {/* Multi-column picker */}
-      {mt === 'duplicate_composite' && (
+      {/* Multi-column picker — hidden in templateMode */}
+      {!templateMode && mt === 'duplicate_composite' && (
         <div className="space-y-1">
           <Label className="text-sm">Chọn các cột tạo thành khóa duy nhất <span className="text-red-500">*</span></Label>
           {tableColumns.length > 0 ? (
@@ -436,6 +438,7 @@ function MetricConfigFields({
       {/* Referential integrity */}
       {mt === 'referential_integrity' && (
         <>
+          {!templateMode && (
           <div className="space-y-1">
             <Label className="text-sm">Cột nguồn <span className="text-red-500">*</span></Label>
             {tableColumns.length > 0 ? (
@@ -447,6 +450,7 @@ function MetricConfigFields({
               <Input value={form.column} onChange={set('column')} placeholder="Cột nguồn..." />
             )}
           </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-sm">Bảng tham chiếu <span className="text-red-500">*</span></Label>
@@ -466,6 +470,7 @@ function MetricConfigFields({
       {/* Reference match */}
       {mt === 'reference_match' && (
         <>
+          {!templateMode && (
           <div className="space-y-1">
             <Label className="text-sm">Cột so sánh (nguồn) <span className="text-red-500">*</span></Label>
             {tableColumns.length > 0 ? (
@@ -477,6 +482,7 @@ function MetricConfigFields({
               <Input value={form.sourceColumn} onChange={set('sourceColumn')} placeholder="Cột nguồn..." />
             )}
           </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-sm">Bảng chuẩn <span className="text-red-500">*</span></Label>
@@ -1504,9 +1510,14 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-amber-600 text-xs font-medium">W:{rule.threshold.warning}%</span>
-                        <span className="text-gray-300 mx-1">/</span>
-                        <span className="text-red-600 text-xs font-medium">C:{rule.threshold.critical}%</span>
+                        <div className="flex items-center gap-1">
+                          <span className="inline-flex items-center bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                            C:{rule.threshold.critical}%
+                          </span>
+                          <span className="inline-flex items-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                            W:{rule.threshold.warning}%
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-xs text-gray-500">
                         {isRunning
@@ -1534,36 +1545,28 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-center sticky right-0 z-10 sticky-right">
-                        <div className="flex items-center justify-center gap-0.5">
-                          <button
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Chạy ngay"
                             onClick={() => !isRunning && handleRunNow(rule.id)}
                             disabled={isRunning}
-                            className="p-1.5 rounded hover:bg-green-50 text-gray-400 hover:text-green-600 disabled:opacity-40 transition-colors"
-                            title="Chạy ngay"
                           >
                             <Play className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-purple-600" title="Lịch sử chạy"
                             onClick={() => setHistoryRule(rule)}
-                            className="p-1.5 rounded hover:bg-purple-50 text-gray-400 hover:text-purple-600 transition-colors"
-                            title="Lịch sử chạy"
                           >
                             <History className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Chỉnh sửa"
                             onClick={() => { setEditRule(rule); setShowAdd(false) }}
-                            className="p-1.5 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
-                            title="Chỉnh sửa"
                           >
                             <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa"
                             onClick={() => setDeleteRule(rule)}
-                            className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
-                            title="Xóa"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1580,9 +1583,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                 {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} quy tắc
               </p>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                   <button
                     key={n}
@@ -1592,9 +1593,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
                     {n}
                   </button>
                 ))}
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           )}
@@ -1713,50 +1712,226 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
   )
 }
 
-// ─── Tab 2 – Mẫu quy tắc ─────────────────────────────────────────────────────
+// ─── Tab 2 – Mẫu quy tắc (3 sub-tabs) ─────────────────────────────────────────
+
+type TemplateSubTab = 'metrics' | 'column_profiles' | 'table_profiles'
 
 interface TemplatesTabProps {
   onUseTemplate: (form: Partial<RuleForm>) => void
 }
 
-function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
+// ── Sub-tab 1: Mẫu Metric — table + CRUD ────────────────────────────────────────
+
+function MetricTemplatesSubTab({ onUseTemplate, metricTemplates, setMetricTemplates }: {
+  onUseTemplate: (form: Partial<RuleForm>) => void
+  metricTemplates: RuleTemplate[]
+  setMetricTemplates: React.Dispatch<React.SetStateAction<RuleTemplate[]>>
+}) {
   const [activeDim, setActiveDim] = useState<QualityDimension | 'all'>('all')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filtered = mockRuleTemplates.filter(t => {
+  // Form state — reuse RuleForm for MetricConfigFields
+  const [form, setForm] = useState<RuleForm>({ ...EMPTY_FORM })
+  const [formName, setFormName] = useState('')
+  const [formDesc, setFormDesc] = useState('')
+  const [formWarning, setFormWarning] = useState('95')
+  const [formCritical, setFormCritical] = useState('85')
+
+  const filtered = metricTemplates.filter(t => {
     if (activeDim !== 'all' && t.dimension !== activeDim) return false
     if (search && !t.name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
   const dimCounts = Object.fromEntries(
-    DIMENSIONS.map(d => [d, mockRuleTemplates.filter(t => t.dimension === d).length])
+    DIMENSIONS.map(d => [d, metricTemplates.filter(t => t.dimension === d).length])
   )
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const resetForm = () => {
+    setFormName(''); setFormDesc('')
+    setForm({ ...EMPTY_FORM })
+    setFormWarning('95'); setFormCritical('85')
+    setEditingId(null)
+  }
+
+  const openCreate = () => { resetForm(); setShowForm(true) }
+
+  const openEdit = (tmpl: RuleTemplate) => {
+    setFormName(tmpl.name)
+    setFormDesc(tmpl.description)
+    setFormWarning(String(tmpl.threshold.warning))
+    setFormCritical(String(tmpl.threshold.critical))
+    // Build a RuleForm from the template for MetricConfigFields
+    const cfg = tmpl.metricConfig
+    setForm(prev => ({
+      ...prev,
+      dimension: tmpl.dimension,
+      metricType: cfg?.metricType ?? '',
+      column: cfg?.column ?? '',
+      columns: cfg?.columns ?? [],
+      pattern: cfg?.pattern ?? '',
+      blacklistPattern: cfg?.blacklistPattern ?? '',
+      minValue: String(cfg?.minValue ?? ''),
+      maxValue: String(cfg?.maxValue ?? ''),
+      allowedValues: (cfg?.allowedValues ?? []).join(', '),
+      refTable: cfg?.refTable ?? '',
+      refColumn: cfg?.refColumn ?? '',
+      sourceColumn: cfg?.sourceColumn ?? '',
+      expression: cfg?.expression ?? '',
+      minFillPct: String(cfg?.minFillPct ?? '95'),
+      slaTime: cfg?.slaTime ?? '08:00',
+      alertWindowMinutes: String(cfg?.alertWindowMinutes ?? '30'),
+      maxAge: String(cfg?.maxAge ?? '24'),
+      maxAgeUnit: cfg?.maxAgeUnit ?? 'hours',
+      timeColumn: cfg?.timeColumn ?? '',
+      granularity: cfg?.granularity ?? 'day',
+      coverageDays: String(cfg?.coverageDays ?? ''),
+      maxNullPct: String(cfg?.maxNullPct ?? ''),
+      minCoveragePct: String(cfg?.minCoveragePct ?? ''),
+      condition: cfg?.condition ?? '',
+      dataType: cfg?.dataType ?? 'STRING',
+      modeValue: cfg?.modeValue ?? '',
+      minFreqPct: String(cfg?.minFreqPct ?? ''),
+      statisticType: cfg?.statisticType ?? 'mean',
+      minPassPct: String(cfg?.minPassPct ?? ''),
+      minRows: String(cfg?.minRows ?? ''),
+      maxRows: String(cfg?.maxRows ?? ''),
+      lookbackPeriod: String(cfg?.lookbackPeriod ?? ''),
+      maxChangePct: String(cfg?.maxChangePct ?? ''),
+      tableSizeMin: String(cfg?.tableSizeMin ?? ''),
+      tableSizeMax: String(cfg?.tableSizeMax ?? ''),
+      tableSizeUnit: cfg?.tableSizeUnit ?? 'MB',
+      sourceTableId: cfg?.sourceTableId ?? '',
+      reportColumn: cfg?.reportColumn ?? '',
+      tolerancePct: String(cfg?.tolerancePct ?? '5'),
+      maxVariancePct: String(cfg?.maxVariancePct ?? '30'),
+      parentKpiColumn: cfg?.parentKpiColumn ?? '',
+      childSumExpression: cfg?.childSumExpression ?? '',
+    }))
+    setEditingId(tmpl.id)
+    setShowForm(true)
+  }
+
+  const buildMetricConfig = (): MetricConfig | undefined => {
+    if (!form.metricType) return undefined
+    const cfg: MetricConfig = { metricType: form.metricType as MetricType }
+    if (form.column) cfg.column = form.column
+    if (form.columns.length) cfg.columns = form.columns
+    if (form.pattern) cfg.pattern = form.pattern
+    if (form.blacklistPattern) cfg.blacklistPattern = form.blacklistPattern
+    if (form.minValue) cfg.minValue = Number(form.minValue)
+    if (form.maxValue) cfg.maxValue = Number(form.maxValue)
+    if (form.allowedValues) cfg.allowedValues = form.allowedValues.split(',').map(v => v.trim()).filter(Boolean)
+    if (form.refTable) cfg.refTable = form.refTable
+    if (form.refColumn) cfg.refColumn = form.refColumn
+    if (form.sourceColumn) cfg.sourceColumn = form.sourceColumn
+    if (form.expression) cfg.expression = form.expression
+    if (form.minFillPct) cfg.minFillPct = Number(form.minFillPct)
+    if (form.slaTime) cfg.slaTime = form.slaTime
+    if (form.alertWindowMinutes) cfg.alertWindowMinutes = Number(form.alertWindowMinutes)
+    if (form.maxAge) cfg.maxAge = Number(form.maxAge)
+    cfg.maxAgeUnit = form.maxAgeUnit
+    if (form.timeColumn) cfg.timeColumn = form.timeColumn
+    cfg.granularity = form.granularity
+    if (form.coverageDays) cfg.coverageDays = Number(form.coverageDays)
+    if (form.maxNullPct) cfg.maxNullPct = Number(form.maxNullPct)
+    if (form.minCoveragePct) cfg.minCoveragePct = Number(form.minCoveragePct)
+    if (form.condition) cfg.condition = form.condition
+    cfg.dataType = form.dataType
+    if (form.modeValue) cfg.modeValue = form.modeValue
+    if (form.minFreqPct) cfg.minFreqPct = Number(form.minFreqPct)
+    cfg.statisticType = form.statisticType
+    if (form.minPassPct) cfg.minPassPct = Number(form.minPassPct)
+    if (form.minRows) cfg.minRows = Number(form.minRows)
+    if (form.maxRows) cfg.maxRows = Number(form.maxRows)
+    if (form.lookbackPeriod) cfg.lookbackPeriod = Number(form.lookbackPeriod)
+    if (form.maxChangePct) cfg.maxChangePct = Number(form.maxChangePct)
+    if (form.tableSizeMin) cfg.tableSizeMin = Number(form.tableSizeMin)
+    if (form.tableSizeMax) cfg.tableSizeMax = Number(form.tableSizeMax)
+    cfg.tableSizeUnit = form.tableSizeUnit
+    if (form.sourceTableId) cfg.sourceTableId = form.sourceTableId
+    if (form.reportColumn) cfg.reportColumn = form.reportColumn
+    if (form.tolerancePct) cfg.tolerancePct = Number(form.tolerancePct)
+    if (form.maxVariancePct) cfg.maxVariancePct = Number(form.maxVariancePct)
+    if (form.parentKpiColumn) cfg.parentKpiColumn = form.parentKpiColumn
+    if (form.childSumExpression) cfg.childSumExpression = form.childSumExpression
+    return cfg
+  }
+
+  const handleSave = () => {
+    if (!formName.trim() || !form.dimension || !form.metricType) return
+    const mc = buildMetricConfig()
+    if (editingId) {
+      setMetricTemplates(prev => prev.map(t => t.id === editingId ? {
+        ...t, name: formName, description: formDesc,
+        dimension: form.dimension as QualityDimension,
+        metricConfig: mc,
+        threshold: { warning: Number(formWarning) || 95, critical: Number(formCritical) || 85 },
+        updatedAt: new Date().toISOString(),
+      } : t))
+    } else {
+      const newT: RuleTemplate = {
+        id: `rt-${Date.now()}`, name: formName, description: formDesc,
+        dimension: form.dimension as QualityDimension,
+        metricConfig: mc, category: form.dimension as string,
+        usageCount: 0,
+        threshold: { warning: Number(formWarning) || 95, critical: Number(formCritical) || 85 },
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        createdBy: 'current_user',
+      }
+      setMetricTemplates(prev => [...prev, newT])
+    }
+    setShowForm(false); resetForm()
+  }
+
+  const handleDelete = () => {
+    if (!deleteId) return
+    setMetricTemplates(prev => prev.filter(t => t.id !== deleteId))
+    setDeleteId(null)
+  }
+
+  // Check if template is used in column profiles
+  const getUsageInColumnProfiles = (id: string): number => {
+    return mockColumnProfiles.filter(p => p.metricTemplateIds.includes(id)).length
+  }
+
+  const deleteTarget = deleteId ? metricTemplates.find(t => t.id === deleteId) : null
+  const deleteUsageCount = deleteId ? getUsageInColumnProfiles(deleteId) : 0
 
   return (
     <>
-      {/* Search */}
-      <div className="flex gap-3 mb-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-          <Input className="pl-8" placeholder="Tìm mẫu quy tắc..." value={search} onChange={e => setSearch(e.target.value)} />
+          <Input className="pl-8" placeholder="Tìm kiếm mẫu metric..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
         </div>
+        <Button size="sm" onClick={openCreate}>
+          <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm mẫu metric
+        </Button>
       </div>
 
-      {/* Dimension filter pills */}
+      {/* Dimension chip filter */}
       <div className="flex gap-2 flex-wrap mb-4">
         <button
-          onClick={() => setActiveDim('all')}
+          onClick={() => { setActiveDim('all'); setPage(1) }}
           className={cn('px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
             activeDim === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
           )}
         >
-          Tất cả ({mockRuleTemplates.length})
+          Tất cả ({metricTemplates.length})
         </button>
         {DIMENSIONS.map(d => {
           const cfg = DIMENSION_CONFIG[d]
           return (
-            <button key={d} onClick={() => setActiveDim(d)}
+            <button key={d} onClick={() => { setActiveDim(d); setPage(1) }}
               className={cn('px-3 py-1.5 rounded-full text-xs font-medium border transition-colors',
                 activeDim === d ? `${cfg.bg} ${cfg.color} ${cfg.border}` : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
               )}
@@ -1767,49 +1942,826 @@ function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
         })}
       </div>
 
-      {/* Template grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map(tmpl => (
-          <Card key={tmpl.id} className="hover:shadow-md transition-shadow flex flex-col">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between gap-2">
-                <DimensionBadge dimension={tmpl.dimension} />
-                <Badge variant="secondary" className="text-xs shrink-0">Dùng {tmpl.usageCount} lần</Badge>
-              </div>
-              <CardTitle className="text-sm font-semibold mt-2 leading-snug">{tmpl.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-3 flex flex-col flex-1">
-              <p className="text-sm text-gray-600 leading-relaxed flex-1">{tmpl.description}</p>
+      {/* Table */}
+      <Card>
+        <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">STT</TableHead>
+              <TableHead className="min-w-[200px]">Tên mẫu</TableHead>
+              <TableHead className="w-28">Chiều DL</TableHead>
+              <TableHead className="min-w-[180px]">Loại metric</TableHead>
+              <TableHead>Cấu hình tóm tắt</TableHead>
+              <TableHead className="w-32 text-center">Ngưỡng</TableHead>
+              <TableHead className="w-20 text-center">Lần dùng</TableHead>
+              <TableHead className="w-36 text-center">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paged.length === 0 && (
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">Không có mẫu metric phù hợp</TableCell></TableRow>
+            )}
+            {paged.map((tmpl, i) => {
+              const summary = tmpl.metricConfig ? metricSummary(tmpl.metricConfig, tmpl.dimension) : ''
+              return (
+                <TableRow key={tmpl.id}>
+                  <TableCell className="text-gray-500">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                  <TableCell>
+                    <div className="font-medium text-sm">{tmpl.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{tmpl.description}</div>
+                  </TableCell>
+                  <TableCell><DimensionBadge dimension={tmpl.dimension} /></TableCell>
+                  <TableCell>
+                    <span className="text-sm whitespace-nowrap" title={tmpl.metricConfig ? getMetricLabel(tmpl.dimension, tmpl.metricConfig.metricType) : ''}>
+                      {tmpl.metricConfig ? getMetricLabel(tmpl.dimension, tmpl.metricConfig.metricType) : '—'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <code className="text-xs font-mono text-gray-600 line-clamp-1" title={summary}>
+                      {summary.length > 50 ? summary.slice(0, 50) + '...' : summary || '—'}
+                    </code>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="inline-flex items-center bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                        C:{tmpl.threshold.critical}
+                      </span>
+                      <span className="inline-flex items-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                        W:{tmpl.threshold.warning}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">{tmpl.usageCount}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Dùng mẫu này"
+                        onClick={() => onUseTemplate(templateToForm(tmpl))}>
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Sửa" onClick={() => openEdit(tmpl)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa" onClick={() => setDeleteId(tmpl.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+        </div>
+      </Card>
 
-              {/* Metric summary */}
-              {tmpl.metricConfig && (
-                <div className="rounded-md bg-blue-50 border border-blue-100 px-3 py-2">
-                  <p className="text-xs text-blue-600 font-medium mb-0.5">{getMetricLabel(tmpl.dimension, tmpl.metricConfig.metricType)}</p>
-                  <code className="text-xs font-mono text-blue-800 break-all">
-                    {metricSummary(tmpl.metricConfig, tmpl.dimension)}
-                  </code>
-                </div>
-              )}
-
-              <Button
-                variant="outline"
-                className="w-full mt-auto border-blue-200 text-blue-700 hover:bg-blue-50"
-                size="sm"
-                onClick={() => onUseTemplate(templateToForm(tmpl))}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                Dùng mẫu này
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-
-        {filtered.length === 0 && (
-          <div className="col-span-3 text-center py-12 text-gray-400 text-sm">
-            Không có mẫu quy tắc phù hợp
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-sm text-gray-500">Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length}</span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+              <button key={n} onClick={() => setPage(n)}
+                className={`w-8 h-8 rounded text-sm font-medium transition-colors ${n === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}>{n}</button>
+            ))}
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
           </div>
+        </div>
+      )}
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={showForm} onClose={() => { setShowForm(false); resetForm() }} title={editingId ? 'Sửa mẫu metric' : 'Thêm mẫu metric'} size="lg">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+          <div>
+            <Label>Tên mẫu <span className="text-red-500">*</span></Label>
+            <Input value={formName} onChange={e => setFormName(e.target.value)} placeholder="VD: Kiểm tra NOT NULL cột mã KH" />
+          </div>
+          <div>
+            <Label>Mô tả</Label>
+            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Mô tả ngắn gọn về mẫu metric..." rows={2} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Chiều dữ liệu <span className="text-red-500">*</span></Label>
+              <Select value={form.dimension} onChange={e => {
+                const dim = e.target.value as QualityDimension
+                setForm(prev => ({ ...prev, dimension: dim, metricType: '' }))
+              }}>
+                <option value="">-- Chọn chiều --</option>
+                {DIMENSIONS.map(d => (
+                  <option key={d} value={d}>{DIMENSION_CONFIG[d].label}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Loại metric <span className="text-red-500">*</span></Label>
+              <Select value={form.metricType} onChange={e => setForm(prev => ({ ...prev, metricType: e.target.value as MetricType }))}>
+                <option value="">-- Chọn loại --</option>
+                {(form.dimension ? METRICS_BY_DIMENSION[form.dimension as QualityDimension] ?? [] : []).map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </Select>
+            </div>
+          </div>
+
+          {/* MetricConfigFields */}
+          {form.metricType && (
+            <div>
+              <Label className="mb-2 block">Cấu hình metric</Label>
+              <MetricConfigFields form={form} setForm={setForm} tableColumns={[]} templateMode />
+            </div>
+          )}
+
+          {/* Threshold */}
+          <div>
+            <Label className="mb-2 block">Ngưỡng mặc định</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-red-700">Critical (%)</Label>
+                <Input type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} placeholder="85" />
+              </div>
+              <div>
+                <Label className="text-xs text-yellow-700">Warning (%)</Label>
+                <Input type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} placeholder="95" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm() }}>Hủy</Button>
+            <Button onClick={handleSave} disabled={!formName.trim() || !form.dimension || !form.metricType}>
+              {editingId ? 'Cập nhật' : 'Tạo mới'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} title="Xác nhận xóa">
+        {deleteUsageCount > 0 ? (
+          <div className="flex items-start gap-2 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-yellow-800">
+              Mẫu này đang được dùng trong <strong>{deleteUsageCount}</strong> mẫu cột. Xóa sẽ gỡ mẫu khỏi các mẫu đó.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-600 mb-4">
+            Bạn có chắc muốn xóa mẫu metric <strong>{deleteTarget?.name}</strong>? Thao tác không thể hoàn tác.
+          </p>
         )}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setDeleteId(null)}>Hủy</Button>
+          <Button variant="destructive" onClick={handleDelete}>Xóa</Button>
+        </div>
+      </Dialog>
+    </>
+  )
+}
+
+// ── Sub-tab 2: Mẫu cột ─────────────────────────────────────────────────────────
+
+function ColumnProfilesSubTab({ onUseTemplate, metricTemplates }: {
+  onUseTemplate: (form: Partial<RuleForm>) => void
+  metricTemplates: RuleTemplate[]
+}) {
+  const [profiles, setProfiles] = useState<ColumnProfileTemplate[]>([...mockColumnProfiles])
+  const [search, setSearch] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+
+  // Form state
+  const [formName, setFormName] = useState('')
+  const [formDesc, setFormDesc] = useState('')
+  const [formKeywords, setFormKeywords] = useState<string[]>([])
+  const [keywordInput, setKeywordInput] = useState('')
+  const [formMetricIds, setFormMetricIds] = useState<string[]>([])
+  const [formMetricOverrides, setFormMetricOverrides] = useState<Record<string, { warning?: number; critical?: number }>>({})
+
+  const filtered = profiles.filter(p => {
+    if (!search) return true
+    const s = search.toLowerCase()
+    return p.name.toLowerCase().includes(s) || p.columnKeywords.some(k => k.toLowerCase().includes(s))
+  })
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const resetForm = () => {
+    setFormName(''); setFormDesc(''); setFormKeywords([]); setKeywordInput('')
+    setFormMetricIds([]); setFormMetricOverrides({})
+    setEditingId(null)
+  }
+  const openCreate = () => { resetForm(); setShowForm(true) }
+  const openEdit = (p: ColumnProfileTemplate) => {
+    setFormName(p.name); setFormDesc(p.description)
+    setFormKeywords([...p.columnKeywords]); setFormMetricIds([...p.metricTemplateIds])
+    setFormMetricOverrides({})
+    setEditingId(p.id); setShowForm(true)
+  }
+  const handleSave = () => {
+    if (!formName.trim()) return
+    if (editingId) {
+      setProfiles(prev => prev.map(p => p.id === editingId ? {
+        ...p, name: formName, description: formDesc, columnKeywords: formKeywords,
+        metricTemplateIds: formMetricIds, updatedAt: new Date().toISOString()
+      } : p))
+    } else {
+      const newP: ColumnProfileTemplate = {
+        id: `cpf-${Date.now()}`, name: formName, description: formDesc,
+        columnKeywords: formKeywords, metricTemplateIds: formMetricIds,
+        usageCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      }
+      setProfiles(prev => [...prev, newP])
+    }
+    setShowForm(false); resetForm()
+  }
+  const handleDelete = () => {
+    if (deleteId) { setProfiles(prev => prev.filter(p => p.id !== deleteId)); setDeleteId(null) }
+  }
+  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && keywordInput.trim()) {
+      e.preventDefault()
+      const kw = keywordInput.trim().toUpperCase()
+      if (!formKeywords.includes(kw)) setFormKeywords(prev => [...prev, kw])
+      setKeywordInput('')
+    }
+  }
+  const getDimensions = (ids: string[]): QualityDimension[] => {
+    const dims = new Set<QualityDimension>()
+    ids.forEach(id => { const t = metricTemplates.find(mt => mt.id === id); if (t) dims.add(t.dimension) })
+    return Array.from(dims)
+  }
+
+  // Selected metric details for mini table
+  const selectedMetrics = formMetricIds.map(id => metricTemplates.find(t => t.id === id)).filter(Boolean) as RuleTemplate[]
+
+  return (
+    <>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+          <Input className="pl-8" placeholder="Tìm theo tên hoặc từ khóa cột..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
+        </div>
+        <Button size="sm" onClick={openCreate}>
+          <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm mẫu cột
+        </Button>
       </div>
+
+      {/* Table */}
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">STT</TableHead>
+              <TableHead>Tên mẫu</TableHead>
+              <TableHead>Từ khóa cột</TableHead>
+              <TableHead className="w-24 text-center">Số metrics</TableHead>
+              <TableHead>Chiều DL</TableHead>
+              <TableHead className="w-24 text-center">Lần dùng</TableHead>
+              <TableHead className="w-36 text-center">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paged.length === 0 && (
+              <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">Không có dữ liệu</TableCell></TableRow>
+            )}
+            {paged.map((p, i) => (
+              <TableRow key={p.id}>
+                <TableCell className="text-gray-500">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                <TableCell>
+                  <div className="font-medium text-sm">{p.name}</div>
+                  <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.description}</div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1 flex-nowrap items-center" title={p.columnKeywords.join(', ')}>
+                    {p.columnKeywords.slice(0, 2).map(k => (
+                      <span key={k} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap">{k}</span>
+                    ))}
+                    {p.columnKeywords.length > 2 && <span className="text-xs text-gray-500 whitespace-nowrap">+{p.columnKeywords.length - 2}</span>}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center font-medium">{p.metricTemplateIds.length}</TableCell>
+                <TableCell>
+                  {(() => { const dims = getDimensions(p.metricTemplateIds); return (
+                    <div className="flex gap-1 flex-nowrap items-center" title={dims.map(d => getDimensionLabel(d)).join(', ')}>
+                      {dims.slice(0, 2).map(d => <DimensionBadge key={d} dimension={d} />)}
+                      {dims.length > 2 && <span className="text-xs text-gray-500 whitespace-nowrap">+{dims.length - 2}</span>}
+                    </div>
+                  ); })()}
+                </TableCell>
+                <TableCell className="text-center">{p.usageCount}</TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Dùng mẫu" onClick={() => {
+                      const firstTmpl = metricTemplates.find(t => p.metricTemplateIds.includes(t.id))
+                      if (firstTmpl) onUseTemplate(templateToForm(firstTmpl))
+                    }}>
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Sửa" onClick={() => openEdit(p)}>
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa" onClick={() => setDeleteId(p.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-sm text-gray-500">Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length}</span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+              <button key={n} onClick={() => setPage(n)}
+                className={`w-8 h-8 rounded text-sm font-medium transition-colors ${n === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}>{n}</button>
+            ))}
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={showForm} onClose={() => { setShowForm(false); resetForm() }} title={editingId ? 'Sửa mẫu cột' : 'Thêm mẫu cột'} size="lg">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+          <div>
+            <Label>Tên mẫu <span className="text-red-500">*</span></Label>
+            <Input value={formName} onChange={e => setFormName(e.target.value)} placeholder="VD: Cột mã khách hàng" />
+          </div>
+          <div>
+            <Label>Mô tả</Label>
+            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Mô tả ngắn gọn về mẫu cột..." rows={2} />
+          </div>
+          <div>
+            <Label>Từ khóa tên cột</Label>
+            <p className="text-xs text-gray-500 mb-1.5">Nhập từ khóa và nhấn Enter. Hệ thống sẽ tự gợi ý profile khi tên cột chứa từ khóa.</p>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {formKeywords.map(k => (
+                <span key={k} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full px-2.5 py-1 text-xs font-medium">
+                  {k}
+                  <button onClick={() => setFormKeywords(prev => prev.filter(x => x !== k))} className="hover:text-blue-900">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <Input value={keywordInput} onChange={e => setKeywordInput(e.target.value)} onKeyDown={handleKeywordKeyDown} placeholder="Nhập từ khóa, nhấn Enter để thêm..." />
+          </div>
+          <div>
+            <Label>Chọn mẫu metric</Label>
+            <SearchableMultiSelect
+              items={metricTemplates.map(t => ({
+                id: t.id,
+                label: t.name,
+                group: getDimensionLabel(t.dimension),
+                badge: <DimensionBadge dimension={t.dimension} />,
+              }))}
+              selectedIds={formMetricIds}
+              onChange={ids => {
+                setFormMetricIds(ids)
+                // Clean up overrides for removed ids
+                setFormMetricOverrides(prev => {
+                  const next = { ...prev }
+                  Object.keys(next).forEach(k => { if (!ids.includes(k)) delete next[k] })
+                  return next
+                })
+              }}
+              placeholder="Tìm mẫu metric..."
+              groupBy={true}
+            />
+          </div>
+
+          {/* Selected metrics mini table */}
+          {selectedMetrics.length > 0 && (
+            <div>
+              <Label className="mb-2 block">Metric đã chọn ({selectedMetrics.length})</Label>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Mẫu Metric</TableHead>
+                      <TableHead className="text-xs w-28">Chiều DL</TableHead>
+                      <TableHead className="text-xs w-20 text-center">C (%)</TableHead>
+                      <TableHead className="text-xs w-20 text-center">W (%)</TableHead>
+                      <TableHead className="text-xs w-12 text-center">Xóa</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedMetrics.map(mt => {
+                      const override = formMetricOverrides[mt.id] || {}
+                      const wVal = override.warning ?? mt.threshold.warning
+                      const cVal = override.critical ?? mt.threshold.critical
+                      const wIsOverride = override.warning !== undefined
+                      const cIsOverride = override.critical !== undefined
+                      return (
+                        <TableRow key={mt.id}>
+                          <TableCell className="text-sm">{mt.name}</TableCell>
+                          <TableCell><DimensionBadge dimension={mt.dimension} /></TableCell>
+                          <TableCell className="text-center p-1">
+                            <input
+                              type="number"
+                              className={cn(
+                                'w-16 text-center text-xs border rounded px-1 py-0.5',
+                                cIsOverride ? 'text-gray-900 border-red-300 bg-red-50' : 'text-gray-400 italic border-gray-200 bg-transparent'
+                              )}
+                              value={cVal}
+                              onChange={e => {
+                                const v = e.target.value === '' ? undefined : Number(e.target.value)
+                                setFormMetricOverrides(prev => ({
+                                  ...prev,
+                                  [mt.id]: { ...prev[mt.id], critical: v }
+                                }))
+                              }}
+                              placeholder={String(mt.threshold.critical)}
+                            />
+                          </TableCell>
+                          <TableCell className="text-center p-1">
+                            <input
+                              type="number"
+                              className={cn(
+                                'w-16 text-center text-xs border rounded px-1 py-0.5',
+                                wIsOverride ? 'text-gray-900 border-yellow-300 bg-yellow-50' : 'text-gray-400 italic border-gray-200 bg-transparent'
+                              )}
+                              value={wVal}
+                              onChange={e => {
+                                const v = e.target.value === '' ? undefined : Number(e.target.value)
+                                setFormMetricOverrides(prev => ({
+                                  ...prev,
+                                  [mt.id]: { ...prev[mt.id], warning: v }
+                                }))
+                              }}
+                              placeholder={String(mt.threshold.warning)}
+                            />
+                          </TableCell>
+                          <TableCell className="text-center p-1">
+                            <button
+                              className="text-red-400 hover:text-red-600"
+                              onClick={() => {
+                                setFormMetricIds(prev => prev.filter(x => x !== mt.id))
+                                setFormMetricOverrides(prev => { const next = { ...prev }; delete next[mt.id]; return next })
+                              }}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm() }}>Hủy</Button>
+            <Button onClick={handleSave} disabled={!formName.trim()}>{editingId ? 'Cập nhật' : 'Tạo mới'}</Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} title="Xóa mẫu cột">
+        <p className="text-sm text-gray-600 mb-4">Bạn có chắc muốn xóa mẫu cột này? Thao tác không thể hoàn tác.</p>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setDeleteId(null)}>Hủy</Button>
+          <Button variant="destructive" onClick={handleDelete}>Xóa</Button>
+        </div>
+      </Dialog>
+    </>
+  )
+}
+
+// ── Sub-tab 3: Mẫu bảng ────────────────────────────────────────────────────────
+
+const TABLE_TYPE_LABELS: Record<string, string> = { source: 'Bảng nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu KPI' }
+const TABLE_TYPE_COLORS: Record<string, string> = { source: 'bg-blue-50 text-blue-700', report: 'bg-purple-50 text-purple-700', kpi: 'bg-orange-50 text-orange-700' }
+const MODE_LABELS: Record<string, string> = { append: 'Append', overwrite: 'Overwrite' }
+const PARTITION_LABELS: Record<string, string> = { daily: 'Daily', monthly: 'Monthly', none: 'None' }
+
+function TableProfilesSubTab({ onUseTemplate, metricTemplates, columnProfiles }: {
+  onUseTemplate: (form: Partial<RuleForm>) => void
+  metricTemplates: RuleTemplate[]
+  columnProfiles: ColumnProfileTemplate[]
+}) {
+  const [profiles, setProfiles] = useState<TableProfileTemplate[]>([...mockTableProfiles])
+  const [search, setSearch] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+
+  // Form state
+  const [formName, setFormName] = useState('')
+  const [formDesc, setFormDesc] = useState('')
+  const [formType, setFormType] = useState<'source' | 'report' | 'kpi'>('source')
+  const [formMode, setFormMode] = useState<'append' | 'overwrite'>('append')
+  const [formPartition, setFormPartition] = useState<'daily' | 'monthly' | 'none'>('daily')
+  const [formTableMetricIds, setFormTableMetricIds] = useState<string[]>([])
+  const [formColumnProfileIds, setFormColumnProfileIds] = useState<string[]>([])
+
+  const filtered = profiles.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const resetForm = () => {
+    setFormName(''); setFormDesc(''); setFormType('source'); setFormMode('append')
+    setFormPartition('daily'); setFormTableMetricIds([]); setFormColumnProfileIds([])
+    setEditingId(null)
+  }
+  const openCreate = () => { resetForm(); setShowForm(true) }
+  const openEdit = (p: TableProfileTemplate) => {
+    setFormName(p.name); setFormDesc(p.description)
+    setFormType(p.tableType as 'source' | 'report' | 'kpi')
+    setFormMode(p.mode); setFormPartition(p.partition)
+    setFormTableMetricIds([...p.tableMetricTemplateIds]); setFormColumnProfileIds([...p.columnProfileIds])
+    setEditingId(p.id); setShowForm(true)
+  }
+  const handleSave = () => {
+    if (!formName.trim()) return
+    if (editingId) {
+      setProfiles(prev => prev.map(p => p.id === editingId ? {
+        ...p, name: formName, description: formDesc, tableType: formType,
+        mode: formMode, partition: formPartition,
+        tableMetricTemplateIds: formTableMetricIds, columnProfileIds: formColumnProfileIds,
+        updatedAt: new Date().toISOString()
+      } : p))
+    } else {
+      const newP: TableProfileTemplate = {
+        id: `tpf-${Date.now()}`, name: formName, description: formDesc,
+        tableType: formType, mode: formMode, partition: formPartition,
+        tableMetricTemplateIds: formTableMetricIds, columnProfileIds: formColumnProfileIds,
+        usageCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      }
+      setProfiles(prev => [...prev, newP])
+    }
+    setShowForm(false); resetForm()
+  }
+  const handleDelete = () => {
+    if (deleteId) { setProfiles(prev => prev.filter(p => p.id !== deleteId)); setDeleteId(null) }
+  }
+
+  // Only table-level metric templates
+  const tableLevelTemplates = metricTemplates.filter(t => {
+    const mt = t.metricConfig?.metricType
+    return mt && TABLE_LEVEL_METRICS.includes(mt)
+  })
+
+  const getProfileNames = (ids: string[]): string[] =>
+    ids.map(id => columnProfiles.find(c => c.id === id)?.name).filter(Boolean) as string[]
+
+  // Preview calculation
+  const previewTableMetrics = formTableMetricIds.length
+  const previewColumnProfiles = formColumnProfileIds.length
+  const previewColumnMetrics = formColumnProfileIds.reduce((sum, cpId) => {
+    const cp = columnProfiles.find(c => c.id === cpId)
+    return sum + (cp?.metricTemplateIds.length ?? 0)
+  }, 0)
+  const previewTotal = previewTableMetrics + previewColumnMetrics
+
+  return (
+    <>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+          <Input className="pl-8" placeholder="Tìm theo tên mẫu bảng..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
+        </div>
+        <Button size="sm" onClick={openCreate}>
+          <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm mẫu bảng
+        </Button>
+      </div>
+
+      {/* Table */}
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">STT</TableHead>
+              <TableHead>Tên mẫu</TableHead>
+              <TableHead className="w-24">Loại</TableHead>
+              <TableHead className="w-24">Mode</TableHead>
+              <TableHead className="w-24">Partition</TableHead>
+              <TableHead className="w-28 text-center">QT cấp bảng</TableHead>
+              <TableHead>Mẫu cột</TableHead>
+              <TableHead className="w-24 text-center">Lần dùng</TableHead>
+              <TableHead className="w-36 text-center">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paged.length === 0 && (
+              <TableRow><TableCell colSpan={9} className="text-center py-8 text-gray-400">Không có dữ liệu</TableCell></TableRow>
+            )}
+            {paged.map((p, i) => {
+              const cpNames = getProfileNames(p.columnProfileIds)
+              return (
+                <TableRow key={p.id}>
+                  <TableCell className="text-gray-500">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                  <TableCell>
+                    <div className="font-medium text-sm">{p.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.description}</div>
+                  </TableCell>
+                  <TableCell>
+                    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', TABLE_TYPE_COLORS[p.tableType])}>
+                      {TABLE_TYPE_LABELS[p.tableType]}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm">{MODE_LABELS[p.mode]}</TableCell>
+                  <TableCell className="text-sm">{PARTITION_LABELS[p.partition]}</TableCell>
+                  <TableCell className="text-center font-medium">{p.tableMetricTemplateIds.length}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1 flex-wrap">
+                      {cpNames.slice(0, 2).map(n => (
+                        <span key={n} className="inline-flex items-center bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">{n}</span>
+                      ))}
+                      {cpNames.length > 2 && <span className="text-xs text-gray-500">+{cpNames.length - 2}</span>}
+                      {cpNames.length === 0 && <span className="text-xs text-gray-400">--</span>}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">{p.usageCount}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Dùng mẫu" onClick={() => {
+                        const firstTmpl = metricTemplates.find(t => p.tableMetricTemplateIds.includes(t.id))
+                        if (firstTmpl) onUseTemplate(templateToForm(firstTmpl))
+                      }}>
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Sửa" onClick={() => openEdit(p)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa" onClick={() => setDeleteId(p.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-sm text-gray-500">Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length}</span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+              <button key={n} onClick={() => setPage(n)}
+                className={`w-8 h-8 rounded text-sm font-medium transition-colors ${n === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}>{n}</button>
+            ))}
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={showForm} onClose={() => { setShowForm(false); resetForm() }} title={editingId ? 'Sửa mẫu bảng' : 'Thêm mẫu bảng'} size="lg">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+          <div>
+            <Label>Tên mẫu <span className="text-red-500">*</span></Label>
+            <Input value={formName} onChange={e => setFormName(e.target.value)} placeholder="VD: Bảng giao dịch daily" />
+          </div>
+          <div>
+            <Label>Mô tả</Label>
+            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Mô tả ngắn gọn..." rows={2} />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Loại bảng</Label>
+              <Select value={formType} onChange={e => setFormType(e.target.value as 'source' | 'report' | 'kpi')}>
+                <option value="source">Bảng nguồn</option>
+                <option value="report">Báo cáo</option>
+                <option value="kpi">Chỉ tiêu KPI</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Mode</Label>
+              <Select value={formMode} onChange={e => setFormMode(e.target.value as 'append' | 'overwrite')}>
+                <option value="append">Append</option>
+                <option value="overwrite">Overwrite</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Partition</Label>
+              <Select value={formPartition} onChange={e => setFormPartition(e.target.value as 'daily' | 'monthly' | 'none')}>
+                <option value="daily">Daily</option>
+                <option value="monthly">Monthly</option>
+                <option value="none">None</option>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Chọn mẫu metric cấp bảng</Label>
+            <SearchableMultiSelect
+              items={tableLevelTemplates.map(t => ({
+                id: t.id,
+                label: t.name,
+                group: getDimensionLabel(t.dimension),
+                badge: <DimensionBadge dimension={t.dimension} />,
+              }))}
+              selectedIds={formTableMetricIds}
+              onChange={setFormTableMetricIds}
+              placeholder="Tìm metric cấp bảng..."
+              groupBy={true}
+            />
+          </div>
+          <div>
+            <Label>Chọn mẫu cột</Label>
+            <SearchableMultiSelect
+              items={columnProfiles.map(cp => ({
+                id: cp.id,
+                label: cp.name,
+                badge: (
+                  <div className="flex gap-1">
+                    {cp.columnKeywords.slice(0, 2).map(k => (
+                      <span key={k} className="bg-blue-50 text-blue-600 rounded-full px-1.5 text-[10px]">{k}</span>
+                    ))}
+                  </div>
+                ),
+              }))}
+              selectedIds={formColumnProfileIds}
+              onChange={setFormColumnProfileIds}
+              placeholder="Tìm mẫu cột..."
+            />
+          </div>
+
+          {/* Preview */}
+          {(previewTableMetrics > 0 || previewColumnProfiles > 0) && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm space-y-1">
+              <div className="text-gray-600">Metric cấp bảng: <span className="font-semibold text-gray-900">{previewTableMetrics}</span></div>
+              <div className="text-gray-600">
+                Mẫu cột: <span className="font-semibold text-gray-900">{previewColumnProfiles}</span>
+                {previewColumnMetrics > 0 && <span className="text-gray-500"> (tổng {previewColumnMetrics} metric cột)</span>}
+              </div>
+              <div className="text-gray-600 border-t border-gray-200 pt-1 mt-1">
+                Ước tính: <span className="font-semibold text-blue-700">~{previewTotal} quy tắc / bảng</span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setShowForm(false); resetForm() }}>Hủy</Button>
+            <Button onClick={handleSave} disabled={!formName.trim()}>{editingId ? 'Cập nhật' : 'Tạo mới'}</Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} title="Xóa mẫu bảng">
+        <p className="text-sm text-gray-600 mb-4">Bạn có chắc muốn xóa mẫu bảng này? Thao tác không thể hoàn tác.</p>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setDeleteId(null)}>Hủy</Button>
+          <Button variant="destructive" onClick={handleDelete}>Xóa</Button>
+        </div>
+      </Dialog>
+    </>
+  )
+}
+
+// ── Wrapper: TemplatesTab với 3 sub-tab ─────────────────────────────────────────
+
+function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
+  const [subTab, setSubTab] = useState<TemplateSubTab>('metrics')
+  const [metricTemplates, setMetricTemplates] = useState<RuleTemplate[]>([...mockRuleTemplates])
+  const [columnProfiles] = useState<ColumnProfileTemplate[]>([...mockColumnProfiles])
+
+  return (
+    <>
+      {/* Sub-tab navigation */}
+      <div className="flex gap-2 mb-5">
+        {([
+          { id: 'metrics' as const, label: `Mẫu Metric (${metricTemplates.length})` },
+          { id: 'column_profiles' as const, label: `Mẫu Cột (${columnProfiles.length})` },
+          { id: 'table_profiles' as const, label: `Mẫu Bảng (${mockTableProfiles.length})` },
+        ]).map(tab => (
+          <button key={tab.id} onClick={() => setSubTab(tab.id)}
+            className={cn('px-4 py-2 rounded-lg text-sm font-medium border transition-colors',
+              subTab === tab.id
+                ? 'bg-gray-100 text-gray-900 border-gray-300 font-semibold'
+                : 'bg-white text-gray-500 border-gray-200 hover:text-gray-700 hover:border-gray-300'
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {subTab === 'metrics' && <MetricTemplatesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} setMetricTemplates={setMetricTemplates} />}
+      {subTab === 'column_profiles' && <ColumnProfilesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} />}
+      {subTab === 'table_profiles' && <TableProfilesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} columnProfiles={columnProfiles} />}
     </>
   )
 }

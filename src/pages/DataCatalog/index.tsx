@@ -679,36 +679,28 @@ export function DataCatalog() {
                       }
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
-                      <div className="flex items-center justify-center gap-0.5">
-                        <button
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Xem chi tiết"
                           onClick={() => navigate(`/data-catalog/${ds.id}`)}
-                          className="p-1 rounded hover:bg-blue-50 hover:text-blue-600 text-gray-400 transition-colors"
-                          title="Xem chi tiết"
                         >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Quét ngay"
                           onClick={() => !scanningIds[ds.id] && handleScanNow(ds.id)}
                           disabled={scanningIds[ds.id]}
-                          className="p-1 rounded hover:bg-green-50 hover:text-green-600 text-gray-400 disabled:opacity-40 transition-colors"
-                          title="Quét ngay"
                         >
-                          <RefreshCw className="h-4 w-4" />
-                        </button>
-                        <button
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Chỉnh sửa"
                           onClick={() => openEditDialog(ds)}
-                          className="p-1 rounded hover:bg-amber-50 hover:text-amber-600 text-gray-400 transition-colors"
-                          title="Chỉnh sửa"
                         >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-600" title="Xóa"
                           onClick={() => setDeleteItem(ds)}
-                          className="p-1 rounded hover:bg-red-50 hover:text-red-600 text-gray-400 transition-colors"
-                          title="Xóa"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -724,20 +716,18 @@ export function DataCatalog() {
                 Hiển thị {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} {activeTab === 'source' ? 'bảng' : activeTab === 'report' ? 'báo cáo' : 'chỉ tiêu'}
               </p>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                  className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40 transition-colors">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
                   <ChevronLeft className="h-4 w-4" />
-                </button>
+                </Button>
                 {pageNums.map(n => (
                   <button key={n} onClick={() => setPage(n)}
                     className={`w-8 h-8 rounded text-sm font-medium transition-colors ${n === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-600'}`}>
                     {n}
                   </button>
                 ))}
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                  className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40 transition-colors">
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
