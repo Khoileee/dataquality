@@ -284,7 +284,7 @@ export function Profiling() {
                           const ds = mockDataSources.find(d => d.id === result.tableId)
                           if (!ds) return null
                           return (
-                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                            <span className="text-sm text-gray-600">
                               {MODULE_LABELS[ds.moduleType]}
                             </span>
                           )

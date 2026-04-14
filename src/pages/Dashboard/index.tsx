@@ -286,10 +286,8 @@ export function Dashboard() {
                 return (
                   <TableRow key={ds.id}>
                     <TableCell className="font-medium text-gray-900">{ds.name}</TableCell>
-                    <TableCell className="text-center">
-                      <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
-                        {MODULE_LABELS[ds.moduleType]}
-                      </span>
+                    <TableCell className="text-center text-sm text-gray-600">
+                      {MODULE_LABELS[ds.moduleType]}
                     </TableCell>
                     <TableCell className={`text-center font-semibold ${getScoreColor(ds.overallScore)}`}>
                       {ds.overallScore}
@@ -363,7 +361,7 @@ export function Dashboard() {
                       const ds = mockDataSources.find(d => d.name === issue.tableName)
                       if (!ds) return null
                       return (
-                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
+                        <span className="text-sm text-gray-600">
                           {MODULE_LABELS[ds.moduleType]}
                         </span>
                       )

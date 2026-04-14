@@ -13,6 +13,8 @@ import { IssueDetail } from '@/pages/Issues/IssueDetail'
 import { Reports } from '@/pages/Reports'
 import { Notifications } from '@/pages/Notifications'
 import { PipelinePage } from '@/pages/Pipeline'
+import { PipelineMonitorPage } from '@/pages/PipelineMonitor'
+import { PipelineMonitorDetail } from '@/pages/PipelineMonitor/PipelineMonitorDetail'
 import { DefaultRules } from '@/pages/Settings/DefaultRules'
 import { DefaultSchedules } from '@/pages/Settings/DefaultSchedules'
 import { UserManagement } from '@/pages/Settings/UserManagement'
@@ -35,6 +37,8 @@ function App() {
           <Route path="/reports" element={<Reports />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/pipeline" element={<PipelinePage />} />
+          <Route path="/pipeline-monitor" element={<PipelineMonitorPage />} />
+          <Route path="/pipeline-monitor/:jobId" element={<PipelineMonitorDetail />} />
           <Route path="/settings" element={<Navigate to="/settings/default-rules" replace />} />
           <Route path="/settings/default-rules" element={<DefaultRules />} />
           <Route path="/settings/default-schedules" element={<DefaultSchedules />} />

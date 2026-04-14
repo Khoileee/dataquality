@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Database, BarChart2, BookOpen, Calendar, Sliders,
   AlertTriangle, FileBarChart, Bell, Settings, Shield, ChevronRight, GitBranch,
+  Activity,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -17,6 +18,7 @@ const navSections = [
       { icon: Database, label: 'Danh mục dữ liệu', href: '/data-catalog' },
       { icon: BarChart2, label: 'Phân tích dữ liệu', href: '/profiling' },
       { icon: GitBranch, label: 'Quản lý Job', href: '/pipeline' },
+      { icon: Activity, label: 'Giám sát Pipeline', href: '/pipeline-monitor' },
     ]
   },
   {

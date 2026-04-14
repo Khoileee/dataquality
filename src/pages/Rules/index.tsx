@@ -2572,7 +2572,7 @@ function TableProfilesSubTab({ onUseTemplate, metricTemplates, columnProfiles }:
                     <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.description}</div>
                   </TableCell>
                   <TableCell>
-                    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', TABLE_TYPE_COLORS[p.tableType])}>
+                    <span className="text-sm text-gray-600">
                       {TABLE_TYPE_LABELS[p.tableType]}
                     </span>
                   </TableCell>

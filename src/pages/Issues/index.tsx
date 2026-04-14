@@ -153,9 +153,7 @@ function CascadeChainCard({ chain }: { chain: CascadeChain }) {
           <span className="text-xs text-gray-500 mr-1">Ảnh hưởng:</span>
           {chain.affectedEntities.map(ent => (
             <div key={ent.tableId} className="flex items-center gap-1">
-              <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_BADGE_COLORS[ent.type]}`}>
-                {TYPE_BADGE_LABELS[ent.type]}
-              </span>
+              <span className="text-xs text-gray-600">{TYPE_BADGE_LABELS[ent.type]}</span>
               <span className="text-xs text-gray-700 font-medium">{ent.tableName}</span>
               <StatusBadge status={ent.status} />
             </div>
@@ -180,7 +178,7 @@ function CascadeChainCard({ chain }: { chain: CascadeChain }) {
                       <span className="text-xs text-gray-400 font-mono">
                         {format(new Date(evt.timestamp), 'dd/MM HH:mm')}
                       </span>
-                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_BADGE_COLORS[evt.affectedType]}`}>
+                      <span className="text-xs text-gray-600">
                         {evt.affectedTableName}
                       </span>
                     </div>
@@ -520,15 +518,11 @@ export function Issues() {
                         <span className="truncate">{issue.tableName}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-sm text-gray-600">
                       {(() => {
                         const ds = mockDataSources.find(d => d.id === issue.tableId)
                         if (!ds) return null
-                        return (
-                          <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${MODULE_COLORS[ds.moduleType]}`}>
-                            {MODULE_LABELS[ds.moduleType]}
-                          </span>
-                        )
+                        return MODULE_LABELS[ds.moduleType]
                       })()}
                     </TableCell>
                     <TableCell>

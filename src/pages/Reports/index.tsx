@@ -268,10 +268,8 @@ function OverviewDashboard({ onSelectTable }: { onSelectTable: (id: string) => v
                           <span className={cn('inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold', color)}>{grade}</span>
                         </TableCell>
                         <TableCell className="text-center text-sm text-gray-600">{ds.owner}</TableCell>
-                        <TableCell className="text-center">
-                          <span className={cn('px-2 py-0.5 rounded text-xs font-medium', MODULE_BADGE[ds.moduleType].color)}>
-                            {MODULE_BADGE[ds.moduleType].label}
-                          </span>
+                        <TableCell className="text-center text-sm text-gray-600">
+                          {MODULE_BADGE[ds.moduleType].label}
                         </TableCell>
                       </TableRow>
                     )
@@ -1221,7 +1219,7 @@ function TableDetailDashboard({ tableId }: { tableId: string }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-xl font-bold text-gray-900 truncate">{ds.name}</h2>
-                <span className={cn('px-2 py-0.5 rounded text-xs font-medium', MODULE_BADGE[ds.moduleType].color)}>
+                <span className="text-sm text-gray-600">
                   {MODULE_BADGE[ds.moduleType].label}
                 </span>
                 <StatusBadge status={ds.status} />

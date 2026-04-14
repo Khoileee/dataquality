@@ -230,9 +230,9 @@ export function DataSourceDetail() {
             <div className="grid grid-cols-2 gap-x-8 gap-y-3">
               {[
                 { label: 'Loại đối tượng', value: (
-                  <Badge variant="secondary" className={`text-xs ${ds.moduleType === 'source' ? 'bg-blue-50 text-blue-700' : ds.moduleType === 'report' ? 'bg-purple-50 text-purple-700' : 'bg-orange-50 text-orange-700'}`}>
-                    {ds.moduleType === 'source' ? '📋 Bảng nguồn' : ds.moduleType === 'report' ? '📊 Báo cáo' : '🎯 Chỉ tiêu KPI'}
-                  </Badge>
+                  <span className="text-sm text-gray-700">
+                    {ds.moduleType === 'source' ? 'Bảng nguồn' : ds.moduleType === 'report' ? 'Báo cáo' : 'Chỉ tiêu KPI'}
+                  </span>
                 )},
                 { label: 'Schema', value: ds.schema },
                 { label: 'Loại kết nối', value: <StatusBadge status={ds.type} /> },
