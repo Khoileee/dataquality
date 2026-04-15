@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   BookOpen, LayoutGrid, Search, Plus, Edit, Trash2, X, Play,
   ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2,
@@ -27,6 +28,13 @@ import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRul
 
 const DIMENSIONS: QualityDimension[] = ['completeness', 'validity', 'consistency', 'uniqueness', 'accuracy', 'timeliness']
 const PAGE_SIZE = 10
+
+// Metric types nhận cột đơn (dùng cho chế độ tạo nhiều rules cùng loại cho nhiều cột)
+const SINGLE_COL_METRICS: MetricType[] = [
+  'not_null', 'fill_rate', 'format_regex', 'blacklist_pattern', 'value_range', 'allowed_values',
+  'null_rate_by_period', 'conditional_not_null', 'fixed_datatype', 'mode_check',
+  'duplicate_single', 'statistics_bound', 'sum_range', 'on_time', 'freshness',
+]
 
 // ─── Module-level issue store (auto-created from rule runs) ──────────────────
 export const _ruleGeneratedIssues: Issue[] = []
@@ -301,12 +309,13 @@ const EMPTY_FORM: RuleForm = {
 // ─── MetricConfigFields ───────────────────────────────────────────────────────
 
 function MetricConfigFields({
-  form, setForm, tableColumns, templateMode = false,
+  form, setForm, tableColumns, templateMode = false, multiColumnMode = false,
 }: {
   form: RuleForm
   setForm: React.Dispatch<React.SetStateAction<RuleForm>>
   tableColumns: string[]
   templateMode?: boolean
+  multiColumnMode?: boolean
 }) {
   const set = (field: keyof RuleForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -328,10 +337,8 @@ function MetricConfigFields({
     <div className="space-y-3 border border-blue-100 bg-blue-50/40 rounded-lg p-4">
       <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Thông số kiểm tra</p>
 
-      {/* Single column picker — hidden in templateMode */}
-      {!templateMode && ['not_null','fill_rate','format_regex','blacklist_pattern','value_range','allowed_values',
-        'null_rate_by_period','conditional_not_null','fixed_datatype','mode_check',
-        'duplicate_single','statistics_bound','sum_range','on_time','freshness'].includes(mt) && (
+      {/* Single column picker — hidden in templateMode; also hidden when multiColumnMode ON */}
+      {!templateMode && !multiColumnMode && SINGLE_COL_METRICS.includes(mt as MetricType) && (
         <div className="space-y-1">
           <Label className="text-sm">Cột kiểm tra <span className="text-red-500">*</span></Label>
           {tableColumns.length > 0 ? (
@@ -341,6 +348,62 @@ function MetricConfigFields({
             </Select>
           ) : (
             <Input value={form.column} onChange={set('column')} placeholder="Nhập tên cột..." />
+          )}
+        </div>
+      )}
+
+      {/* Multi-column picker (B1) — khi multiColumnMode ON, cho phép chọn nhiều cột → tạo N rules */}
+      {!templateMode && multiColumnMode && SINGLE_COL_METRICS.includes(mt as MetricType) && (
+        <div className="space-y-1.5">
+          <Label className="text-sm inline-flex items-center gap-1">
+            Chọn nhiều cột áp cùng loại kiểm tra <span className="text-red-500">*</span>
+            <InfoTooltip text="Khi bật chế độ tạo hàng loạt, mỗi cột được chọn sẽ sinh ra 1 rule độc lập với cùng cấu hình metric/threshold. VD: chọn 10 cột cho metric not_null → tạo 10 rule." />
+          </Label>
+          {tableColumns.length > 0 ? (
+            <>
+              <div className="flex items-center gap-2 mb-1.5">
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, columns: [...tableColumns] }))}
+                  className="text-xs px-2 py-0.5 rounded border border-blue-200 text-blue-700 hover:bg-blue-50"
+                >
+                  Chọn tất cả
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, columns: [] }))}
+                  className="text-xs px-2 py-0.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+                >
+                  Bỏ chọn
+                </button>
+                <span className="text-xs text-gray-500">
+                  {form.columns.length}/{tableColumns.length} cột đã chọn
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 bg-white rounded border border-blue-200">
+                {tableColumns.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => toggleCol(c)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                      form.columns.includes(c)
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <Input
+              value={form.columns.join(', ')}
+              onChange={e => setForm(p => ({ ...p, columns: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+              placeholder="col1, col2, col3"
+            />
           )}
         </div>
       )}
@@ -1034,15 +1097,19 @@ interface RuleDialogProps {
 
 function RuleDialog({ open, editRule, initialForm, onClose, onSave }: RuleDialogProps) {
   const [form, setForm] = useState<RuleForm>(EMPTY_FORM)
+  const [multiColumnMode, setMultiColumnMode] = useState(false)
 
   useEffect(() => {
     if (open) {
       if (editRule) {
         setForm(ruleToForm(editRule))
+        setMultiColumnMode(false)
       } else if (initialForm) {
         setForm({ ...EMPTY_FORM, ...initialForm })
+        setMultiColumnMode(false)
       } else {
         setForm(EMPTY_FORM)
+        setMultiColumnMode(false)
       }
     }
   }, [open, editRule, initialForm])
@@ -1066,12 +1133,49 @@ function RuleDialog({ open, editRule, initialForm, onClose, onSave }: RuleDialog
     }))
   }
 
-  const isValid = form.name.trim() && form.dimension && form.metricType && form.tableId
+  const canBatch = !editRule && SINGLE_COL_METRICS.includes(form.metricType as MetricType)
+  const effectiveMultiMode = canBatch && multiColumnMode
+
+  const isValid =
+    form.name.trim() &&
+    form.dimension &&
+    form.metricType &&
+    form.tableId &&
+    (!effectiveMultiMode || form.columns.length > 0)
 
   const handleSave = () => {
     if (!isValid) return
     const ds = mockDataSources.find(d => d.id === form.tableId)
     const now = new Date().toISOString()
+
+    if (effectiveMultiMode) {
+      // Tạo N rules — một rule / cột
+      const baseTs = Date.now()
+      form.columns.forEach((col, idx) => {
+        const perColForm: RuleForm = { ...form, column: col, columns: [] }
+        const rule: QualityRule = {
+          id: `rule-${baseTs}-${idx}`,
+          name: `${form.name.trim()} — ${col}`,
+          description: form.description.trim(),
+          dimension: form.dimension as QualityDimension,
+          tableId: form.tableId,
+          tableName: ds?.tableName ?? form.tableId,
+          columnName: col,
+          metricConfig: formToMetricConfig(perColForm),
+          threshold: {
+            warning: Number(form.warningThreshold) || 85,
+            critical: Number(form.criticalThreshold) || 70,
+          },
+          status: form.status,
+          createdBy: 'Người dùng hiện tại',
+          createdAt: now,
+        }
+        onSave(rule)
+      })
+      onClose()
+      return
+    }
+
     const rule: QualityRule = {
       id: editRule?.id ?? `rule-${Date.now()}`,
       name: form.name.trim(),
@@ -1190,9 +1294,37 @@ Mỗi rule thuộc 1 chiều." /></Label>
           </div>
         )}
 
+        {/* Chế độ tạo nhiều rules cùng lúc (B1) — chỉ hiển thị khi tạo mới + metric nhận cột đơn */}
+        {canBatch && (
+          <div className={cn(
+            'flex items-start gap-3 rounded-lg border p-3 transition-colors',
+            multiColumnMode ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'
+          )}>
+            <Switch
+              checked={multiColumnMode}
+              onCheckedChange={v => {
+                setMultiColumnMode(v)
+                if (v) setForm(p => ({ ...p, column: '' }))
+                else setForm(p => ({ ...p, columns: [] }))
+              }}
+            />
+            <div className="flex-1">
+              <Label className="text-sm inline-flex items-center gap-1 cursor-pointer" onClick={() => setMultiColumnMode(!multiColumnMode)}>
+                Tạo nhiều rules cùng lúc (một rule / cột)
+                <InfoTooltip text="Bật chế độ này để áp cùng một loại kiểm tra (metric) cho nhiều cột của bảng. Hệ thống sẽ tạo N rules độc lập, mỗi rule trên 1 cột, dùng chung cấu hình metric và ngưỡng. Phù hợp khi cần kiểm tra not_null / fill_rate / regex... cho nhiều cột trong cùng bảng." />
+              </Label>
+              {multiColumnMode && form.columns.length > 0 && (
+                <p className="text-xs text-purple-700 mt-0.5">
+                  Sẽ tạo <strong>{form.columns.length} rules</strong> — tên rule: "{form.name.trim() || '(chưa đặt tên)'} — [tên cột]"
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Conditional metric config fields */}
         {form.dimension && form.metricType && (
-          <MetricConfigFields form={form} setForm={setForm} tableColumns={tableColumns} />
+          <MetricConfigFields form={form} setForm={setForm} tableColumns={tableColumns} multiColumnMode={effectiveMultiMode} />
         )}
 
         {/* Thresholds — Dual Range Slider */}
@@ -1258,7 +1390,11 @@ Mỗi rule thuộc 1 chiều." /></Label>
       <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
         <Button variant="outline" onClick={onClose}>Hủy</Button>
         <Button onClick={handleSave} disabled={!isValid}>
-          {editRule ? 'Cập nhật' : 'Lưu quy tắc'}
+          {editRule
+            ? 'Cập nhật'
+            : effectiveMultiMode && form.columns.length > 0
+              ? `Tạo ${form.columns.length} rules`
+              : 'Lưu quy tắc'}
         </Button>
       </div>
     </Dialog>
@@ -1294,9 +1430,11 @@ function DeleteConfirm({ rule, onConfirm, onCancel }: { rule: QualityRule | null
 interface RuleListTabProps {
   pendingTemplate?: Partial<RuleForm> | null
   onTemplateUsed?: () => void
+  pendingBulkApply?: { template: RuleTemplate; tableIds: string[] } | null
+  onBulkApplyUsed?: () => void
 }
 
-function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
+function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulkApplyUsed }: RuleListTabProps) {
   const [rules, setRules] = useState<QualityRule[]>([...mockRules])
   const [search, setSearch] = useState('')
   const [dimFilter, setDimFilter] = useState('all')
@@ -1316,6 +1454,8 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
   )
   const [dialogInitialForm, setDialogInitialForm] = useState<Partial<RuleForm> | undefined>()
 
+  const [bulkApplyToast, setBulkApplyToast] = useState<{ count: number; template: string } | null>(null)
+
   // Open add dialog with template pre-fill
   useEffect(() => {
     if (pendingTemplate) {
@@ -1324,6 +1464,40 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
       onTemplateUsed?.()
     }
   }, [pendingTemplate])
+
+  // B2: Bulk apply template → tạo N rules (mỗi bảng 1 rule)
+  useEffect(() => {
+    if (!pendingBulkApply) return
+    const { template, tableIds } = pendingBulkApply
+    if (tableIds.length === 0) { onBulkApplyUsed?.(); return }
+    const baseTs = Date.now()
+    const now = new Date().toISOString()
+    const newRules: QualityRule[] = tableIds.map((tableId, idx) => {
+      const ds = mockDataSources.find(d => d.id === tableId)
+      return {
+        id: `rule-${baseTs}-${idx}`,
+        name: `${template.name} — ${ds?.name ?? tableId}`,
+        description: template.description,
+        dimension: template.dimension,
+        tableId,
+        tableName: ds?.tableName ?? tableId,
+        columnName: template.metricConfig?.column,
+        metricConfig: template.metricConfig,
+        threshold: { ...template.threshold },
+        status: 'active',
+        createdBy: 'Người dùng hiện tại',
+        createdAt: now,
+      }
+    })
+    setRules(prev => [...newRules, ...prev])
+    setSwitchStates(prev => ({
+      ...prev,
+      ...Object.fromEntries(newRules.map(r => [r.id, true])),
+    }))
+    setBulkApplyToast({ count: newRules.length, template: template.name })
+    setTimeout(() => setBulkApplyToast(null), 5000)
+    onBulkApplyUsed?.()
+  }, [pendingBulkApply])
 
   const handleSearch = () => { setAppliedFilter({ search, dim: dimFilter, table: tableFilter, status: statusFilter, module: moduleFilter }); setPage(1) }
   const handleClear = () => { setSearch(''); setDimFilter('all'); setTableFilter('all'); setStatusFilter('all'); setModuleFilter('all'); setAppliedFilter(null); setPage(1) }
@@ -1600,6 +1774,26 @@ function RuleListTab({ pendingTemplate, onTemplateUsed }: RuleListTabProps) {
         </CardContent>
       </Card>
 
+      {/* Bulk apply success toast (B2) */}
+      {bulkApplyToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-2 fade-in">
+          <div className="bg-white border-2 border-purple-200 rounded-lg shadow-xl p-4 flex items-start gap-3 max-w-sm">
+            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-5 w-5 text-purple-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm text-gray-900">Đã tạo {bulkApplyToast.count} rules</p>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Áp mẫu <strong>{bulkApplyToast.template}</strong> cho {bulkApplyToast.count} bảng
+              </p>
+            </div>
+            <button onClick={() => setBulkApplyToast(null)} className="text-gray-400 hover:text-gray-600 shrink-0">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Add dialog */}
       <RuleDialog
         open={showAdd}
@@ -1718,12 +1912,190 @@ type TemplateSubTab = 'metrics' | 'column_profiles' | 'table_profiles'
 
 interface TemplatesTabProps {
   onUseTemplate: (form: Partial<RuleForm>) => void
+  onBulkApplyTemplate: (tmpl: RuleTemplate, tableIds: string[]) => void
+}
+
+// Dialog chung cho "Áp mẫu cho nhiều bảng" (B2)
+function BulkApplyTemplateDialog({
+  open, template, onClose, onConfirm,
+}: {
+  open: boolean
+  template: RuleTemplate | null
+  onClose: () => void
+  onConfirm: (tableIds: string[]) => void
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [moduleFilter, setModuleFilter] = useState<ModuleType | 'all'>('all')
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIds([])
+      setSearch('')
+      setModuleFilter('all')
+    }
+  }, [open])
+
+  if (!template) return null
+
+  const filteredTables = mockDataSources.filter(ds => {
+    if (moduleFilter !== 'all' && ds.moduleType !== moduleFilter) return false
+    if (search && !ds.name.toLowerCase().includes(search.toLowerCase()) && !ds.tableName.toLowerCase().includes(search.toLowerCase())) return false
+    return true
+  })
+
+  const toggleId = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+
+  const allVisibleSelected = filteredTables.length > 0 && filteredTables.every(t => selectedIds.includes(t.id))
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds(prev => prev.filter(id => !filteredTables.some(t => t.id === id)))
+    } else {
+      const toAdd = filteredTables.map(t => t.id).filter(id => !selectedIds.includes(id))
+      setSelectedIds(prev => [...prev, ...toAdd])
+    }
+  }
+
+  const summary = template.metricConfig ? metricSummary(template.metricConfig, template.dimension) : ''
+
+  return (
+    <Dialog open={open} onClose={onClose} title="Áp mẫu cho nhiều bảng" size="lg">
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+        {/* Template summary card */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <Copy className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-medium text-sm text-purple-900">{template.name}</span>
+                <DimensionBadge dimension={template.dimension} />
+              </div>
+              <p className="text-xs text-purple-700 mt-0.5">{template.description}</p>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-xs text-gray-600">
+                  Metric: <strong>{template.metricConfig ? getMetricLabel(template.dimension, template.metricConfig.metricType) : '—'}</strong>
+                </span>
+                {summary && (
+                  <code className="text-[11px] font-mono bg-white px-1.5 py-0.5 rounded border border-purple-100 text-gray-700">
+                    {summary.length > 60 ? summary.slice(0, 60) + '...' : summary}
+                  </code>
+                )}
+                <span className="inline-flex items-center bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                  C:{template.threshold.critical}
+                </span>
+                <span className="inline-flex items-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                  W:{template.threshold.warning}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Label className="inline-flex items-center gap-1 mb-1.5">
+            Chọn bảng áp mẫu <span className="text-red-500">*</span>
+            <InfoTooltip text="Mỗi bảng được chọn sẽ tạo 1 rule độc lập dùng chung cấu hình metric và ngưỡng từ mẫu. Có thể lọc theo phân hệ hoặc tìm kiếm theo tên bảng." />
+          </Label>
+
+          {/* Filters */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <Input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Tìm theo tên bảng..."
+                className="pl-8"
+              />
+            </div>
+            <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | 'all')}>
+              <option value="all">Tất cả phân hệ</option>
+              <option value="core_banking">Core Banking</option>
+              <option value="card">Thẻ</option>
+              <option value="wallet">Ví điện tử</option>
+              <option value="payment">Thanh toán</option>
+              <option value="aml">AML</option>
+              <option value="lending">Tín dụng</option>
+              <option value="risk">Rủi ro</option>
+              <option value="other">Khác</option>
+            </Select>
+          </div>
+
+          {/* Select-all + summary */}
+          <div className="flex items-center justify-between mb-1.5">
+            <button
+              type="button"
+              onClick={toggleAllVisible}
+              className="text-xs px-2 py-0.5 rounded border border-purple-200 text-purple-700 hover:bg-purple-50"
+            >
+              {allVisibleSelected ? 'Bỏ chọn tất cả (đang hiển thị)' : 'Chọn tất cả (đang hiển thị)'}
+            </button>
+            <span className="text-xs text-gray-500">
+              Đã chọn <strong className="text-purple-700">{selectedIds.length}</strong> / {filteredTables.length} bảng
+            </span>
+          </div>
+
+          {/* Table list */}
+          <div className="border border-gray-200 rounded-lg max-h-72 overflow-y-auto divide-y divide-gray-100 bg-white">
+            {filteredTables.length === 0 ? (
+              <div className="py-6 text-center text-sm text-gray-400">Không có bảng phù hợp bộ lọc</div>
+            ) : (
+              filteredTables.map(ds => {
+                const checked = selectedIds.includes(ds.id)
+                return (
+                  <label
+                    key={ds.id}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors',
+                      checked ? 'bg-purple-50/70' : 'hover:bg-gray-50'
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleId(ds.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-800 truncate">{ds.name}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <code>{ds.tableName}</code>
+                        {ds.owner && <span>· Owner: {ds.owner}</span>}
+                      </div>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 uppercase">
+                      {ds.moduleType ?? '—'}
+                    </span>
+                  </label>
+                )
+              })
+            )}
+          </div>
+        </div>
+
+        {selectedIds.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-sm text-blue-800">
+            Sẽ tạo <strong>{selectedIds.length} rules</strong> — mỗi bảng 1 rule, tên theo cú pháp "<em>[Tên mẫu] — [Tên bảng]</em>"
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
+        <Button variant="outline" onClick={onClose}>Hủy</Button>
+        <Button disabled={selectedIds.length === 0} onClick={() => { onConfirm(selectedIds); onClose() }}>
+          Áp cho {selectedIds.length || ''} bảng
+        </Button>
+      </div>
+    </Dialog>
+  )
 }
 
 // ── Sub-tab 1: Mẫu Metric — table + CRUD ────────────────────────────────────────
 
-function MetricTemplatesSubTab({ onUseTemplate, metricTemplates, setMetricTemplates }: {
+function MetricTemplatesSubTab({ onUseTemplate, onBulkApplyTemplate, metricTemplates, setMetricTemplates }: {
   onUseTemplate: (form: Partial<RuleForm>) => void
+  onBulkApplyTemplate: (tmpl: RuleTemplate, tableIds: string[]) => void
   metricTemplates: RuleTemplate[]
   setMetricTemplates: React.Dispatch<React.SetStateAction<RuleTemplate[]>>
 }) {
@@ -1733,6 +2105,7 @@ function MetricTemplatesSubTab({ onUseTemplate, metricTemplates, setMetricTempla
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [bulkTarget, setBulkTarget] = useState<RuleTemplate | null>(null)
 
   // Form state — reuse RuleForm for MetricConfigFields
   const [form, setForm] = useState<RuleForm>({ ...EMPTY_FORM })
@@ -1995,9 +2368,13 @@ function MetricTemplatesSubTab({ onUseTemplate, metricTemplates, setMetricTempla
                   <TableCell className="text-center">{tmpl.usageCount}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Dùng mẫu này"
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Dùng mẫu này (1 bảng)"
                         onClick={() => onUseTemplate(templateToForm(tmpl))}>
                         <CheckCircle2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-purple-600" title="Áp mẫu cho nhiều bảng"
+                        onClick={() => setBulkTarget(tmpl)}>
+                        <LayoutGrid className="h-3.5 w-3.5" />
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Sửa" onClick={() => openEdit(tmpl)}>
                         <Edit className="h-3.5 w-3.5" />
@@ -2116,6 +2493,16 @@ function MetricTemplatesSubTab({ onUseTemplate, metricTemplates, setMetricTempla
           <Button variant="destructive" onClick={handleDelete}>Xóa</Button>
         </div>
       </Dialog>
+
+      {/* Bulk apply dialog (B2) */}
+      <BulkApplyTemplateDialog
+        open={!!bulkTarget}
+        template={bulkTarget}
+        onClose={() => setBulkTarget(null)}
+        onConfirm={(ids) => {
+          if (bulkTarget) onBulkApplyTemplate(bulkTarget, ids)
+        }}
+      />
     </>
   )
 }
@@ -2733,7 +3120,7 @@ function TableProfilesSubTab({ onUseTemplate, metricTemplates, columnProfiles }:
 
 // ── Wrapper: TemplatesTab với 3 sub-tab ─────────────────────────────────────────
 
-function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
+function TemplatesTab({ onUseTemplate, onBulkApplyTemplate }: TemplatesTabProps) {
   const [subTab, setSubTab] = useState<TemplateSubTab>('metrics')
   const [metricTemplates, setMetricTemplates] = useState<RuleTemplate[]>([...mockRuleTemplates])
   const [columnProfiles] = useState<ColumnProfileTemplate[]>([...mockColumnProfiles])
@@ -2759,7 +3146,7 @@ function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
         ))}
       </div>
 
-      {subTab === 'metrics' && <MetricTemplatesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} setMetricTemplates={setMetricTemplates} />}
+      {subTab === 'metrics' && <MetricTemplatesSubTab onUseTemplate={onUseTemplate} onBulkApplyTemplate={onBulkApplyTemplate} metricTemplates={metricTemplates} setMetricTemplates={setMetricTemplates} />}
       {subTab === 'column_profiles' && <ColumnProfilesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} />}
       {subTab === 'table_profiles' && <TableProfilesSubTab onUseTemplate={onUseTemplate} metricTemplates={metricTemplates} columnProfiles={columnProfiles} />}
     </>
@@ -2769,11 +3156,33 @@ function TemplatesTab({ onUseTemplate }: TemplatesTabProps) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function Rules() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState('rules')
   const [pendingTemplate, setPendingTemplate] = useState<Partial<RuleForm> | null>(null)
+  const [pendingBulkApply, setPendingBulkApply] = useState<{ template: RuleTemplate; tableIds: string[] } | null>(null)
+  const deepLinkHandled = useRef(false)
+
+  // B7: Deep link — /rules?action=new&tableId=xxx → auto-open Add dialog với tableId pre-filled
+  useEffect(() => {
+    if (deepLinkHandled.current) return
+    const action = searchParams.get('action')
+    const tableId = searchParams.get('tableId')
+    if (action === 'new' && tableId) {
+      deepLinkHandled.current = true
+      setPendingTemplate({ tableId })
+      setActiveTab('rules')
+      // Xóa query params sau khi xử lý
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams])
 
   const handleUseTemplate = (form: Partial<RuleForm>) => {
     setPendingTemplate(form)
+    setActiveTab('rules')
+  }
+
+  const handleBulkApplyTemplate = (template: RuleTemplate, tableIds: string[]) => {
+    setPendingBulkApply({ template, tableIds })
     setActiveTab('rules')
   }
 
@@ -2797,13 +3206,15 @@ export function Rules() {
               <RuleListTab
                 pendingTemplate={pendingTemplate}
                 onTemplateUsed={() => setPendingTemplate(null)}
+                pendingBulkApply={pendingBulkApply}
+                onBulkApplyUsed={() => setPendingBulkApply(null)}
               />
             ),
           },
           {
             id: 'templates',
             label: <span className="flex items-center gap-2"><LayoutGrid className="h-4 w-4" />Mẫu quy tắc</span>,
-            content: <TemplatesTab onUseTemplate={handleUseTemplate} />,
+            content: <TemplatesTab onUseTemplate={handleUseTemplate} onBulkApplyTemplate={handleBulkApplyTemplate} />,
           },
         ]}
       />

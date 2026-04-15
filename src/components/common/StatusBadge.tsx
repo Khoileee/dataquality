@@ -40,6 +40,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'outli
   email: { label: 'Email', variant: 'default' },
   sms: { label: 'SMS', variant: 'warning' },
   webhook: { label: 'Webhook', variant: 'secondary' },
+  telegram: { label: 'Telegram', variant: 'default' },
 }
 
 export function StatusBadge({ status }: { status: string }) {

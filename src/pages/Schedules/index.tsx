@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Plus, Search, X, Database, Play, Edit, Trash2, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Plus, Search, X, Database, Play, Edit, Trash2, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink, Clock, Loader2, CheckCircle2, Sparkles, List, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { formatDateTime } from '@/lib/utils'
 import { mockSchedules, mockDataSources } from '@/data/mockData'
 import type { Schedule, ScheduleFrequency } from '@/types'
@@ -107,16 +108,86 @@ function calcNextRun(frequency: ScheduleFrequency | '', runTime: string, daysOfW
 interface ScheduleDialogProps {
   open: boolean
   editSchedule?: Schedule | null
+  initialTableId?: string | null
   onClose: () => void
   onSave: (s: Schedule) => void
 }
 
-function ScheduleDialog({ open, editSchedule, onClose, onSave }: ScheduleDialogProps) {
+// B3: Auto-suggest frequency + runTime dựa trên partition metadata + dataRequiredByTime
+function suggestScheduleFromTable(tableId: string): { frequency: ScheduleFrequency | ''; runTime: string; reason: string } | null {
+  const ds = mockDataSources.find(d => d.id === tableId)
+  if (!ds) return null
+  const partition = ds.partitionBy ?? 'none'
+  const mode = ds.mode ?? 'append'
+  const dataReady = ds.dataRequiredByTime ?? '06:00'
+  // offset 30 phút sau giờ dữ liệu sẵn sàng để tránh false alarm
+  const [hh, mm] = dataReady.split(':').map(Number)
+  const runMin = (hh * 60 + mm + 30) % (24 * 60)
+  const suggestedTime = `${String(Math.floor(runMin / 60)).padStart(2, '0')}:${String(runMin % 60).padStart(2, '0')}`
+
+  if (partition === 'daily') {
+    return {
+      frequency: 'daily',
+      runTime: suggestedTime,
+      reason: `Bảng partition Daily (${mode}), dữ liệu sẵn sàng ${dataReady} → đề xuất quét ${suggestedTime} hàng ngày`,
+    }
+  }
+  if (partition === 'monthly') {
+    return {
+      frequency: 'monthly',
+      runTime: suggestedTime,
+      reason: `Bảng partition Monthly (${mode}), dữ liệu sẵn sàng ${dataReady} → đề xuất quét hàng tháng`,
+    }
+  }
+  // partition = none
+  if (mode === 'overwrite') {
+    return {
+      frequency: 'daily',
+      runTime: suggestedTime,
+      reason: `Bảng không partition, mode Overwrite → đề xuất quét daily sau ${dataReady}`,
+    }
+  }
+  return {
+    frequency: 'hourly',
+    runTime: '00:00',
+    reason: 'Bảng không partition, mode Append → đề xuất quét hàng giờ',
+  }
+}
+
+function ScheduleDialog({ open, editSchedule, initialTableId, onClose, onSave }: ScheduleDialogProps) {
   const [form, setForm] = useState<ScheduleForm>(EMPTY_FORM)
+  const [suggestion, setSuggestion] = useState<ReturnType<typeof suggestScheduleFromTable>>(null)
 
   useEffect(() => {
-    if (open) setForm(editSchedule ? scheduleToForm(editSchedule) : EMPTY_FORM)
-  }, [open, editSchedule])
+    if (open) {
+      if (editSchedule) {
+        setForm(scheduleToForm(editSchedule))
+      } else if (initialTableId) {
+        setForm({ ...EMPTY_FORM, tableId: initialTableId })
+      } else {
+        setForm(EMPTY_FORM)
+      }
+      setSuggestion(null)
+    }
+  }, [open, editSchedule, initialTableId])
+
+  // Tính suggestion khi chọn bảng (chỉ áp dụng khi thêm mới)
+  useEffect(() => {
+    if (!editSchedule && form.tableId) {
+      setSuggestion(suggestScheduleFromTable(form.tableId))
+    } else {
+      setSuggestion(null)
+    }
+  }, [form.tableId, editSchedule])
+
+  const applySuggestion = () => {
+    if (!suggestion) return
+    setForm(prev => ({
+      ...prev,
+      frequency: suggestion.frequency,
+      runTime: suggestion.runTime,
+    }))
+  }
 
   const set = (field: keyof ScheduleForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -180,6 +251,30 @@ function ScheduleDialog({ open, editSchedule, onClose, onSave }: ScheduleDialogP
             ))}
           </Select>
         </div>
+
+        {/* B3: Auto-suggest card */}
+        {suggestion && !editSchedule && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50/70 p-3 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-900 mb-0.5">
+                Đề xuất tự động
+                <InfoTooltip text="Hệ thống đề xuất tần suất và giờ quét dựa trên partition + mode + Giờ cần dữ liệu của bảng. Mục đích: tránh quét trước khi ETL load xong (false alarm)" wide />
+              </div>
+              <div className="text-xs text-blue-800">{suggestion.reason}</div>
+              <div className="mt-1.5 text-xs text-blue-700">
+                <span className="font-medium">Tần suất:</span> {FREQ_LABELS[suggestion.frequency as string] ?? suggestion.frequency}
+                {' · '}
+                <span className="font-medium">Giờ:</span> {suggestion.runTime}
+              </div>
+            </div>
+            <Button size="sm" className="h-7 text-xs shrink-0" onClick={applySuggestion}>
+              Áp dụng
+            </Button>
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <Label>Tần suất <span className="text-red-500">*</span></Label>
@@ -275,6 +370,7 @@ function DeleteConfirm({ schedule, onConfirm, onCancel }: { schedule: Schedule |
 
 export function Schedules() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [schedules, setSchedules] = useState<Schedule[]>([...mockSchedules])
   const [tableFilter, setTableFilter] = useState('all')
   const [freqFilter, setFreqFilter] = useState('all')
@@ -282,9 +378,49 @@ export function Schedules() {
   const [appliedFilter, setAppliedFilter] = useState<{ table: string; freq: string; status: string } | null>(null)
   const [page, setPage] = useState(1)
   const [showAdd, setShowAdd] = useState(false)
+  const [deepLinkTableId, setDeepLinkTableId] = useState<string | null>(null)
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null)
   const [deleteSchedule, setDeleteSchedule] = useState<Schedule | null>(null)
   const [runningIds, setRunningIds] = useState<Record<string, boolean>>({})
+  const [toast, setToast] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'batch'>('list')
+
+  // B7: Deep link — /schedules?tableId=xxx → auto-filter or open Add dialog
+  useEffect(() => {
+    const tableId = searchParams.get('tableId')
+    if (tableId) {
+      const hasExisting = schedules.some(s => s.tableId === tableId)
+      if (hasExisting) {
+        setTableFilter(tableId)
+        setAppliedFilter({ table: tableId, freq: 'all', status: 'all' })
+      } else {
+        setDeepLinkTableId(tableId)
+        setShowAdd(true)
+      }
+      setSearchParams({}, { replace: true })
+    }
+  }, [])
+
+  // B4: Group schedules by time slot (batch view)
+  const TIME_SLOTS = [
+    { id: 'dawn', label: 'Rạng sáng', icon: '🌙', range: '00:00 – 06:00', start: 0, end: 6, color: 'slate' },
+    { id: 'morning', label: 'Buổi sáng', icon: '🌅', range: '06:00 – 10:00', start: 6, end: 10, color: 'amber' },
+    { id: 'midday', label: 'Giữa trưa', icon: '☀️', range: '10:00 – 14:00', start: 10, end: 14, color: 'yellow' },
+    { id: 'afternoon', label: 'Buổi chiều', icon: '🌤️', range: '14:00 – 18:00', start: 14, end: 18, color: 'orange' },
+    { id: 'evening', label: 'Buổi tối', icon: '🌆', range: '18:00 – 24:00', start: 18, end: 24, color: 'indigo' },
+    { id: 'realtime', label: 'Thực thời / Hàng giờ', icon: '⚡', range: 'Liên tục', start: -1, end: -1, color: 'green' },
+  ] as const
+
+  const schedulesBySlot = TIME_SLOTS.map(slot => {
+    const matched = schedules.filter(s => {
+      if (slot.id === 'realtime') return s.frequency === 'realtime' || s.frequency === 'hourly'
+      if (s.frequency === 'realtime' || s.frequency === 'hourly') return false
+      if (!s.runTime) return false
+      const hour = Number(s.runTime.split(':')[0] ?? 0)
+      return hour >= slot.start && hour < slot.end
+    })
+    return { ...slot, schedules: matched }
+  })
 
   const handleSearch = () => { setAppliedFilter({ table: tableFilter, freq: freqFilter, status: statusFilter }); setPage(1) }
   const handleClear = () => { setTableFilter('all'); setFreqFilter('all'); setStatusFilter('all'); setAppliedFilter(null); setPage(1) }
@@ -318,7 +454,10 @@ export function Schedules() {
   }
 
   const handleRunNow = (id: string) => {
+    const sch = schedules.find(s => s.id === id)
     setRunningIds(prev => ({ ...prev, [id]: true }))
+    setToast(`\u0110\u00e3 g\u1eedi l\u1ec7nh qu\u00e9t DQ cho b\u1ea3ng ${sch?.tableName ?? id}`)
+    setTimeout(() => setToast(null), 3000)
     setTimeout(() => {
       setRunningIds(prev => ({ ...prev, [id]: false }))
       setSchedules(prev => prev.map(s => s.id === id
@@ -361,14 +500,124 @@ export function Schedules() {
               <Button size="sm" onClick={handleSearch}><Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm</Button>
               <Button size="sm" variant="outline" onClick={handleClear}><X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc</Button>
             </div>
-            <Button size="sm" onClick={() => setShowAdd(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm lịch chạy
-            </Button>
+            <div className="flex gap-2">
+              {/* B4: View toggle */}
+              <div className="inline-flex rounded-md border border-gray-200 p-0.5 bg-white">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                    viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="Xem dạng danh sách"
+                >
+                  <List className="h-3.5 w-3.5" />
+                  Danh sách
+                </button>
+                <button
+                  onClick={() => setViewMode('batch')}
+                  className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                    viewMode === 'batch' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="Xem theo khung giờ (batch)"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Khung giờ
+                </button>
+              </div>
+              <Button size="sm" onClick={() => setShowAdd(true)}>
+                <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm lịch chạy
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* B4: Batch time slot view */}
+      {viewMode === 'batch' && (
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              Lịch chạy theo khung giờ
+              <InfoTooltip text="Gom nhóm các lịch chạy theo khung giờ trong ngày. Giúp phát hiện giờ cao điểm, cân đối tải hệ thống, phát hiện lịch chạy trùng giờ gây nghẽn" wide />
+              <Badge variant="secondary">{schedules.length} lịch</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {schedulesBySlot.map(slot => (
+                <div
+                  key={slot.id}
+                  className={`rounded-lg border-2 p-4 ${
+                    slot.schedules.length > 0
+                      ? `border-${slot.color}-200 bg-${slot.color}-50/40`
+                      : 'border-gray-100 bg-gray-50/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{slot.icon}</span>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">{slot.label}</div>
+                        <div className="text-xs text-gray-500">{slot.range}</div>
+                      </div>
+                    </div>
+                    <Badge variant={slot.schedules.length > 0 ? 'default' : 'secondary'}>
+                      {slot.schedules.length}
+                    </Badge>
+                  </div>
+
+                  {slot.schedules.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">Không có lịch nào</p>
+                  ) : (
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                      {slot.schedules.slice(0, 8).map(s => {
+                        const ds = mockDataSources.find(d => d.id === s.tableId)
+                        const dataReady = ds?.dataRequiredByTime
+                        const isBeforeDataReady = !!(dataReady && s.runTime && s.runTime < dataReady)
+                        return (
+                          <div
+                            key={s.id}
+                            className="flex items-center justify-between gap-2 px-2 py-1.5 rounded bg-white border border-gray-100 text-xs hover:border-blue-300 cursor-pointer"
+                            onClick={() => setEditSchedule(s)}
+                            title={`${s.name} — ${s.tableName}`}
+                          >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Clock className="h-3 w-3 text-gray-400 shrink-0" />
+                              <span className="font-mono text-gray-600 shrink-0">{s.runTime ?? '—'}</span>
+                              <span className="text-gray-800 truncate">{s.tableName}</span>
+                              {isBeforeDataReady && (
+                                <span className="px-1 rounded bg-amber-100 text-amber-700 text-[9px] shrink-0" title={`DL sẵn ${dataReady}`}>!</span>
+                              )}
+                            </div>
+                            <StatusBadge status={s.status} />
+                          </div>
+                        )
+                      })}
+                      {slot.schedules.length > 8 && (
+                        <p className="text-[11px] text-gray-500 text-center pt-1">
+                          + {slot.schedules.length - 8} lịch khác
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Legend */}
+            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-1">
+                <span className="px-1 rounded bg-amber-100 text-amber-700 text-[9px]">!</span>
+                <span>Lịch quét trước giờ DL sẵn sàng</span>
+              </div>
+              <span>Bấm vào mỗi lịch để chỉnh sửa</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Results table */}
+      {viewMode === 'list' && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -382,7 +631,18 @@ export function Schedules() {
                 <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead>Tên lịch</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
-                <TableHead className="w-28">Tần suất</TableHead>
+                <TableHead className="w-32">
+                  <span className="inline-flex items-center gap-1">
+                    Giờ DL sẵn sàng
+                    <InfoTooltip text="Giờ mong muốn dữ liệu đã được load xong (từ ETL). Nếu quét DQ trước giờ này, kết quả có thể không chính xác (false alarm)" />
+                  </span>
+                </TableHead>
+                <TableHead className="w-28">
+                  <span className="inline-flex items-center gap-1">
+                    Tần suất
+                    <InfoTooltip text="Tần suất quét DQ cho bảng. Nên set sau giờ ETL load xong" />
+                  </span>
+                </TableHead>
                 <TableHead className="w-36">Chạy tiếp theo</TableHead>
                 <TableHead className="w-36">Chạy lần cuối</TableHead>
                 <TableHead className="w-28">Kết quả</TableHead>
@@ -395,7 +655,7 @@ export function Schedules() {
             <TableBody>
               {paged.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-gray-400">
+                  <TableCell colSpan={12} className="text-center py-10 text-gray-400">
                     Không tìm thấy lịch chạy phù hợp
                   </TableCell>
                 </TableRow>
@@ -403,6 +663,8 @@ export function Schedules() {
                 paged.map((schedule, idx) => {
                   const isRunning = runningIds[schedule.id]
                   const isActive = schedule.status === 'active'
+                  const dataReadyTime = mockDataSources.find(ds => ds.id === schedule.tableId)?.dataRequiredByTime ?? null
+                  const isBeforeDataReady = !!(dataReadyTime && schedule.runTime && schedule.runTime < dataReadyTime)
                   return (
                     <TableRow key={schedule.id} className="hover:bg-gray-50">
                       <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
@@ -417,6 +679,21 @@ export function Schedules() {
                           <Database className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                           {schedule.tableName}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {dataReadyTime ? (
+                          <div className={`flex items-center gap-1 text-xs ${isBeforeDataReady ? 'text-amber-600' : 'text-gray-500'}`}>
+                            <Clock className="h-3 w-3 shrink-0" />
+                            <span>{dataReadyTime}</span>
+                            {isBeforeDataReady && (
+                              <span className="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-medium whitespace-nowrap" title="Quét trước giờ DL sẵn sàng">
+                                Quét sớm
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">&mdash;</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div>
@@ -474,11 +751,11 @@ export function Schedules() {
                       </TableCell>
                       <TableCell className="text-center sticky right-0 z-10 sticky-right">
                         <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Chạy ngay"
+                          <Button variant="ghost" size="sm" className={`h-7 w-7 p-0 ${isRunning ? 'text-blue-500' : 'text-gray-500 hover:text-green-600'}`} title="Chạy ngay"
                             onClick={() => !isRunning && handleRunNow(schedule.id)}
                             disabled={isRunning}
                           >
-                            <Play className="h-3.5 w-3.5" />
+                            {isRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
                           </Button>
                           <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Chỉnh sửa"
                             onClick={() => setEditSchedule(schedule)}
@@ -524,10 +801,19 @@ export function Schedules() {
           )}
         </CardContent>
       </Card>
+      )}
 
-      <ScheduleDialog open={showAdd} onClose={() => setShowAdd(false)} onSave={handleSave} />
+      <ScheduleDialog open={showAdd} initialTableId={deepLinkTableId} onClose={() => { setShowAdd(false); setDeepLinkTableId(null) }} onSave={handleSave} />
       <ScheduleDialog open={!!editSchedule} editSchedule={editSchedule} onClose={() => setEditSchedule(null)} onSave={handleSave} />
       <DeleteConfirm schedule={deleteSchedule} onConfirm={handleDelete} onCancel={() => setDeleteSchedule(null)} />
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-600 text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm animate-fade-in">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

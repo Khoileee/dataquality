@@ -12,12 +12,14 @@ import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
 import { mockNotifications, mockDataSources, getDownstreamJobs, cascadeConfig as defaultCascadeConfig } from '@/data/mockData'
 import type { NotificationConfig, CascadeConfig } from '@/types'
-import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle, Link2 } from 'lucide-react'
+import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle, Link2, Send } from 'lucide-react'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 
 const TYPE_ICONS: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
   email: { icon: Mail, bg: 'bg-blue-100', color: 'text-blue-600' },
   sms: { icon: MessageSquare, bg: 'bg-green-100', color: 'text-green-600' },
   webhook: { icon: Webhook, bg: 'bg-purple-100', color: 'text-purple-600' },
+  telegram: { icon: Send, bg: 'bg-sky-100', color: 'text-sky-600' },
 }
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -31,19 +33,20 @@ export function Notifications() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
-    name: '', type: 'email' as 'email' | 'sms' | 'webhook',
+    name: '', type: 'email' as 'email' | 'sms' | 'webhook' | 'telegram',
     recipients: '', webhookUrl: '',
     triggerWarning: true, triggerCritical: true, triggerResolved: false,
     allTables: true, selectedTables: [] as string[],
     isActive: true, notifyDownstream: false,
     emailSubject: '', emailBody: '',
+    digestEnabled: false, digestIntervalMinutes: 15,
   })
   const [testSent, setTestSent] = useState<string | null>(null)
   const [cascadeCfg, setCascadeCfg] = useState<CascadeConfig>({ ...defaultCascadeConfig })
 
   const openAdd = () => {
     setEditingId(null)
-    setForm({ name: '', type: 'email', recipients: '', webhookUrl: '', triggerWarning: true, triggerCritical: true, triggerResolved: false, allTables: true, selectedTables: [], isActive: true, notifyDownstream: false, emailSubject: '', emailBody: '' })
+    setForm({ name: '', type: 'email', recipients: '', webhookUrl: '', triggerWarning: true, triggerCritical: true, triggerResolved: false, allTables: true, selectedTables: [], isActive: true, notifyDownstream: false, emailSubject: '', emailBody: '', digestEnabled: false, digestIntervalMinutes: 15 })
     setShowDialog(true)
   }
 
@@ -62,6 +65,8 @@ export function Notifications() {
       notifyDownstream: item.notifyDownstream ?? false,
       emailSubject: item.emailSubject ?? '',
       emailBody: item.emailBody ?? '',
+      digestEnabled: item.digestEnabled ?? false,
+      digestIntervalMinutes: item.digestIntervalMinutes ?? 15,
     })
     setShowDialog(true)
   }
@@ -76,10 +81,14 @@ export function Notifications() {
     const emailFields = form.type === 'email'
       ? { emailSubject: form.emailSubject || undefined, emailBody: form.emailBody || undefined }
       : { emailSubject: undefined, emailBody: undefined }
+    const digestFields = {
+      digestEnabled: form.digestEnabled,
+      digestIntervalMinutes: form.digestEnabled ? form.digestIntervalMinutes : undefined,
+    }
     if (editingId) {
-      setItems(prev => prev.map(i => i.id === editingId ? { ...i, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields } : i))
+      setItems(prev => prev.map(i => i.id === editingId ? { ...i, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields, ...digestFields } : i))
     } else {
-      setItems(prev => [...prev, { id: `notif-${Date.now()}`, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields }])
+      setItems(prev => [...prev, { id: `notif-${Date.now()}`, name: form.name, type: form.type, recipients, triggerOn, tables, isActive: form.isActive, notifyDownstream: form.notifyDownstream, ...emailFields, ...digestFields }])
     }
     setShowDialog(false)
   }
@@ -137,9 +146,14 @@ export function Notifications() {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <span className="font-semibold text-gray-900">{item.name}</span>
                       <StatusBadge status={item.type} />
+                      {item.digestEnabled && (
+                        <Badge variant="secondary" className="bg-sky-100 text-sky-700 border-sky-200">
+                          Digest {item.digestIntervalMinutes ? `${item.digestIntervalMinutes}p` : ''}
+                        </Badge>
+                      )}
                       {!item.isActive && <Badge variant="secondary">Đã tắt</Badge>}
                     </div>
 
@@ -278,19 +292,32 @@ export function Notifications() {
             <Input className="mt-1" placeholder="VD: Cảnh báo nghiêm trọng - Nhóm DBA" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
           </div>
           <div>
-            <Label>Loại thông báo</Label>
+            <Label className="inline-flex items-center gap-1">
+              Loại thông báo
+              <InfoTooltip text="Email: gửi tới hộp thư; SMS: gửi tin nhắn; Webhook: gọi HTTP POST đến URL; Telegram: gửi tin qua bot Telegram (chat_id)" />
+            </Label>
             <Select className="mt-1" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as any }))}>
               <option value="email">Email</option>
               <option value="sms">SMS</option>
               <option value="webhook">Webhook</option>
+              <option value="telegram">Telegram</option>
             </Select>
           </div>
 
           {form.type !== 'webhook' ? (
             <div>
-              <Label>Danh sách người nhận (mỗi địa chỉ 1 dòng)</Label>
+              <Label className="inline-flex items-center gap-1">
+                {form.type === 'telegram' ? 'Danh sách Chat ID Telegram' : 'Danh sách người nhận'} (mỗi dòng 1 giá trị)
+                {form.type === 'telegram' && (
+                  <InfoTooltip text="Chat ID của user/group Telegram. Bot phải được thêm vào group. Có thể lấy chat_id qua @userinfobot" />
+                )}
+              </Label>
               <Textarea className="mt-1 font-mono text-xs" rows={4}
-                placeholder={form.type === 'email' ? 'user@company.vn\nteam@company.vn' : '+84901234567\n+84901234568'}
+                placeholder={
+                  form.type === 'email' ? 'user@company.vn\nteam@company.vn' :
+                  form.type === 'telegram' ? '-1001234567890\n123456789' :
+                  '+84901234567\n+84901234568'
+                }
                 value={form.recipients} onChange={e => setForm(f => ({ ...f, recipients: e.target.value }))} />
             </div>
           ) : (
@@ -398,6 +425,37 @@ export function Notifications() {
             })()}
             {form.notifyDownstream && form.allTables && (
               <p className="text-xs text-slate-500 italic pl-1">Chọn bảng cụ thể để xem preview danh sách người nhận downstream.</p>
+            )}
+          </div>
+
+          {/* Digest (batch) mode */}
+          <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <Switch checked={form.digestEnabled} onCheckedChange={v => setForm(f => ({ ...f, digestEnabled: v }))} />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-slate-800 flex items-center gap-1">
+                  Gửi tổng hợp (digest)
+                  <InfoTooltip text="Thay vì gửi từng sự kiện, hệ thống sẽ gom các cảnh báo trong một khoảng thời gian rồi gửi 1 thông báo tổng hợp. Giảm spam khi có nhiều lỗi cùng lúc" wide />
+                </div>
+                <div className="text-xs text-slate-500 mt-0.5">Gom các cảnh báo trong khoảng thời gian → gửi 1 thông báo tổng hợp (giảm spam)</div>
+              </div>
+            </div>
+            {form.digestEnabled && (
+              <div className="flex items-center gap-2 pl-12">
+                <Label className="text-sm text-slate-700 whitespace-nowrap">Chu kỳ gom:</Label>
+                <Select
+                  className="w-32"
+                  value={String(form.digestIntervalMinutes)}
+                  onChange={e => setForm(f => ({ ...f, digestIntervalMinutes: Number(e.target.value) }))}
+                >
+                  <option value="5">5 phút</option>
+                  <option value="15">15 phút</option>
+                  <option value="30">30 phút</option>
+                  <option value="60">1 giờ</option>
+                  <option value="240">4 giờ</option>
+                  <option value="1440">1 ngày</option>
+                </Select>
+              </div>
             )}
           </div>
 

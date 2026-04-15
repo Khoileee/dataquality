@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   Play, Edit, Layers, CheckSquare, Link2, Fingerprint, Target, Clock, RefreshCw,
   AlertTriangle as AlertTriangleIcon, CheckCircle, Database, FileBarChart,
+  Plus, Calendar,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -172,6 +173,24 @@ export function DataSourceDetail() {
                 <CheckCircle className="h-4 w-4" /> Phân tích hoàn tất!
               </span>
             )}
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+              onClick={() => navigate(`/rules?action=new&tableId=${ds.id}`)}
+              title="Tạo quy tắc kiểm tra DQ mới gắn với bảng này"
+            >
+              <Plus className="h-4 w-4" />
+              Tạo rule cho bảng này
+            </Button>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+              onClick={() => navigate(`/schedules?tableId=${ds.id}`)}
+              title="Xem lịch chạy DQ của bảng"
+            >
+              <Calendar className="h-4 w-4" />
+              Đặt lịch chạy
+            </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={openEditDialog}>
               <Edit className="h-4 w-4" />
               Chỉnh sửa

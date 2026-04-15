@@ -13,7 +13,7 @@ export const mockDataSources: DataSource[] = [
     rowCount: 1250000, lastProfiled: '2026-03-28T08:30:00', overallScore: 82,
     dimensionScores: { completeness: 91, validity: 85, consistency: 78, uniqueness: 95, accuracy: 76, timeliness: 88 },
     createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T08:30:00',
-    moduleType: 'source'
+    moduleType: 'source', dataRequiredByTime: '08:00'
   },
   {
     id: 'ds-002', name: 'GD_GIAODICH', type: 'database', schema: 'CORE',
@@ -22,7 +22,7 @@ export const mockDataSources: DataSource[] = [
     rowCount: 45000000, lastProfiled: '2026-03-28T06:00:00', overallScore: 74,
     dimensionScores: { completeness: 88, validity: 72, consistency: 65, uniqueness: 99, accuracy: 68, timeliness: 55 },
     createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T06:00:00',
-    moduleType: 'source'
+    moduleType: 'source', dataRequiredByTime: '07:00'
   },
   {
     id: 'ds-003', name: 'TK_TAIKHOAN', type: 'database', schema: 'CORE',
@@ -31,7 +31,7 @@ export const mockDataSources: DataSource[] = [
     rowCount: 2100000, lastProfiled: '2026-03-28T07:15:00', overallScore: 88,
     dimensionScores: { completeness: 95, validity: 90, consistency: 85, uniqueness: 98, accuracy: 82, timeliness: 79 },
     createdAt: '2024-01-15T00:00:00', updatedAt: '2026-03-28T07:15:00',
-    moduleType: 'source'
+    moduleType: 'source', dataRequiredByTime: '08:00'
   },
   {
     id: 'ds-004', name: 'SP_SANPHAM', type: 'database', schema: 'CORE',
@@ -58,7 +58,7 @@ export const mockDataSources: DataSource[] = [
     rowCount: 12500, lastProfiled: '2026-03-28T09:00:00', overallScore: 63,
     dimensionScores: { completeness: 70, validity: 65, consistency: 58, uniqueness: 85, accuracy: 55, timeliness: 47 },
     createdAt: '2024-02-01T00:00:00', updatedAt: '2026-03-28T09:00:00',
-    moduleType: 'report', sourceTableIds: ['ds-002', 'ds-003']
+    moduleType: 'report', sourceTableIds: ['ds-002', 'ds-003'], dataRequiredByTime: '10:00'
   },
   {
     id: 'ds-007', name: 'DM_TIENTE', type: 'database', schema: 'DM',
@@ -103,7 +103,7 @@ export const mockDataSources: DataSource[] = [
     rowCount: 125000000, lastProfiled: '2026-03-27T22:00:00', overallScore: 55,
     dimensionScores: { completeness: 65, validity: 58, consistency: 48, uniqueness: 78, accuracy: 50, timeliness: 32 },
     createdAt: '2024-03-01T00:00:00', updatedAt: '2026-03-27T22:00:00',
-    moduleType: 'source'
+    moduleType: 'source', dataRequiredByTime: '07:00'
   },
   {
     id: 'ds-012', name: 'QUAN_LY_RR', type: 'sql', schema: 'RISK',

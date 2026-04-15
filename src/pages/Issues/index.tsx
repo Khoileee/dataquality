@@ -4,6 +4,7 @@ import {
   AlertCircle, AlertTriangle, Clock, CheckCircle2,
   Database, Eye, Download, Search,
   CheckCircle, Layers, RefreshCw, Bell, Play, Shield, ChevronDown, ChevronUp,
+  UserPlus,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -18,9 +19,9 @@ import { DimensionBadge } from '@/components/common/DimensionBadge'
 import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { formatDateTime } from '@/lib/utils'
-import { mockIssues, mockDataSources, getDownstreamJobs, cascadeChains, cascadeEvents } from '@/data/mockData'
+import { mockIssues, mockDataSources, mockUsers, getDownstreamJobs, cascadeChains, cascadeEvents } from '@/data/mockData'
 import { _ruleGeneratedIssues } from '@/pages/Rules'
-import type { Issue, ModuleType, CascadeChain, CascadeEvent } from '@/types'
+import type { Issue, IssueStatus, ModuleType, CascadeChain, CascadeEvent } from '@/types'
 
 const MODULE_LABELS: Record<ModuleType, string> = {
   source: 'Bảng nguồn', report: 'Báo cáo', kpi: 'Chỉ tiêu',
@@ -32,6 +33,15 @@ const MODULE_COLORS: Record<ModuleType, string> = {
 }
 
 const PAGE_SIZE = 10
+
+const ISSUE_STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
+  { value: 'new', label: 'Mới' },
+  { value: 'assigned', label: 'Đã phân công' },
+  { value: 'in_progress', label: 'Đang xử lý' },
+  { value: 'pending_review', label: 'Chờ duyệt' },
+  { value: 'resolved', label: 'Đã xử lý' },
+  { value: 'closed', label: 'Đóng' },
+]
 
 function exportCSV(issues: Issue[]) {
   const header = ['STT', 'ID', 'Tiêu đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
@@ -273,9 +283,11 @@ export function Issues() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [page, setPage] = useState(1)
+  const [openDropdown, setOpenDropdown] = useState<{ type: 'assign' | 'status'; issueId: string } | null>(null)
 
   // Merge mock issues with auto-generated issues from rule runs (newest first)
-  const allIssues: Issue[] = [..._ruleGeneratedIssues, ...mockIssues]
+  const [localIssues, setLocalIssues] = useState<Issue[]>(() => [..._ruleGeneratedIssues, ...mockIssues])
+  const allIssues = localIssues
 
   const newCount = allIssues.filter(i => i.status === 'new').length
   const inProgressCount = allIssues.filter(i => i.status === 'in_progress' || i.status === 'assigned').length
@@ -302,6 +314,15 @@ export function Issues() {
 
   const handleSearch = () => setPage(1)
 
+  const handleAssign = (issueId: string, userName: string) => {
+    setLocalIssues(prev => prev.map(i => i.id === issueId ? { ...i, assignedTo: userName } : i))
+    setOpenDropdown(null)
+  }
+
+  const handleStatusChange = (issueId: string, newStatus: IssueStatus) => {
+    setLocalIssues(prev => prev.map(i => i.id === issueId ? { ...i, status: newStatus } : i))
+    setOpenDropdown(null)
+  }
 
   const issueListContent = (
     <div className="space-y-6">
@@ -475,7 +496,7 @@ export function Issues() {
                 <TableHead className="w-36">Phát hiện lúc</TableHead>
                 <TableHead className="w-36"><span className="inline-flex items-center gap-1">Gán cho <InfoTooltip text="Người được phân công xử lý. Cập nhật trong trang chi tiết vấn đề." /></span></TableHead>
                 <TableHead className="w-28"><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Vòng đời: Mới → Đã gán → Đang xử lý → Chờ xét duyệt → Đã giải quyết → Đóng" /></span></TableHead>
-                <TableHead className="w-16 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
+                <TableHead className="w-28 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -513,10 +534,14 @@ export function Issues() {
                       <StatusBadge status={issue.severity} />
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5 text-sm text-gray-700">
-                        <Database className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        <span className="truncate">{issue.tableName}</span>
-                      </div>
+                      <button
+                        onClick={() => navigate(`/data-catalog/${issue.tableId}`)}
+                        className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-blue-600 group transition-colors"
+                        title={`Xem chi tiết bảng ${issue.tableName}`}
+                      >
+                        <Database className="h-3.5 w-3.5 text-gray-400 group-hover:text-blue-500 shrink-0" />
+                        <span className="truncate group-hover:underline">{issue.tableName}</span>
+                      </button>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
                       {(() => {
@@ -550,12 +575,65 @@ export function Issues() {
                       <StatusBadge status={issue.status} />
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-1 relative">
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Xem chi tiết"
                           onClick={() => navigate(`/issues/${issue.id}`)}
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
+                        {/* Assign button */}
+                        <div className="relative">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-indigo-600" title="Phân công"
+                            onClick={() => setOpenDropdown(prev => prev?.type === 'assign' && prev.issueId === issue.id ? null : { type: 'assign', issueId: issue.id })}
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                          </Button>
+                          {openDropdown?.type === 'assign' && openDropdown.issueId === issue.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                              <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[180px] max-h-48 overflow-y-auto">
+                                <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 border-b border-gray-100">Chọn người xử lý</div>
+                                {mockUsers.filter(u => u.isActive).map(user => (
+                                  <button
+                                    key={user.id}
+                                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors"
+                                    onClick={() => handleAssign(issue.id, user.name)}
+                                  >
+                                    <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-semibold text-blue-700 shrink-0">
+                                      {user.name.charAt(0)}
+                                    </div>
+                                    <span className="truncate">{user.name}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        {/* Status change button */}
+                        <div className="relative">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-amber-600" title="Đổi trạng thái"
+                            onClick={() => setOpenDropdown(prev => prev?.type === 'status' && prev.issueId === issue.id ? null : { type: 'status', issueId: issue.id })}
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </Button>
+                          {openDropdown?.type === 'status' && openDropdown.issueId === issue.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                              <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[160px]">
+                                <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 border-b border-gray-100">Đổi trạng thái</div>
+                                {ISSUE_STATUS_OPTIONS.map(opt => (
+                                  <button
+                                    key={opt.value}
+                                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 transition-colors ${issue.status === opt.value ? 'bg-blue-50 font-semibold text-blue-700' : 'text-gray-700'}`}
+                                    onClick={() => handleStatusChange(issue.id, opt.value)}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

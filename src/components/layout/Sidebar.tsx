@@ -7,7 +7,26 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-const navSections = [
+interface NavChild {
+  label: string
+  href: string
+}
+
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  href: string
+  deprecated?: boolean
+  deprecatedTooltip?: string
+  children?: NavChild[]
+}
+
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const navSections: NavSection[] = [
   {
     title: 'TỔNG QUAN',
     items: [{ icon: LayoutDashboard, label: 'Dashboard', href: '/' }]
@@ -17,7 +36,7 @@ const navSections = [
     items: [
       { icon: Database, label: 'Danh mục dữ liệu', href: '/data-catalog' },
       { icon: BarChart2, label: 'Phân tích dữ liệu', href: '/profiling' },
-      { icon: GitBranch, label: 'Quản lý Job', href: '/pipeline' },
+      { icon: GitBranch, label: 'Quản lý Job', href: '/pipeline', deprecated: true, deprecatedTooltip: 'Chức năng sẽ gộp vào SQLWF — Chỉ giữ Giám sát Pipeline' },
       { icon: Activity, label: 'Giám sát Pipeline', href: '/pipeline-monitor' },
     ]
   },
@@ -26,7 +45,7 @@ const navSections = [
     items: [
       { icon: BookOpen, label: 'Quản lý quy tắc', href: '/rules' },
       { icon: Calendar, label: 'Lịch chạy', href: '/schedules' },
-      { icon: Sliders, label: 'Ngưỡng cảnh báo', href: '/thresholds' },
+      { icon: Sliders, label: 'Ngưỡng cảnh báo', href: '/thresholds', deprecated: true, deprecatedTooltip: 'Đã gộp vào Danh mục dữ liệu — Ngưỡng mặc định xem tại Cài đặt' },
     ]
   },
   {
@@ -43,6 +62,7 @@ const navSections = [
       {
         icon: Settings, label: 'Cài đặt', href: '/settings',
         children: [
+          { label: 'Ngưỡng mặc định', href: '/settings/default-thresholds' },
           { label: 'Quy tắc mặc định', href: '/settings/default-rules' },
           { label: 'Lịch mặc định', href: '/settings/default-schedules' },
           { label: 'Quản lý người dùng', href: '/settings/users' },
@@ -100,6 +120,10 @@ export function Sidebar() {
               )
               const iconCls = cn('h-4 w-4 shrink-0', active ? 'text-blue-400' : 'text-slate-500')
 
+              const isDeprecated = 'deprecated' in item && item.deprecated
+              const deprecatedStyle = isDeprecated ? { opacity: 0.45 } : {}
+              const deprecatedTip = isDeprecated ? (item as NavItem).deprecatedTooltip : undefined
+
               return (
                 <div key={item.label}>
                   {/* Active background highlight */}
@@ -119,13 +143,17 @@ export function Sidebar() {
                   ) : (
                     <Link to={item.href!}
                       className={linkCls}
-                      style={active ? { background: 'rgba(59,130,246,0.12)' } : {}}>
+                      title={deprecatedTip}
+                      style={{
+                        ...(active ? { background: 'rgba(59,130,246,0.12)' } : {}),
+                        ...deprecatedStyle,
+                      }}>
                       {active && (
                         <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
                           style={{ background: '#3b82f6' }} />
                       )}
                       <Icon className={iconCls} />
-                      <span>{item.label}</span>
+                      <span className={isDeprecated ? 'line-through' : ''}>{item.label}</span>
                     </Link>
                   )}
 

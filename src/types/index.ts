@@ -142,6 +142,8 @@ export interface DataSource {
   kpiFormula?: string
   // Threshold overrides per dimension (empty = inherit global defaults)
   thresholdOverrides?: Partial<Record<QualityDimension, { warning: number; critical: number }>>
+  // Scheduling & Timeliness
+  dataRequiredByTime?: string  // HH:mm — giờ mong muốn có dữ liệu sẵn sàng (VD: '08:00')
   // SQLWF metadata
   syncSource?: 'sqlwf' | 'manual'
   partitionBy?: 'daily' | 'monthly' | 'none'
@@ -257,7 +259,7 @@ export interface Issue {
 export interface NotificationConfig {
   id: string
   name: string
-  type: 'email' | 'sms' | 'webhook'
+  type: 'email' | 'sms' | 'webhook' | 'telegram'
   recipients: string[]
   triggerOn: ('warning' | 'critical' | 'resolved')[]
   tables: string[]
@@ -265,6 +267,9 @@ export interface NotificationConfig {
   notifyDownstream?: boolean
   emailSubject?: string
   emailBody?: string
+  // Digest mode: gom nhóm các sự kiện trong 1 khoảng thời gian → gửi 1 email/message tổng hợp (giảm spam)
+  digestEnabled?: boolean
+  digestIntervalMinutes?: number  // VD: 15, 30, 60 — khoảng gom nhóm
 }
 
 export interface CascadeEvent {

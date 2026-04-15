@@ -1,13 +1,16 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Area, AreaChart,
+  ResponsiveContainer, Area, AreaChart, BarChart, Bar, Cell,
 } from 'recharts'
 import {
   Database, BarChart2, AlertTriangle, CheckCircle, FileBarChart, Target, Link2,
+  CheckCircle2, Circle, ChevronRight, Sparkles,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { ScoreGauge } from '@/components/common/ScoreGauge'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { DimensionBadge, DIMENSION_CONFIG } from '@/components/common/DimensionBadge'
@@ -15,7 +18,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
-import { mockDataSources, mockIssues, mockTrendData, mockRules, cascadeChains } from '@/data/mockData'
+import { mockDataSources, mockIssues, mockTrendData, mockRules, cascadeChains, mockSchedules, mockNotifications } from '@/data/mockData'
 import type { QualityDimension, ModuleType } from '@/types'
 
 const MODULE_LABELS: Record<ModuleType, string> = {
@@ -43,8 +46,45 @@ function fakeTrend(id: string) {
   return TRENDS[id.charCodeAt(id.length - 1) % 2]
 }
 
+type TimeRange = 'today' | '7d' | '30d'
+
+const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
+  { value: 'today', label: 'Hôm nay' },
+  { value: '7d', label: '7 ngày' },
+  { value: '30d', label: '30 ngày' },
+]
+
+// A6: Top failed rules mock data
+const topFailedRules = [
+  { ruleName: 'NOT NULL — Mã KH', dimension: 'completeness' as QualityDimension, failCount: 47, tables: 12 },
+  { ruleName: 'Format Regex — SĐT', dimension: 'validity' as QualityDimension, failCount: 38, tables: 8 },
+  { ruleName: 'Referential Integrity — Mã CN', dimension: 'consistency' as QualityDimension, failCount: 31, tables: 6 },
+  { ruleName: 'Freshness — Dữ liệu cũ', dimension: 'timeliness' as QualityDimension, failCount: 28, tables: 15 },
+  { ruleName: 'Value Range — Số tiền', dimension: 'accuracy' as QualityDimension, failCount: 24, tables: 5 },
+  { ruleName: 'Duplicate — CCCD', dimension: 'uniqueness' as QualityDimension, failCount: 19, tables: 4 },
+  { ruleName: 'Fill Rate — Email', dimension: 'completeness' as QualityDimension, failCount: 16, tables: 7 },
+  { ruleName: 'Row Count — Thiếu dòng', dimension: 'completeness' as QualityDimension, failCount: 12, tables: 3 },
+]
+
+const DIMENSION_BAR_COLORS: Record<QualityDimension, string> = {
+  completeness: '#3b82f6',
+  validity: '#10b981',
+  consistency: '#f59e0b',
+  uniqueness: '#8b5cf6',
+  accuracy: '#ef4444',
+  timeliness: '#06b6d4',
+}
+
+function getFilteredTrendData(timeRange: TimeRange) {
+  if (timeRange === '30d') return mockTrendData
+  if (timeRange === '7d') return mockTrendData.slice(-7)
+  return mockTrendData.slice(-1)
+}
+
 export function Dashboard() {
   const [_tab] = useState('overview')
+  const [timeRange, setTimeRange] = useState<TimeRange>('7d')
+  const navigate = useNavigate()
 
   const moduleCounts = mockDataSources.reduce(
     (acc, ds) => { acc[ds.moduleType] = (acc[ds.moduleType] || 0) + 1; return acc },
@@ -58,12 +98,113 @@ export function Dashboard() {
 
   const recentIssues = mockIssues.slice(0, 8)
 
+  const filteredTrendData = getFilteredTrendData(timeRange)
+
+  // B6: Onboarding checklist — tự tính tiến độ từ mock data
+  const hasThresholdConfig = true // DefaultThresholds đã tồn tại
+  const hasRegisteredTables = mockDataSources.length > 0
+  const hasRules = mockRules.length > 0
+  const hasSchedules = mockSchedules.length > 0
+  const hasNotifications = mockNotifications.filter(n => n.isActive).length > 0
+  const onboardingSteps = [
+    { id: 1, label: 'Cấu hình ngưỡng mặc định', path: '/settings/default-thresholds', done: hasThresholdConfig, desc: 'Đặt ngưỡng Warning/Critical cho 6 chiều DQ' },
+    { id: 2, label: 'Đăng ký bảng dữ liệu', path: '/data-catalog', done: hasRegisteredTables, desc: `Đã đăng ký ${mockDataSources.length} bảng` },
+    { id: 3, label: 'Tạo quy tắc kiểm tra', path: '/rules', done: hasRules, desc: `Đã có ${mockRules.length} quy tắc` },
+    { id: 4, label: 'Đặt lịch chạy DQ', path: '/schedules', done: hasSchedules, desc: `Đã có ${mockSchedules.length} lịch chạy` },
+    { id: 5, label: 'Cấu hình thông báo', path: '/notifications', done: hasNotifications, desc: `${mockNotifications.filter(n => n.isActive).length} kênh đang hoạt động` },
+  ]
+  const completedSteps = onboardingSteps.filter(s => s.done).length
+  const progressPct = Math.round((completedSteps / onboardingSteps.length) * 100)
+  const [onboardingCollapsed, setOnboardingCollapsed] = useState(completedSteps === onboardingSteps.length)
+
   return (
     <div className="p-6 space-y-6">
-      <PageHeader
-        title="Tổng quan hệ thống"
-        description="Giám sát chất lượng dữ liệu toàn hệ thống theo thời gian thực"
-      />
+      {/* Header with time range picker */}
+      <div className="flex items-start justify-between">
+        <PageHeader
+          title="Tổng quan hệ thống"
+          description="Giám sát chất lượng dữ liệu toàn hệ thống theo thời gian thực"
+        />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {TIME_RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setTimeRange(opt.value)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                timeRange === opt.value
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* B6: Onboarding checklist */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50/60 to-indigo-50/60">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  Lộ trình thiết lập DQ
+                  <InfoTooltip text="5 bước cần hoàn tất để hệ thống DQ hoạt động đầy đủ: Cấu hình ngưỡng → Đăng ký bảng → Tạo quy tắc → Đặt lịch → Bật thông báo" wide />
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  Đã hoàn thành <span className="font-semibold text-blue-600">{completedSteps}/{onboardingSteps.length}</span> bước ({progressPct}%)
+                </div>
+              </div>
+            </div>
+            <button
+              className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+              onClick={() => setOnboardingCollapsed(c => !c)}
+            >
+              {onboardingCollapsed ? 'Xem chi tiết' : 'Thu gọn'}
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-1.5 rounded-full bg-white/70 overflow-hidden mb-3">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+
+          {!onboardingCollapsed && (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+              {onboardingSteps.map(step => (
+                <button
+                  key={step.id}
+                  onClick={() => navigate(step.path)}
+                  className={`text-left p-3 rounded-lg border transition-all hover:shadow-sm ${
+                    step.done
+                      ? 'border-green-200 bg-green-50/70 hover:bg-green-50'
+                      : 'border-amber-200 bg-white hover:bg-amber-50/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    {step.done ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                    ) : (
+                      <Circle className="h-4 w-4 text-amber-500 shrink-0" />
+                    )}
+                    <span className="text-xs font-semibold text-gray-700">Bước {step.id}</span>
+                    <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
+                  </div>
+                  <div className="text-xs font-medium text-gray-800 leading-tight">{step.label}</div>
+                  <div className="text-[11px] text-gray-500 mt-1 leading-tight">{step.desc}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Row 1 - KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -72,7 +213,10 @@ export function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 font-medium">Tổng bảng dữ liệu</p>
+                <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                  Tổng bảng dữ liệu
+                  <InfoTooltip text="Số bảng đã đăng ký trên hệ thống DQ, phân loại theo Bảng nguồn / Báo cáo / KPI" />
+                </p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{mockDataSources.length}</p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <span className="inline-flex items-center gap-1 text-xs text-blue-700"><Database className="w-3 h-3" />{moduleCounts.source || 0} nguồn</span>
@@ -92,7 +236,10 @@ export function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 font-medium">Điểm chất lượng TB</p>
+                <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                  Điểm chất lượng TB
+                  <InfoTooltip text="Trung bình điểm DQ của tất cả bảng đã quét. Công thức: TB(table scores). Mỗi table score = TB 6 chiều" />
+                </p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">78.4</p>
                 <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                   <span>↑</span>
@@ -111,7 +258,10 @@ export function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 font-medium">Vấn đề đang mở</p>
+                <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                  Vấn đề đang mở
+                  <InfoTooltip text="Số vấn đề DQ chưa được xử lý (trạng thái: Mới, Đang xử lý)" />
+                </p>
                 <p className="text-3xl font-bold text-red-600 mt-1">12</p>
                 <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
                   <span>↑</span>
@@ -130,7 +280,10 @@ export function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 font-medium">Quy tắc đang hoạt động</p>
+                <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                  Quy tắc đang hoạt động
+                  <InfoTooltip text="Số quy tắc kiểm tra DQ đang được áp dụng" />
+                </p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{activeRulesCount}</p>
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <span>─</span>
@@ -153,7 +306,10 @@ export function Dashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Chuỗi cảnh báo</p>
+                    <p className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                      Chuỗi cảnh báo
+                      <InfoTooltip text="Số chuỗi ảnh hưởng liên bảng (cascade) đang hoạt động. Khi 1 bảng gặp lỗi, các bảng downstream bị ảnh hưởng sẽ được theo dõi." />
+                    </p>
                     <p className={`text-3xl font-bold mt-1 ${hasActive ? 'text-red-600' : 'text-green-600'}`}>{activeCascades}</p>
                     <p className={`text-xs mt-2 flex items-center gap-1 ${hasActive ? 'text-red-500' : 'text-green-600'}`}>
                       <span>{hasActive ? '!' : '-'}</span>
@@ -219,14 +375,16 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Column 3 - 30-day trend */}
+        {/* Column 3 - Trend chart (filtered by timeRange) */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Xu hướng 30 ngày</CardTitle>
+            <CardTitle className="text-base">
+              Xu hướng {timeRange === 'today' ? 'hôm nay' : timeRange === '7d' ? '7 ngày' : '30 ngày'}
+            </CardTitle>
           </CardHeader>
           <CardContent className="pb-6">
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={mockTrendData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
+              <AreaChart data={filteredTrendData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <defs>
                   <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
@@ -237,7 +395,7 @@ export function Dashboard() {
                 <XAxis
                   dataKey="date"
                   tick={{ fontSize: 10 }}
-                  interval={6}
+                  interval={timeRange === '30d' ? 6 : 0}
                   tickLine={false}
                 />
                 <YAxis domain={[60, 100]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
@@ -259,7 +417,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Row 3 - Worst tables */}
+      {/* Row 3 - Worst tables (A5: clickable table names) */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Bảng dữ liệu cần chú ý</CardTitle>
@@ -285,7 +443,12 @@ export function Dashboard() {
                 const trend = fakeTrend(ds.id)
                 return (
                   <TableRow key={ds.id}>
-                    <TableCell className="font-medium text-gray-900">{ds.name}</TableCell>
+                    <TableCell
+                      className="font-medium text-gray-900 cursor-pointer hover:text-blue-600 hover:underline"
+                      onClick={() => navigate(`/data-catalog/${ds.id}`)}
+                    >
+                      {ds.name}
+                    </TableCell>
                     <TableCell className="text-center text-sm text-gray-600">
                       {MODULE_LABELS[ds.moduleType]}
                     </TableCell>
@@ -325,13 +488,89 @@ export function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Row 4 - Recent issues */}
+      {/* Row 4 - A6: Top quy tắc vi phạm */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Left: Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-1.5">
+              Top quy tắc vi phạm
+              <InfoTooltip text="Danh sách 8 quy tắc DQ bị vi phạm nhiều nhất trong khoảng thời gian đã chọn. Giúp phát hiện pattern lỗi phổ biến để ưu tiên xử lý" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12 text-center">STT</TableHead>
+                  <TableHead>Tên quy tắc</TableHead>
+                  <TableHead>Chiều DL</TableHead>
+                  <TableHead className="text-center">Số lần vi phạm</TableHead>
+                  <TableHead className="text-center">Số bảng ảnh hưởng</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topFailedRules.map((rule, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="text-center text-gray-500">{idx + 1}</TableCell>
+                    <TableCell className="font-medium text-gray-900">{rule.ruleName}</TableCell>
+                    <TableCell>
+                      <DimensionBadge dimension={rule.dimension} />
+                    </TableCell>
+                    <TableCell className="text-center font-semibold text-red-600">{rule.failCount}</TableCell>
+                    <TableCell className="text-center text-gray-600">{rule.tables}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Right: Horizontal bar chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Biểu đồ vi phạm theo quy tắc</CardTitle>
+          </CardHeader>
+          <CardContent className="pb-6">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                layout="vertical"
+                data={topFailedRules}
+                margin={{ top: 5, right: 30, bottom: 5, left: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis
+                  type="category"
+                  dataKey="ruleName"
+                  tick={{ fontSize: 10 }}
+                  width={180}
+                />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 6 }}
+                  formatter={(value: number) => [value, 'Lần vi phạm']}
+                />
+                <Bar dataKey="failCount" radius={[0, 4, 4, 0]} barSize={24}>
+                  {topFailedRules.map((entry, idx) => (
+                    <Cell key={idx} fill={DIMENSION_BAR_COLORS[entry.dimension]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 5 - Recent issues (A5: clickable issue titles) */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Vấn đề gần đây</CardTitle>
-          <a href="/issues" className="text-sm text-blue-600 hover:underline">
+          <button
+            onClick={() => navigate('/issues')}
+            className="text-sm text-blue-600 hover:underline"
+          >
             Xem tất cả →
-          </a>
+          </button>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -349,7 +588,11 @@ export function Dashboard() {
             <TableBody>
               {recentIssues.map((issue) => (
                 <TableRow key={issue.id}>
-                  <TableCell className="font-medium max-w-xs truncate" title={issue.title}>
+                  <TableCell
+                    className="font-medium max-w-xs truncate cursor-pointer hover:text-blue-600 hover:underline"
+                    title={issue.title}
+                    onClick={() => navigate(`/issues/${issue.id}`)}
+                  >
                     {issue.title}
                   </TableCell>
                   <TableCell>

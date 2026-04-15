@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Search, Plus, Download, Eye, Edit, Trash2, ChevronLeft, ChevronRight,
   AlertTriangle, RefreshCw, Database, FileBarChart, Target,
-  ListPlus, CheckCircle2, Upload, FileDown, AlertCircle, Check,
+  ListPlus, CheckCircle2, Upload, FileDown, AlertCircle, Check, Sparkles, ShieldCheck,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,10 +21,11 @@ import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { getScoreColor, getScoreBarColor, formatDateTime } from '@/lib/utils'
-import { mockDataSources, mockUsers } from '@/data/mockData'
-import { DimensionBadge } from '@/components/common/DimensionBadge'
+import { Switch } from '@/components/ui/switch'
+import { mockDataSources, mockUsers, mockTableProfiles, mockColumnProfiles, mockRuleTemplates } from '@/data/mockData'
+import { DimensionBadge, DIMENSION_CONFIG } from '@/components/common/DimensionBadge'
 import { getGlobalThreshold } from '../Thresholds'
-import type { DataSource, ModuleType, PeriodType, QualityDimension } from '@/types'
+import type { DataSource, ModuleType, PeriodType, QualityDimension, TableProfileTemplate, ColumnProfileTemplate, RuleTemplate } from '@/types'
 
 const PAGE_SIZE = 10
 
@@ -157,6 +158,282 @@ function exportCSV(sources: DataSource[]) {
   a.click(); URL.revokeObjectURL(url)
 }
 
+// ── Mock: cột phổ biến theo prefix tên bảng (demo) ──
+const MOCK_COLUMNS_BY_PREFIX: Record<string, string[]> = {
+  'KH_': ['MA_KH', 'HO_TEN', 'NGAY_SINH', 'GIOI_TINH', 'SO_CMND', 'DIEN_THOAI', 'EMAIL', 'DIA_CHI', 'LOAI_KH', 'TRANG_THAI', 'NGAY_TAO'],
+  'GD_': ['MA_GD', 'MA_TK', 'MA_KH', 'SO_TIEN', 'LOAI_GD', 'NGAY_GD', 'KENH_GD', 'TRANG_THAI', 'MO_TA'],
+  'TK_': ['MA_TK', 'MA_KH', 'LOAI_TK', 'SO_DU', 'TRANG_THAI', 'LAI_SUAT', 'NGAY_MO'],
+  'SP_': ['MA_SP', 'TEN_SP', 'LOAI_SP', 'TRANG_THAI', 'MUC_PHI', 'NGAY_RA_MAT'],
+  'BC_': ['NGAY_BC', 'MA_CN', 'SO_TIEN', 'TRANG_THAI', 'LOAI_BC', 'GIA_TRI'],
+  'DM_': ['MA_DM', 'TEN_DM', 'TRANG_THAI', 'NGAY_CAP_NHAT'],
+  'AML_': ['MA_GD', 'MA_KH', 'SO_TIEN', 'NGAY_GD', 'TRANG_THAI', 'MUC_DO_NGHI_NGO'],
+  'WALLET_': ['MA_VI', 'MA_KH', 'SO_DU', 'TRANG_THAI', 'NGAY_TAO', 'DIEN_THOAI'],
+}
+
+function guessColumnsForTable(tableName: string): string[] {
+  for (const [prefix, cols] of Object.entries(MOCK_COLUMNS_BY_PREFIX)) {
+    if (tableName.toUpperCase().startsWith(prefix)) return cols
+  }
+  return ['ID', 'TEN', 'MA_KH', 'SO_TIEN', 'NGAY_TAO', 'TRANG_THAI']
+}
+
+// ── Match TableProfile cho 1 DataSource ──
+function matchTableProfile(ds: DataSource): TableProfileTemplate | null {
+  const mt = ds.moduleType ?? 'source'
+  const mode = ds.mode
+  const partition = ds.partitionBy
+  // Exact match
+  let best = mockTableProfiles.find(tp =>
+    tp.tableType === mt && (!mode || tp.mode === mode) && (!partition || tp.partition === partition))
+  if (!best) {
+    best = mockTableProfiles.find(tp => tp.tableType === mt)
+  }
+  return best ?? null
+}
+
+// ── Match ColumnProfile cho 1 cột dựa trên keywords ──
+function matchColumnProfile(colName: string): ColumnProfileTemplate | null {
+  const upper = colName.toUpperCase()
+  for (const cp of mockColumnProfiles) {
+    if (cp.columnKeywords.some(kw => {
+      const kup = kw.toUpperCase()
+      // exact hoặc prefix/suffix match
+      return upper === kup || upper.startsWith(kup) || upper.endsWith(kup) || upper.includes(kup)
+    })) {
+      return cp
+    }
+  }
+  return null
+}
+
+// ── Tính toán suggestion cho 1 bảng ──
+interface TableRuleSuggestion {
+  table: DataSource
+  profile: TableProfileTemplate | null
+  columns: string[]
+  columnMatches: { col: string; profile: ColumnProfileTemplate | null; rules: RuleTemplate[] }[]
+  tableRules: RuleTemplate[]
+  totalRules: number
+  enabled: boolean
+}
+
+function buildSuggestionsForTables(tables: DataSource[]): TableRuleSuggestion[] {
+  return tables.map(table => {
+    const profile = matchTableProfile(table)
+    const columns = guessColumnsForTable(table.tableName)
+
+    // Column-level rules
+    const columnProfileIds = profile?.columnProfileIds ?? []
+    const activeColProfiles = mockColumnProfiles.filter(cp => columnProfileIds.includes(cp.id))
+
+    const columnMatches = columns.map(col => {
+      const cp = activeColProfiles.find(acp =>
+        acp.columnKeywords.some(kw => {
+          const kup = kw.toUpperCase()
+          const cup = col.toUpperCase()
+          return cup === kup || cup.startsWith(kup) || cup.endsWith(kup) || cup.includes(kup)
+        })
+      ) ?? matchColumnProfile(col)
+
+      const rules = cp
+        ? cp.metricTemplateIds.map(id => mockRuleTemplates.find(t => t.id === id)).filter(Boolean) as RuleTemplate[]
+        : []
+
+      return { col, profile: cp, rules }
+    })
+
+    // Table-level rules
+    const tableRules = (profile?.tableMetricTemplateIds ?? [])
+      .map(id => mockRuleTemplates.find(t => t.id === id))
+      .filter(Boolean) as RuleTemplate[]
+
+    const totalRules = tableRules.length + columnMatches.reduce((s, cm) => s + cm.rules.length, 0)
+
+    return { table, profile, columns, columnMatches, tableRules, totalRules, enabled: true }
+  })
+}
+
+// ── PostImportTemplateDialog ──
+function PostImportTemplateDialog({
+  open, importedTables, onClose, onConfirm,
+}: {
+  open: boolean
+  importedTables: DataSource[]
+  onClose: () => void
+  onConfirm: (count: number) => void
+}) {
+  const [suggestions, setSuggestions] = useState<TableRuleSuggestion[]>([])
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+
+  // Compute suggestions when dialog opens
+  useEffect(() => {
+    if (open && importedTables.length > 0) {
+      setSuggestions(buildSuggestionsForTables(importedTables))
+      setExpandedIdx(null)
+    }
+  }, [open, importedTables])
+
+  const toggleTable = (idx: number) =>
+    setSuggestions(prev => prev.map((s, i) => i === idx ? { ...s, enabled: !s.enabled } : s))
+
+  const totalEnabled = suggestions.filter(s => s.enabled).reduce((sum, s) => sum + s.totalRules, 0)
+  const tablesEnabled = suggestions.filter(s => s.enabled).length
+
+  return (
+    <Dialog open={open} onClose={onClose} title="Áp mẫu quy tắc cho bảng vừa import" size="lg">
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+
+        {/* Giải thích */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3">
+          <p className="text-sm text-purple-900 font-medium">Gợi ý tự động từ hệ thống mẫu 3 tầng</p>
+          <p className="text-xs text-purple-700 mt-1">
+            Hệ thống đã phân tích {importedTables.length} bảng vừa import, tự động ghép mẫu dựa trên
+            loại bảng (moduleType), chế độ (mode), phân vùng (partition) và tên cột.
+            Bạn có thể bật/tắt từng bảng và xem chi tiết rules sẽ được tạo.
+          </p>
+        </div>
+
+        {/* Summary stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-blue-700">{importedTables.length}</p>
+            <p className="text-xs text-blue-600">Bảng vừa import</p>
+          </div>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-purple-700">{tablesEnabled}</p>
+            <p className="text-xs text-purple-600">Bảng sẽ áp mẫu</p>
+          </div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-green-700">{totalEnabled}</p>
+            <p className="text-xs text-green-600">Rules sẽ tạo</p>
+          </div>
+        </div>
+
+        {/* Per-table list */}
+        <div className="space-y-2">
+          {suggestions.map((sg, idx) => (
+            <div key={sg.table.id} className={`border rounded-lg transition-colors ${sg.enabled ? 'border-purple-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+              {/* Header row */}
+              <div className="flex items-center gap-3 px-3 py-2.5">
+                <Switch
+                  checked={sg.enabled}
+                  onCheckedChange={() => toggleTable(idx)}
+                />
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedIdx(prev => prev === idx ? null : idx)}>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm text-gray-900 truncate">{sg.table.name}</span>
+                    <code className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{sg.table.tableName}</code>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                    {sg.profile ? (
+                      <>
+                        <span className="text-purple-700 font-medium">Mẫu: {sg.profile.name}</span>
+                        <span>·</span>
+                      </>
+                    ) : (
+                      <span className="text-amber-600">Không match mẫu bảng — dùng match cột chung</span>
+                    )}
+                    <span>{sg.columns.length} cột</span>
+                    <span>·</span>
+                    <span className="text-green-700 font-medium">{sg.totalRules} rules</span>
+                    <span className="text-gray-400 ml-1">({sg.tableRules.length} bảng + {sg.totalRules - sg.tableRules.length} cột)</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedIdx(prev => prev === idx ? null : idx)}
+                  className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-500 hover:bg-gray-50"
+                >
+                  {expandedIdx === idx ? 'Thu gọn' : 'Chi tiết'}
+                </button>
+              </div>
+
+              {/* Expanded detail */}
+              {expandedIdx === idx && (
+                <div className="border-t border-gray-100 px-3 py-3 bg-gray-50/50 space-y-3">
+                  {/* Table-level rules */}
+                  {sg.tableRules.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Kiểm tra cấp bảng</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {sg.tableRules.map(r => (
+                          <span key={r.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                            <DimensionBadge dimension={r.dimension} />
+                            {r.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Column-level rules */}
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Kiểm tra cấp cột ({sg.columns.length} cột)</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-32">Tên cột</th>
+                            <th className="text-left py-1.5 px-2 text-gray-500 font-medium">Mẫu cột match</th>
+                            <th className="text-left py-1.5 px-2 text-gray-500 font-medium">Rules sẽ tạo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sg.columnMatches.map(cm => (
+                            <tr key={cm.col} className="border-b border-gray-50">
+                              <td className="py-1.5 px-2 font-mono text-gray-800 font-medium">{cm.col}</td>
+                              <td className="py-1.5 px-2">
+                                {cm.profile ? (
+                                  <span className="text-purple-700">{cm.profile.name}</span>
+                                ) : (
+                                  <span className="text-gray-400 italic">Không match</span>
+                                )}
+                              </td>
+                              <td className="py-1.5 px-2">
+                                {cm.rules.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {cm.rules.map(r => (
+                                      <span key={r.id} className="px-1.5 py-0.5 rounded bg-green-50 border border-green-200 text-green-800 text-[10px]">
+                                        {r.metricConfig?.metricType ?? 'custom'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-300">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700">
+          Bỏ qua — tôi sẽ tạo rules thủ công
+        </button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose}>Hủy</Button>
+          <Button
+            disabled={totalEnabled === 0}
+            onClick={() => { onConfirm(totalEnabled); onClose() }}
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            Tạo {totalEnabled} rules
+          </Button>
+        </div>
+      </div>
+    </Dialog>
+  )
+}
+
 export function DataCatalog() {
   const navigate = useNavigate()
 
@@ -168,10 +445,17 @@ export function DataCatalog() {
   const [filterType, setFilterType] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
+  const [filterArea, setFilterArea] = useState('')
+  const [filterOwner, setFilterOwner] = useState('')
+  const [filterScoreRange, setFilterScoreRange] = useState('')  // '' | 'low' (<70) | 'mid' (70-85) | 'high' (>=85)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [activeSearch, setActiveSearch] = useState('')
   const [activeType, setActiveType] = useState('')
   const [activeStatus, setActiveStatus] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
+  const [activeArea, setActiveArea] = useState('')
+  const [activeOwner, setActiveOwner] = useState('')
+  const [activeScoreRange, setActiveScoreRange] = useState('')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<string[]>([])
 
@@ -195,6 +479,8 @@ export function DataCatalog() {
   const [formKpiFormula, setFormKpiFormula] = useState('')
   const [formThresholds, setFormThresholds] = useState<Record<string, { warning: string; critical: string }>>(emptyThresholds())
   const [sqlwfSynced, setSqlwfSynced] = useState(false)
+  const [formDataRequiredByTime, setFormDataRequiredByTime] = useState('')
+  const [autoFillToast, setAutoFillToast] = useState(false)
 
   // Bulk add state
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
@@ -209,6 +495,11 @@ export function DataCatalog() {
   const [importValidation, setImportValidation] = useState<{ valid: boolean; issues: ImportValidation[] } | null>(null)
   const [importFileName, setImportFileName] = useState('')
 
+  // Post-import template dialog state
+  const [postImportOpen, setPostImportOpen] = useState(false)
+  const [lastImportedTables, setLastImportedTables] = useState<DataSource[]>([])
+  const [postImportToast, setPostImportToast] = useState<{ count: number } | null>(null)
+
   // Count per module type for tab badges
   const countByModule: Record<ModuleType, number> = {
     source: sources.filter(s => s.moduleType === 'source').length,
@@ -222,26 +513,39 @@ export function DataCatalog() {
     if (activeType && ds.type !== activeType) return false
     if (activeStatus && ds.status !== activeStatus) return false
     if (activeCategory && ds.category !== activeCategory) return false
+    if (activeArea && ds.area !== activeArea) return false
+    if (activeOwner && ds.owner !== activeOwner) return false
+    if (activeScoreRange) {
+      if (activeScoreRange === 'low' && ds.overallScore >= 70) return false
+      if (activeScoreRange === 'mid' && (ds.overallScore < 70 || ds.overallScore >= 85)) return false
+      if (activeScoreRange === 'high' && ds.overallScore < 85) return false
+    }
     return true
   })
+
+  // Distinct values cho Area / Owner dropdown
+  const distinctAreas = Array.from(new Set(sources.map(s => s.area).filter((a): a is string => !!a))).sort()
+  const distinctOwners = Array.from(new Set(sources.map(s => s.owner).filter(Boolean))).sort()
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   function handleSearch() {
-    setActiveSearch(search); setActiveType(filterType); setActiveStatus(filterStatus); setActiveCategory(filterCategory); setPage(1)
+    setActiveSearch(search); setActiveType(filterType); setActiveStatus(filterStatus); setActiveCategory(filterCategory)
+    setActiveArea(filterArea); setActiveOwner(filterOwner); setActiveScoreRange(filterScoreRange); setPage(1)
   }
   function handleReset() {
-    setSearch(''); setFilterType(''); setFilterStatus(''); setFilterCategory('')
-    setActiveSearch(''); setActiveType(''); setActiveStatus(''); setActiveCategory(''); setPage(1)
+    setSearch(''); setFilterType(''); setFilterStatus(''); setFilterCategory(''); setFilterArea(''); setFilterOwner(''); setFilterScoreRange('')
+    setActiveSearch(''); setActiveType(''); setActiveStatus(''); setActiveCategory(''); setActiveArea(''); setActiveOwner(''); setActiveScoreRange(''); setPage(1)
   }
+  const activeFilterCount = [activeSearch, activeType, activeStatus, activeCategory, activeArea, activeOwner, activeScoreRange].filter(Boolean).length
 
   function openAddDialog() {
     setEditItem(null)
     setFormName(''); setFormDesc(''); setFormType('database'); setFormSchema('')
     setFormTable(''); setFormCategory('KH'); setFormOwner(mockUsers[0]?.name ?? ''); setFormTeam('Nhóm Khách hàng')
     setFormModuleType(activeTab); setFormSourceTableIds([]); setFormPeriodType('monthly'); setFormKpiFormula('')
-    setFormThresholds(emptyThresholds()); setSqlwfSynced(false)
+    setFormThresholds(emptyThresholds()); setSqlwfSynced(false); setFormDataRequiredByTime('')
     setDialogOpen(true)
   }
 
@@ -264,6 +568,7 @@ export function DataCatalog() {
     }
     setFormThresholds(thr)
     setSqlwfSynced(ds.syncSource === 'sqlwf')
+    setFormDataRequiredByTime(ds.dataRequiredByTime ?? '')
     setDialogOpen(true)
   }
 
@@ -296,6 +601,7 @@ export function DataCatalog() {
             periodType: formModuleType === 'kpi' ? formPeriodType : undefined,
             kpiFormula: formModuleType === 'kpi' ? formKpiFormula : undefined,
             thresholdOverrides: thrOverrides,
+            dataRequiredByTime: formDataRequiredByTime || undefined,
             syncSource: sqlwfMatch ? 'sqlwf' : 'manual',
             partitionBy: sqlwfMatch?.partitionBy,
             mode: sqlwfMatch?.mode,
@@ -317,6 +623,7 @@ export function DataCatalog() {
         periodType: formModuleType === 'kpi' ? formPeriodType : undefined,
         kpiFormula: formModuleType === 'kpi' ? formKpiFormula : undefined,
         thresholdOverrides: thrOverrides,
+        dataRequiredByTime: formDataRequiredByTime || undefined,
         syncSource: sqlwfMatch ? 'sqlwf' : 'manual',
         partitionBy: sqlwfMatch?.partitionBy,
         mode: sqlwfMatch?.mode,
@@ -346,8 +653,10 @@ export function DataCatalog() {
       }
     })
     setSources(prev => [...newSources, ...prev])
+    setLastImportedTables(newSources)
     setBulkDialogOpen(false); setBulkSelectedTables([]); setBulkSearchTable('')
     setBulkThresholds(emptyThresholds())
+    setTimeout(() => setPostImportOpen(true), 300)
   }
 
   function openImportDialog(type: 'table' | 'rule') {
@@ -420,10 +729,16 @@ export function DataCatalog() {
         }
       })
       setSources(prev => [...newSources, ...prev])
+      // Trigger post-import template dialog
+      setLastImportedTables(newSources)
     }
     // Rule import is display-only for demo (rules are managed in Rules page)
     setImportDialogOpen(false)
     setImportData(null); setImportValidation(null)
+    // Open post-import dialog only for table import
+    if (importType === 'table') {
+      setTimeout(() => setPostImportOpen(true), 300)
+    }
   }
 
   function handleDelete() {
@@ -483,6 +798,21 @@ export function DataCatalog() {
             )}
             <Button variant="outline" onClick={() => openImportDialog('table')} className="flex items-center gap-2">
               <Upload className="h-4 w-4" />Import
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Demo: chọn 3 bảng đầu tiên của tab hiện tại để demo luồng áp mẫu
+                const demoTables = sources.filter(s => s.moduleType === activeTab).slice(0, 3)
+                if (demoTables.length > 0) {
+                  setLastImportedTables(demoTables)
+                  setPostImportOpen(true)
+                }
+              }}
+              className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+              title="Demo luồng áp mẫu quy tắc tự động cho các bảng đã khai báo"
+            >
+              <Sparkles className="h-4 w-4" />Gợi ý áp mẫu
             </Button>
           </div>
         }
@@ -547,12 +877,61 @@ export function DataCatalog() {
               </Select>
             </div>
           </div>
+
+          {/* B8: Advanced filters */}
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 pt-3 border-t border-gray-100">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
+                  Area (L1–L6)
+                  <InfoTooltip text="Vùng dữ liệu theo phân lớp SQLWF: bi_customer_zone, bi_transaction_zone... Tương ứng L1→L6 trong pipeline" />
+                </Label>
+                <Select value={filterArea} onChange={e => setFilterArea(e.target.value)}>
+                  <option value="">Tất cả area</option>
+                  {distinctAreas.map(a => <option key={a} value={a}>{a}</option>)}
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
+                  Owner
+                  <InfoTooltip text="Người chịu trách nhiệm chất lượng dữ liệu của bảng" />
+                </Label>
+                <Select value={filterOwner} onChange={e => setFilterOwner(e.target.value)}>
+                  <option value="">Tất cả owner</option>
+                  {distinctOwners.map(o => <option key={o} value={o}>{o}</option>)}
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
+                  Điểm chất lượng
+                  <InfoTooltip text="Lọc theo khoảng điểm DQ: Thấp (&lt;70), Trung bình (70–85), Cao (≥85). Ưu tiên xử lý các bảng điểm thấp" wide />
+                </Label>
+                <Select value={filterScoreRange} onChange={e => setFilterScoreRange(e.target.value)}>
+                  <option value="">Tất cả điểm</option>
+                  <option value="low">Thấp (&lt; 70)</option>
+                  <option value="mid">Trung bình (70–85)</option>
+                  <option value="high">Cao (≥ 85)</option>
+                </Select>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
                 <Search className="h-4 w-4 mr-1" />Tìm kiếm
               </Button>
               <Button variant="outline" onClick={handleReset} className="text-sm">Bỏ lọc</Button>
+              <button
+                type="button"
+                onClick={() => setShowAdvancedFilters(v => !v)}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline ml-1"
+              >
+                {showAdvancedFilters ? 'Ẩn bộ lọc nâng cao' : 'Bộ lọc nâng cao (Area / Owner / Điểm)'}
+              </button>
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="text-[10px]">{activeFilterCount} bộ lọc đang áp dụng</Badge>
+              )}
             </div>
           </div>
         </CardContent>
@@ -592,13 +971,14 @@ export function DataCatalog() {
                   <TableHead><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của bảng trong hệ thống DQ. Cấu hình trong form Thêm/Sửa bảng dữ liệu.
 'Hoạt động' = đang được giám sát chất lượng.
 'Không hoạt động' = tạm dừng giám sát." /></span></TableHead>
+                  <TableHead><span className="inline-flex items-center gap-1 text-xs">Giờ DL</span></TableHead>
                   <TableHead className="w-28 sticky right-0 z-10 sticky-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={activeTab !== 'source' ? 11 : 10} className="text-center py-12 text-gray-400">
+                    <TableCell colSpan={activeTab !== 'source' ? 12 : 11} className="text-center py-12 text-gray-400">
                       <Search className="h-10 w-10 mx-auto mb-2 opacity-30" />
                       <p>Không tìm thấy kết quả nào</p>
                     </TableCell>
@@ -678,12 +1058,20 @@ export function DataCatalog() {
                         : <StatusBadge status={ds.status} />
                       }
                     </TableCell>
+                    <TableCell className="text-xs text-gray-500">
+                      {ds.dataRequiredByTime ?? '—'}
+                    </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
                       <div className="flex items-center justify-center gap-1">
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-blue-600" title="Xem chi tiết"
                           onClick={() => navigate(`/data-catalog/${ds.id}`)}
                         >
                           <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-purple-600" title="Tạo rule cho bảng này"
+                          onClick={() => navigate(`/rules?action=new&tableId=${ds.id}`)}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-green-600" title="Quét ngay"
                           onClick={() => !scanningIds[ds.id] && handleScanNow(ds.id)}
@@ -745,7 +1133,7 @@ export function DataCatalog() {
         <div className="space-y-4">
           {/* Module Type Selector */}
           <div>
-            <Label className="text-sm font-medium mb-1 block">Loại đối tượng <span className="text-red-500">*</span></Label>
+            <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Loại <InfoTooltip text="Phân loại: Bảng nguồn = dữ liệu gốc từ ETL; Báo cáo = bảng tổng hợp từ nhiều nguồn; KPI = chỉ tiêu kinh doanh" /></span> <span className="text-red-500">*</span></Label>
             <div className="flex gap-2">
               {MODULE_TABS.map(tab => (
                 <button
@@ -785,11 +1173,11 @@ export function DataCatalog() {
               </Select>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Schema</Label>
+              <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Schema <InfoTooltip text="Database schema chứa bảng (VD: CORE, REPORT, DM)" /></span></Label>
               <Input placeholder="CORE, REPORT, DM..." value={formSchema} onChange={e => setFormSchema(e.target.value)} />
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Tên bảng vật lý</Label>
+              <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Tên bảng <InfoTooltip text="Tên bảng trên hệ thống lưu trữ (HDFS/DB). Nên lấy từ SQLWF để đảm bảo chính xác" /></span></Label>
               <Input placeholder="VD: KH_KHACHHANG" value={formTable} onChange={e => {
                 const val = e.target.value
                 setFormTable(val)
@@ -801,6 +1189,15 @@ export function DataCatalog() {
                   setSqlwfSynced(true)
                 } else {
                   setSqlwfSynced(false)
+                }
+                // Auto-fill from catalog (mockDataSources)
+                const catalogMatch = mockDataSources.find(ds => ds.tableName.toLowerCase() === val.toLowerCase() || ds.name.toLowerCase() === val.toLowerCase())
+                if (catalogMatch) {
+                  if (catalogMatch.schema) setFormSchema(catalogMatch.schema)
+                  if (catalogMatch.owner) setFormOwner(catalogMatch.owner)
+                  if (catalogMatch.description) setFormDesc(catalogMatch.description)
+                  setAutoFillToast(true)
+                  setTimeout(() => setAutoFillToast(false), 3000)
                 }
               }} />
               {sqlwfSynced && (
@@ -823,7 +1220,7 @@ export function DataCatalog() {
               </Select>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block">Chủ sở hữu</Label>
+              <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Owner <InfoTooltip text="Người chịu trách nhiệm chất lượng dữ liệu của bảng. Nhận cảnh báo khi có sự cố" /></span></Label>
               <Select value={formOwner} onChange={e => setFormOwner(e.target.value)}>
                 {mockUsers.filter(u => u.isActive).map(u => (
                   <option key={u.id} value={u.name}>{u.name}</option>
@@ -843,10 +1240,107 @@ export function DataCatalog() {
             </div>
           </div>
 
+          {/* Metadata: Mode, Partition, Giờ cần dữ liệu */}
+          <div className="border-t border-gray-100 pt-4">
+            <Label className="text-sm font-semibold text-gray-700 mb-3 block">Metadata vận hành</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Mode <InfoTooltip text="Append = thêm dữ liệu mới theo partition (ngày/tháng). Overwrite = ghi đè toàn bộ mỗi lần chạy ETL" /></span></Label>
+                <div className="text-sm text-gray-600 bg-gray-50 border rounded-md px-3 py-2">
+                  {sqlwfSynced
+                    ? (SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.mode ?? '—')
+                    : '—'}
+                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ SQLWF)</span>}
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Partition <InfoTooltip text="Cách phân vùng dữ liệu: Daily (hàng ngày), Monthly (hàng tháng), None (không phân vùng). Ảnh hưởng lịch quét DQ tự động" /></span></Label>
+                <div className="text-sm text-gray-600 bg-gray-50 border rounded-md px-3 py-2">
+                  {sqlwfSynced
+                    ? (SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.partitionBy ?? '—')
+                    : '—'}
+                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ SQLWF)</span>}
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Giờ cần dữ liệu <InfoTooltip text="Giờ mong muốn dữ liệu đã được load xong từ ETL. Dùng để: (1) Hệ thống tự lên lịch quét DQ sau giờ này, (2) Bỏ qua kết quả quét trước giờ này (tránh false alarm)" wide /></span></Label>
+                <Input type="time" value={formDataRequiredByTime} onChange={e => setFormDataRequiredByTime(e.target.value)} className="h-9" />
+              </div>
+            </div>
+          </div>
+
+          {/* B5: Gợi ý mẫu bảng — match theo moduleType + mode + partition */}
+          {(() => {
+            const sqlwfMatch = SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())
+            const currentMode = sqlwfMatch?.mode
+            const currentPartition = sqlwfMatch?.partitionBy
+            const matched = mockTableProfiles.filter(tpl => {
+              if (tpl.tableType !== formModuleType) return false
+              if (currentMode && tpl.mode !== currentMode) return false
+              if (currentPartition && tpl.partition !== currentPartition) return false
+              return true
+            }).slice(0, 3)
+            const fallback = mockTableProfiles.filter(tpl => tpl.tableType === formModuleType).slice(0, 3)
+            const showList = matched.length > 0 ? matched : fallback
+            if (showList.length === 0) return null
+            const isExact = matched.length > 0 && sqlwfMatch
+            return (
+              <div className="rounded-lg border border-purple-200 bg-purple-50/60 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-purple-900">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    Gợi ý mẫu bảng
+                    <InfoTooltip
+                      text="Các mẫu bảng phù hợp dựa trên: loại đối tượng (Nguồn/Báo cáo/KPI), mode (Append/Overwrite) và partition (Daily/Monthly/None). Áp mẫu sẽ tự sinh rules và ngưỡng mặc định cho bảng này"
+                      wide
+                    />
+                  </div>
+                  {isExact && (
+                    <Badge variant="secondary" className="text-[10px]">Khớp chính xác</Badge>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {showList.map(tpl => (
+                    <div key={tpl.id} className="flex items-start gap-2 p-2 bg-white rounded border border-purple-100 hover:border-purple-300">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-gray-900">{tpl.name}</span>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {tpl.mode} · {tpl.partition}
+                          </Badge>
+                          <span className="text-[11px] text-gray-500">Đã dùng {tpl.usageCount} lần</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-0.5 line-clamp-2">{tpl.description}</div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs shrink-0 border-purple-300 text-purple-700 hover:bg-purple-100"
+                        onClick={() => {
+                          // Áp ngưỡng mặc định từ template
+                          if (tpl.defaultThresholds) {
+                            const next = emptyThresholds()
+                            Object.entries(tpl.defaultThresholds).forEach(([dim, thr]) => {
+                              if (thr) next[dim] = { warning: String(thr.warning), critical: String(thr.critical) }
+                            })
+                            setFormThresholds(next)
+                          }
+                          alert(`Đã áp mẫu "${tpl.name}". Sau khi lưu bảng, rules từ mẫu sẽ được tự sinh.`)
+                        }}
+                      >
+                        Dùng mẫu
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Threshold overrides per dimension */}
           <div className="border-t border-gray-100 pt-4">
             <Label className="text-sm font-semibold text-gray-700 mb-1 block">
-              Ngưỡng cảnh báo theo chiều dữ liệu
+              <span className="inline-flex items-center gap-1">Ngưỡng cảnh báo <InfoTooltip text="Ngưỡng Warning (cảnh báo nhẹ) và Critical (nghiêm trọng) cho từng chiều dữ liệu. Để trống = kế thừa ngưỡng mặc định hệ thống" /></span>
             </Label>
             <p className="text-xs text-gray-400 mb-3">Để trống = kế thừa ngưỡng mặc định toàn cục</p>
             <div className="space-y-2">
@@ -1226,6 +1720,14 @@ export function DataCatalog() {
         </div>
       </Dialog>
 
+      {/* Auto-fill toast */}
+      {autoFillToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-600 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle2 className="h-4 w-4" />
+          Đã tự động điền thông tin từ catalog
+        </div>
+      )}
+
       {/* Delete Confirm */}
       <Dialog open={!!deleteItem} onClose={() => setDeleteItem(null)} title="Xác nhận xóa" size="sm">
         <div className="flex items-start gap-3">
@@ -1243,6 +1745,34 @@ export function DataCatalog() {
           <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleDelete}>Xóa</Button>
         </div>
       </Dialog>
+
+      {/* Post-import: Áp mẫu quy tắc */}
+      <PostImportTemplateDialog
+        open={postImportOpen}
+        importedTables={lastImportedTables}
+        onClose={() => setPostImportOpen(false)}
+        onConfirm={(count) => {
+          setPostImportToast({ count })
+          setTimeout(() => setPostImportToast(null), 6000)
+        }}
+      />
+
+      {/* Post-import success toast */}
+      {postImportToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-2 fade-in">
+          <div className="bg-white border-2 border-purple-200 rounded-lg shadow-xl p-4 flex items-start gap-3 max-w-sm">
+            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm text-gray-900">Đã tạo {postImportToast.count} rules từ mẫu</p>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Các quy tắc đã được tạo tự động. Xem tại trang <button onClick={() => navigate('/rules')} className="text-purple-700 font-medium underline">Quản lý quy tắc</button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
