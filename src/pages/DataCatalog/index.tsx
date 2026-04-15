@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Search, Plus, Download, Eye, Edit, Trash2, ChevronLeft, ChevronRight,
   AlertTriangle, RefreshCw, Database, FileBarChart, Target,
-  ListPlus, CheckCircle2, Upload, FileDown, AlertCircle, Check, Sparkles, ShieldCheck,
+  ListPlus, CheckCircle2, Upload, FileDown, AlertCircle, Check, Sparkles, ShieldCheck, X,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -445,15 +445,12 @@ export function DataCatalog() {
   const [filterType, setFilterType] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
-  const [filterArea, setFilterArea] = useState('')
   const [filterOwner, setFilterOwner] = useState('')
   const [filterScoreRange, setFilterScoreRange] = useState('')  // '' | 'low' (<70) | 'mid' (70-85) | 'high' (>=85)
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [activeSearch, setActiveSearch] = useState('')
   const [activeType, setActiveType] = useState('')
   const [activeStatus, setActiveStatus] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
-  const [activeArea, setActiveArea] = useState('')
   const [activeOwner, setActiveOwner] = useState('')
   const [activeScoreRange, setActiveScoreRange] = useState('')
   const [page, setPage] = useState(1)
@@ -513,7 +510,6 @@ export function DataCatalog() {
     if (activeType && ds.type !== activeType) return false
     if (activeStatus && ds.status !== activeStatus) return false
     if (activeCategory && ds.category !== activeCategory) return false
-    if (activeArea && ds.area !== activeArea) return false
     if (activeOwner && ds.owner !== activeOwner) return false
     if (activeScoreRange) {
       if (activeScoreRange === 'low' && ds.overallScore >= 70) return false
@@ -523,8 +519,7 @@ export function DataCatalog() {
     return true
   })
 
-  // Distinct values cho Area / Owner dropdown
-  const distinctAreas = Array.from(new Set(sources.map(s => s.area).filter((a): a is string => !!a))).sort()
+  // Distinct values cho Owner dropdown
   const distinctOwners = Array.from(new Set(sources.map(s => s.owner).filter(Boolean))).sort()
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -532,13 +527,13 @@ export function DataCatalog() {
 
   function handleSearch() {
     setActiveSearch(search); setActiveType(filterType); setActiveStatus(filterStatus); setActiveCategory(filterCategory)
-    setActiveArea(filterArea); setActiveOwner(filterOwner); setActiveScoreRange(filterScoreRange); setPage(1)
+    setActiveOwner(filterOwner); setActiveScoreRange(filterScoreRange); setPage(1)
   }
   function handleReset() {
-    setSearch(''); setFilterType(''); setFilterStatus(''); setFilterCategory(''); setFilterArea(''); setFilterOwner(''); setFilterScoreRange('')
-    setActiveSearch(''); setActiveType(''); setActiveStatus(''); setActiveCategory(''); setActiveArea(''); setActiveOwner(''); setActiveScoreRange(''); setPage(1)
+    setSearch(''); setFilterType(''); setFilterStatus(''); setFilterCategory(''); setFilterOwner(''); setFilterScoreRange('')
+    setActiveSearch(''); setActiveType(''); setActiveStatus(''); setActiveCategory(''); setActiveOwner(''); setActiveScoreRange(''); setPage(1)
   }
-  const activeFilterCount = [activeSearch, activeType, activeStatus, activeCategory, activeArea, activeOwner, activeScoreRange].filter(Boolean).length
+  const activeFilterCount = [activeSearch, activeType, activeStatus, activeCategory, activeOwner, activeScoreRange].filter(Boolean).length
 
   function openAddDialog() {
     setEditItem(null)
@@ -835,11 +830,11 @@ export function DataCatalog() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
+            <div>
               <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
               <div className="relative">
-                <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 <Input className="pl-8" placeholder="Tên bảng, mô tả..." value={search}
                   onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
               </div>
@@ -847,7 +842,7 @@ export function DataCatalog() {
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">Loại kết nối</Label>
               <Select value={filterType} onChange={e => setFilterType(e.target.value)}>
-                <option value="">Tất cả loại</option>
+                <option value="">Tất cả</option>
                 <option value="database">Database</option>
                 <option value="sql">SQL View</option>
                 <option value="file">File</option>
@@ -876,59 +871,37 @@ export function DataCatalog() {
                 <option value="QTRI">QTRI</option>
               </Select>
             </div>
-          </div>
-
-          {/* B8: Advanced filters */}
-          {showAdvancedFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 pt-3 border-t border-gray-100">
-              <div>
-                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
-                  Area (L1–L6)
-                  <InfoTooltip text="Vùng dữ liệu theo phân lớp SQLWF: bi_customer_zone, bi_transaction_zone... Tương ứng L1→L6 trong pipeline" />
-                </Label>
-                <Select value={filterArea} onChange={e => setFilterArea(e.target.value)}>
-                  <option value="">Tất cả area</option>
-                  {distinctAreas.map(a => <option key={a} value={a}>{a}</option>)}
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
-                  Owner
-                  <InfoTooltip text="Người chịu trách nhiệm chất lượng dữ liệu của bảng" />
-                </Label>
-                <Select value={filterOwner} onChange={e => setFilterOwner(e.target.value)}>
-                  <option value="">Tất cả owner</option>
-                  {distinctOwners.map(o => <option key={o} value={o}>{o}</option>)}
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs text-gray-500 mb-1 block inline-flex items-center gap-1">
-                  Điểm chất lượng
-                  <InfoTooltip text="Lọc theo khoảng điểm DQ: Thấp (&lt;70), Trung bình (70–85), Cao (≥85). Ưu tiên xử lý các bảng điểm thấp" wide />
-                </Label>
-                <Select value={filterScoreRange} onChange={e => setFilterScoreRange(e.target.value)}>
-                  <option value="">Tất cả điểm</option>
-                  <option value="low">Thấp (&lt; 70)</option>
-                  <option value="mid">Trung bình (70–85)</option>
-                  <option value="high">Cao (≥ 85)</option>
-                </Select>
-              </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                <span>Chủ sở hữu</span>
+                <InfoTooltip text="Người chịu trách nhiệm chất lượng dữ liệu của bảng" />
+              </Label>
+              <Select value={filterOwner} onChange={e => setFilterOwner(e.target.value)}>
+                <option value="">Tất cả</option>
+                {distinctOwners.map(o => <option key={o} value={o}>{o}</option>)}
+              </Select>
             </div>
-          )}
-
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                <span>Điểm chất lượng</span>
+                <InfoTooltip text="Lọc theo khoảng điểm DQ: Thấp (<70), Trung bình (70–85), Cao (≥85)" />
+              </Label>
+              <Select value={filterScoreRange} onChange={e => setFilterScoreRange(e.target.value)}>
+                <option value="">Tất cả</option>
+                <option value="low">Thấp (&lt; 70)</option>
+                <option value="mid">Trung bình (70–85)</option>
+                <option value="high">Cao (≥ 85)</option>
+              </Select>
+            </div>
+          </div>
           <div className="flex items-center justify-between">
             <div className="flex gap-2 items-center">
-              <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                <Search className="h-4 w-4 mr-1" />Tìm kiếm
+              <Button size="sm" onClick={handleSearch}>
+                <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
               </Button>
-              <Button variant="outline" onClick={handleReset} className="text-sm">Bỏ lọc</Button>
-              <button
-                type="button"
-                onClick={() => setShowAdvancedFilters(v => !v)}
-                className="text-xs text-blue-600 hover:text-blue-800 hover:underline ml-1"
-              >
-                {showAdvancedFilters ? 'Ẩn bộ lọc nâng cao' : 'Bộ lọc nâng cao (Area / Owner / Điểm)'}
-              </button>
+              <Button size="sm" variant="outline" onClick={handleReset}>
+                <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
+              </Button>
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="text-[10px]">{activeFilterCount} bộ lọc đang áp dụng</Badge>
               )}
@@ -998,10 +971,10 @@ export function DataCatalog() {
                         <span className="text-xs text-gray-400">{ds.schema}.{ds.tableName}</span>
                       </button>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <StatusBadge status={ds.type} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <Badge variant="secondary">{ds.category}</Badge>
                     </TableCell>
                     <TableCell>
@@ -1052,7 +1025,7 @@ export function DataCatalog() {
                         : ds.lastProfiled ? formatDateTime(ds.lastProfiled) : '—'
                       }
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {scanningIds[ds.id]
                         ? <Badge variant="secondary" className="text-blue-600 bg-blue-50 text-xs">Đang quét</Badge>
                         : <StatusBadge status={ds.status} />

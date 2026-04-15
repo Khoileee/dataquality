@@ -4,7 +4,7 @@ import {
   AlertCircle, AlertTriangle, Clock, CheckCircle2,
   Database, Eye, Download, Search,
   CheckCircle, Layers, RefreshCw, Bell, Play, Shield, ChevronDown, ChevronUp,
-  UserPlus,
+  UserPlus, X,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Tabs } from '@/components/ui/tabs'
 import { StatusBadge } from '@/components/common/StatusBadge'
@@ -384,18 +385,17 @@ export function Issues() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-5 space-y-4">
-          <div className="grid grid-cols-5 gap-3">
+        <CardContent className="pt-4 pb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Tìm kiếm</label>
-              <Input
-                placeholder="Tìm theo tiêu đề..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input className="pl-8" placeholder="Tìm theo tiêu đề..." value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Mức độ</label>
+              <Label className="text-xs text-gray-500 mb-1 block">Mức độ</Label>
               <Select value={severity} onChange={e => setSeverity(e.target.value)}>
                 <option value="">Tất cả</option>
                 <option value="critical">Nghiêm trọng</option>
@@ -405,7 +405,7 @@ export function Issues() {
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Trạng thái</label>
+              <Label className="text-xs text-gray-500 mb-1 block">Trạng thái</Label>
               <Select value={status} onChange={e => setStatus(e.target.value)}>
                 <option value="">Tất cả</option>
                 <option value="new">Mới</option>
@@ -417,7 +417,7 @@ export function Issues() {
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Bảng dữ liệu</label>
+              <Label className="text-xs text-gray-500 mb-1 block">Bảng dữ liệu</Label>
               <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
                 <option value="">Tất cả</option>
                 {mockDataSources.map(ds => (
@@ -426,7 +426,7 @@ export function Issues() {
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1 block">Loại nguồn</label>
+              <Label className="text-xs text-gray-500 mb-1 block">Loại nguồn</Label>
               <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | '')}>
                 <option value="">Tất cả</option>
                 <option value="source">Bảng nguồn</option>
@@ -434,41 +434,39 @@ export function Issues() {
                 <option value="kpi">Chỉ tiêu</option>
               </Select>
             </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Chiều DL</Label>
+              <Select value={dimension} onChange={e => setDimension(e.target.value)}>
+                <option value="">Tất cả</option>
+                <option value="completeness">Đầy đủ</option>
+                <option value="validity">Hợp lệ</option>
+                <option value="consistency">Nhất quán</option>
+                <option value="uniqueness">Duy nhất</option>
+                <option value="accuracy">Chính xác</option>
+                <option value="timeliness">Kịp thời</option>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Từ ngày</Label>
+              <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Đến ngày</Label>
+              <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+            </div>
           </div>
-
-          <div className="flex items-end justify-between gap-3">
-            <div className="flex items-end gap-3">
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Chiều DL</label>
-                <Select value={dimension} onChange={e => setDimension(e.target.value)} className="w-40">
-                  <option value="">Tất cả</option>
-                  <option value="completeness">Đầy đủ</option>
-                  <option value="validity">Hợp lệ</option>
-                  <option value="consistency">Nhất quán</option>
-                  <option value="uniqueness">Duy nhất</option>
-                  <option value="accuracy">Chính xác</option>
-                  <option value="timeliness">Kịp thời</option>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Từ ngày</label>
-                <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-40" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Đến ngày</label>
-                <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-40" />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="gap-2">
-                <Search className="h-4 w-4" />
-                Tìm kiếm
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSearch}>
+                <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
               </Button>
-              <Button variant="outline" className="gap-2" onClick={() => exportCSV(filtered)}>
-                <Download className="h-4 w-4" />
-                Xuất CSV ({filtered.length})
+              <Button size="sm" variant="outline" onClick={() => { setSearch(''); setSeverity(''); setStatus(''); setTableFilter(''); setModuleFilter(''); setDimension(''); setFromDate(''); setToDate('') }}>
+                <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
               </Button>
             </div>
+            <Button size="sm" variant="outline" onClick={() => exportCSV(filtered)}>
+              <Download className="h-3.5 w-3.5 mr-1.5" />Xuất CSV ({filtered.length})
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -543,20 +541,20 @@ export function Issues() {
                         <span className="truncate group-hover:underline">{issue.tableName}</span>
                       </button>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
+                    <TableCell className="text-sm text-gray-600 whitespace-nowrap">
                       {(() => {
                         const ds = mockDataSources.find(d => d.id === issue.tableId)
                         if (!ds) return null
                         return MODULE_LABELS[ds.moduleType]
                       })()}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <DimensionBadge dimension={issue.dimension} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <DownstreamImpactBadge tableId={issue.tableId} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <span className="text-sm text-gray-600">{formatDateTime(issue.detectedAt)}</span>
                     </TableCell>
                     <TableCell>
@@ -571,7 +569,7 @@ export function Issues() {
                         <span className="text-sm text-gray-400 italic">Chưa gán</span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <StatusBadge status={issue.status} />
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">

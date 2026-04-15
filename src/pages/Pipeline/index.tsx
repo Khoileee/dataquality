@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -138,11 +138,11 @@ export function PipelinePage() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
             <div className="col-span-2 md:col-span-2">
               <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
               <div className="relative">
-                <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 <Input className="pl-8" placeholder="Tên job, mô tả..." value={searchJob}
                   onChange={e => setSearchJob(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
               </div>
@@ -157,10 +157,12 @@ export function PipelinePage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
-              <Search className="h-4 w-4 mr-1" />Tìm kiếm
+            <Button size="sm" onClick={handleSearch}>
+              <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
             </Button>
-            <Button variant="outline" onClick={handleReset} className="text-sm">Bỏ lọc</Button>
+            <Button size="sm" variant="outline" onClick={handleReset}>
+              <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -199,13 +201,13 @@ export function PipelinePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Tên Job <InfoTooltip text="Tên định danh của job xử lý dữ liệu (ETL/SQL/Spark)" /></span></TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Bảng đầu vào <InfoTooltip text="Các bảng dữ liệu mà job đọc làm input" /></span></TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Bảng đầu ra <InfoTooltip text="Các bảng dữ liệu mà job ghi kết quả ra" /></span></TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Lịch chạy <InfoTooltip text="Tần suất job được trigger bởi orchestrator (Rundeck/Airflow)" /></span></TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Kết quả gần nhất <InfoTooltip text="Trạng thái lần chạy gần nhất: Thành công (load OK), Lỗi (crash/timeout), Một phần (partial data)" /></span></TableHead>
-                  <TableHead><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của job: Hoạt động = đang được lập lịch, Bảo trì = tạm dừng" /></span></TableHead>
-                  <TableHead className="text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
+                  <TableHead className="w-[260px]"><span className="inline-flex items-center gap-1 whitespace-nowrap">Tên Job <InfoTooltip text="Tên định danh của job xử lý dữ liệu (ETL/SQL/Spark)" /></span></TableHead>
+                  <TableHead className="w-[160px]"><span className="inline-flex items-center gap-1 whitespace-nowrap">Bảng đầu vào <InfoTooltip text="Các bảng dữ liệu mà job đọc làm input" /></span></TableHead>
+                  <TableHead className="w-[160px]"><span className="inline-flex items-center gap-1 whitespace-nowrap">Bảng đầu ra <InfoTooltip text="Các bảng dữ liệu mà job ghi kết quả ra" /></span></TableHead>
+                  <TableHead className="w-[130px] whitespace-nowrap"><span className="inline-flex items-center gap-1">Lịch chạy <InfoTooltip text="Tần suất job được trigger bởi orchestrator (Rundeck/Airflow)" /></span></TableHead>
+                  <TableHead className="w-[160px] whitespace-nowrap"><span className="inline-flex items-center gap-1">Kết quả gần nhất <InfoTooltip text="Trạng thái lần chạy gần nhất: Thành công (load OK), Lỗi (crash/timeout), Một phần (partial data)" /></span></TableHead>
+                  <TableHead className="w-[130px] whitespace-nowrap"><span className="inline-flex items-center gap-1">Trạng thái <InfoTooltip text="Trạng thái quản lý của job: Hoạt động = đang được lập lịch, Bảo trì = tạm dừng" /></span></TableHead>
+                  <TableHead className="w-20 text-center sticky right-0 z-10 sticky-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -220,22 +222,24 @@ export function PipelinePage() {
                   <TableRow key={job.id} className="hover:bg-gray-50">
                     <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">{(page - 1) * PAGE_SIZE + idx + 1}</TableCell>
                     <TableCell>
-                      <div className="font-semibold text-gray-800" title={`${job.name} — ${job.description}`}>{job.name}</div>
-                      <div className="text-xs text-gray-400 mt-0.5 max-w-[320px] truncate">{job.description}</div>
+                      <div className="font-semibold text-gray-800 truncate max-w-[240px]" title={job.name}>{job.name}</div>
+                      <div className="text-xs text-gray-400 mt-0.5 max-w-[240px] truncate" title={job.description}>{job.description}</div>
                     </TableCell>
-                    <TableCell className="max-w-[160px]"><TableChips ids={job.inputTableIds} /></TableCell>
-                    <TableCell className="max-w-[160px]"><TableChips ids={job.outputTableIds} /></TableCell>
+                    <TableCell><TableChips ids={job.inputTableIds} /></TableCell>
+                    <TableCell><TableChips ids={job.outputTableIds} /></TableCell>
                     <TableCell className="text-xs text-gray-600 whitespace-nowrap">{job.schedule}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {runStatusIcon(job.lastRunStatus)}
-                        <span className="text-xs text-gray-600">{runStatusLabel[job.lastRunStatus]}</span>
-                      </div>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={job.lastRunStatus === 'success' ? 'success' : job.lastRunStatus === 'failed' ? 'destructive' : 'warning'}>
+                        <span className="inline-flex items-center gap-1">
+                          {runStatusIcon(job.lastRunStatus)}
+                          {runStatusLabel[job.lastRunStatus]}
+                        </span>
+                      </Badge>
                     </TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${job.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={job.status === 'active' ? 'success' : 'secondary'}>
                         {job.status === 'active' ? 'Hoạt động' : 'Tắt'}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell className="sticky right-0 z-10 sticky-right">
                       <div className="flex items-center justify-center gap-1">
@@ -281,8 +285,8 @@ export function PipelinePage() {
         description="Quản lý job ETL và luồng dữ liệu trong hệ thống"
         breadcrumbs={[{ label: 'Quản lý Job' }]}
         actions={
-          <Button onClick={openAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="h-4 w-4" />Thêm job
+          <Button onClick={openAdd}>
+            <Plus className="h-4 w-4 mr-1.5" />Thêm job
           </Button>
         }
       />

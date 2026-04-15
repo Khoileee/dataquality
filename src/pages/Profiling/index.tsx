@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, Play, Eye, RefreshCw, BarChart2, CheckCircle, XCircle, Loader,
+  Search, Play, Eye, RefreshCw, BarChart2, CheckCircle, XCircle, Loader, X,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -169,8 +169,8 @@ export function Profiling() {
         description="Lịch sử các lần quét thống kê cột dữ liệu · Mỗi hàng = 1 snapshot tại thời điểm quét, độc lập với điểm tổng hợp từ Rules"
         breadcrumbs={[{ label: 'Phân tích dữ liệu' }]}
         actions={
-          <Button onClick={() => setShowNewScan(true)} className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-            <Play className="h-4 w-4" />
+          <Button onClick={() => setShowNewScan(true)}>
+            <Play className="h-4 w-4 mr-1.5" />
             Chạy phân tích mới
           </Button>
         }
@@ -179,7 +179,7 @@ export function Profiling() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">Tên bảng</Label>
               <Select value={filterTable} onChange={e => setFilterTable(e.target.value)}>
@@ -230,12 +230,11 @@ export function Profiling() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white text-sm flex items-center gap-1">
-              <Search className="h-4 w-4" />
-              Tìm kiếm
+            <Button size="sm" onClick={handleSearch}>
+              <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
             </Button>
-            <Button variant="outline" onClick={handleReset} className="text-sm">
-              Bỏ lọc
+            <Button size="sm" variant="outline" onClick={handleReset}>
+              <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
             </Button>
           </div>
         </CardContent>
@@ -279,7 +278,7 @@ export function Profiling() {
                       <TableCell>
                         <span className="font-semibold text-gray-800">{result.tableName}</span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {(() => {
                           const ds = mockDataSources.find(d => d.id === result.tableId)
                           if (!ds) return null
@@ -293,7 +292,7 @@ export function Profiling() {
                       <TableCell className="text-sm text-gray-500 whitespace-nowrap">
                         {formatDateTime(result.runAt)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <StatusIcon status={result.status} />
                           <StatusBadge status={result.status} />

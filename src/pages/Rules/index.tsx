@@ -1590,30 +1590,45 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
       {/* Filter card */}
       <Card className="mb-4">
         <CardContent className="pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
-              <Input className="pl-8" placeholder="Tên quy tắc..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Tên quy tắc</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input className="pl-8" placeholder="Tìm kiếm..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
+              </div>
             </div>
-            <Select value={dimFilter} onChange={e => setDimFilter(e.target.value)}>
-              <option value="all">Chiều dữ liệu: Tất cả</option>
-              {DIMENSIONS.map(d => <option key={d} value={d}>{getDimensionLabel(d)}</option>)}
-            </Select>
-            <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
-              <option value="all">Bảng: Tất cả</option>
-              {mockDataSources.map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
-            </Select>
-            <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | 'all')}>
-              <option value="all">Loại: Tất cả</option>
-              <option value="source">Bảng nguồn</option>
-              <option value="report">Báo cáo</option>
-              <option value="kpi">Chỉ tiêu</option>
-            </Select>
-            <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-              <option value="all">Trạng thái: Tất cả</option>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-            </Select>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Chiều dữ liệu</Label>
+              <Select value={dimFilter} onChange={e => setDimFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                {DIMENSIONS.map(d => <option key={d} value={d}>{getDimensionLabel(d)}</option>)}
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Bảng</Label>
+              <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                {mockDataSources.map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Loại</Label>
+              <Select value={moduleFilter} onChange={e => setModuleFilter(e.target.value as ModuleType | 'all')}>
+                <option value="all">Tất cả</option>
+                <option value="source">Bảng nguồn</option>
+                <option value="report">Báo cáo</option>
+                <option value="kpi">Chỉ tiêu</option>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Trạng thái</Label>
+              <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Không hoạt động</option>
+              </Select>
+            </div>
           </div>
           <div className="flex items-center justify-between mt-3">
             <div className="flex gap-2">
@@ -1683,17 +1698,17 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
                           {getScopeLabel(rule)}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span className="inline-flex items-center bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-1 flex-nowrap">
+                          <span className="inline-flex items-center bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap">
                             C:{rule.threshold.critical}%
                           </span>
-                          <span className="inline-flex items-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-[10px] font-medium">
+                          <span className="inline-flex items-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap">
                             W:{rule.threshold.warning}%
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-gray-500">
+                      <TableCell className="text-xs text-gray-500 whitespace-nowrap">
                         {isRunning
                           ? <span className="text-blue-600 animate-pulse font-medium">Đang chạy…</span>
                           : rule.lastRunAt ? formatDateTime(rule.lastRunAt) : <span className="text-gray-300">Chưa chạy</span>

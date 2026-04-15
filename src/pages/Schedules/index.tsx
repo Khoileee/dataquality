@@ -478,22 +478,31 @@ export function Schedules() {
       {/* Filter card */}
       <Card className="mb-4">
         <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
-              <option value="all">Bảng dữ liệu: Tất cả</option>
-              {mockDataSources.map(ds => (
-                <option key={ds.id} value={ds.id}>{ds.name}</option>
-              ))}
-            </Select>
-            <Select value={freqFilter} onChange={e => setFreqFilter(e.target.value)}>
-              <option value="all">Tần suất: Tất cả</option>
-              {Object.entries(FREQ_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </Select>
-            <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-              <option value="all">Trạng thái: Tất cả</option>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Bảng dữ liệu</Label>
+              <Select value={tableFilter} onChange={e => setTableFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                {mockDataSources.map(ds => (
+                  <option key={ds.id} value={ds.id}>{ds.name}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Tần suất</Label>
+              <Select value={freqFilter} onChange={e => setFreqFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                {Object.entries(FREQ_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Trạng thái</Label>
+              <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="all">Tất cả</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Không hoạt động</option>
+              </Select>
+            </div>
           </div>
           <div className="flex items-center justify-between mt-3">
             <div className="flex gap-2">
@@ -506,7 +515,7 @@ export function Schedules() {
                 <button
                   onClick={() => setViewMode('list')}
                   className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
-                    viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                    viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                   title="Xem dạng danh sách"
                 >
@@ -516,7 +525,7 @@ export function Schedules() {
                 <button
                   onClick={() => setViewMode('batch')}
                   className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
-                    viewMode === 'batch' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                    viewMode === 'batch' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                   title="Xem theo khung giờ (batch)"
                 >
@@ -710,7 +719,7 @@ export function Schedules() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs">
+                      <TableCell className="text-xs whitespace-nowrap">
                         {isRunning
                           ? <span className="text-blue-600 animate-pulse">Đang chạy…</span>
                           : isActive && schedule.nextRun
@@ -718,10 +727,10 @@ export function Schedules() {
                             : <span className="text-gray-400">Đã tạm dừng</span>
                         }
                       </TableCell>
-                      <TableCell className="text-xs text-gray-600">
+                      <TableCell className="text-xs text-gray-600 whitespace-nowrap">
                         {schedule.lastRun ? formatDateTime(schedule.lastRun) : <span className="text-gray-400">Chưa chạy</span>}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         {isRunning
                           ? <Badge variant="secondary" className="text-blue-600 bg-blue-50 text-xs">Đang chạy</Badge>
                           : schedule.lastRunStatus

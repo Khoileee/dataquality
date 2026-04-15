@@ -2,11 +2,12 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Search, RefreshCw, AlertTriangle, XCircle, BarChart2,
-  GitBranch, Eye, CheckCircle, ChevronLeft, ChevronRight
+  GitBranch, Eye, CheckCircle, ChevronLeft, ChevronRight, X,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
@@ -58,10 +59,10 @@ function DqStatusBadge({ tableIds }: { tableIds: string[] }) {
   const noDataCount = grades.filter(g => g === 'no_data').length
   const total = tableIds.length
 
-  if (noDataCount === total) return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-500 border border-gray-200">Chưa quét</span>
-  if (failCount > 0) return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">{failCount}/{total} lỗi</span>
-  if (warnCount > 0) return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">{warnCount}/{total} cảnh báo</span>
-  return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">{total}/{total} OK</span>
+  if (noDataCount === total) return <Badge variant="secondary">Chưa quét</Badge>
+  if (failCount > 0) return <Badge variant="destructive">{failCount}/{total} lỗi</Badge>
+  if (warnCount > 0) return <Badge variant="warning">{warnCount}/{total} cảnh báo</Badge>
+  return <Badge variant="success">{total}/{total} OK</Badge>
 }
 
 // ─── Progress Bar ───────────────────────────────────────────────────
@@ -226,30 +227,32 @@ export function PipelineMonitorPage() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <div className="flex flex-col md:flex-row md:items-end gap-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="md:col-span-3">
               <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
               <div className="relative">
-                <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 <Input className="pl-8" placeholder="Tên job, bảng input/output..." value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
               </div>
             </div>
-            <div className="w-full md:w-44">
+            <div>
               <Label className="text-xs text-gray-500 mb-1 block">Trạng thái DQ</Label>
-              <select className="flex h-9 w-full rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500" value={filterDqStatus} onChange={e => setFilterDqStatus(e.target.value)}>
+              <Select value={filterDqStatus} onChange={e => setFilterDqStatus(e.target.value)}>
                 <option value="">Tất cả</option>
                 <option value="issues">Có vấn đề</option>
                 <option value="ok">Tất cả OK</option>
                 <option value="no_data">Chưa quét</option>
-              </select>
+              </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                <Search className="h-4 w-4 mr-1" />Tìm kiếm
-              </Button>
-              <Button variant="outline" onClick={handleReset} className="text-sm">Bỏ lọc</Button>
-            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button size="sm" onClick={handleSearch}>
+              <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleReset}>
+              <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -275,15 +278,15 @@ export function PipelineMonitorPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
-                      <TableHead className="min-w-[180px]">
-                        <span className="inline-flex items-center gap-1">Tên Job <InfoTooltip text="Tên và mô tả job ETL trên hệ thống pipeline" /></span>
+                      <TableHead className="w-[240px]">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">Tên Job <InfoTooltip text="Tên và mô tả job ETL trên hệ thống pipeline" /></span>
                       </TableHead>
-                      <TableHead className="min-w-[140px]"><span className="inline-flex items-center gap-1">Input <InfoTooltip text="Bảng dữ liệu nguồn" /></span></TableHead>
-                      <TableHead className="min-w-[140px]"><span className="inline-flex items-center gap-1">Output <InfoTooltip text="Bảng dữ liệu đầu ra" /></span></TableHead>
-                      <TableHead className="w-[110px]"><span className="inline-flex items-center gap-1">DQ <InfoTooltip text="Trạng thái chất lượng tổng hợp" /></span></TableHead>
-                      <TableHead className="w-[140px]"><span className="inline-flex items-center gap-1">Tiến độ quét <InfoTooltip text="Số bảng đã được quét DQ / tổng số bảng" /></span></TableHead>
-                      <TableHead className="w-[110px]">Job Status</TableHead>
-                      <TableHead className="w-[130px]">Lịch chạy</TableHead>
+                      <TableHead className="w-[160px]"><span className="inline-flex items-center gap-1 whitespace-nowrap">Input <InfoTooltip text="Bảng dữ liệu nguồn" /></span></TableHead>
+                      <TableHead className="w-[160px]"><span className="inline-flex items-center gap-1 whitespace-nowrap">Output <InfoTooltip text="Bảng dữ liệu đầu ra" /></span></TableHead>
+                      <TableHead className="w-[140px] whitespace-nowrap"><span className="inline-flex items-center gap-1">DQ <InfoTooltip text="Trạng thái chất lượng tổng hợp" /></span></TableHead>
+                      <TableHead className="w-[150px] whitespace-nowrap"><span className="inline-flex items-center gap-1">Tiến độ quét <InfoTooltip text="Số bảng đã được quét DQ / tổng số bảng" /></span></TableHead>
+                      <TableHead className="w-[140px] whitespace-nowrap">Trạng thái</TableHead>
+                      <TableHead className="w-[130px] whitespace-nowrap">Lịch chạy</TableHead>
                       <TableHead className="w-16 text-center sticky right-0 z-10 sticky-right">Xem</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -295,15 +298,17 @@ export function PipelineMonitorPage() {
                           <div className="font-semibold text-gray-800 truncate max-w-[220px]" title={job.name}>{job.name}</div>
                           <div className="text-xs text-gray-400 mt-0.5 max-w-[220px] truncate" title={job.description}>{job.description}</div>
                         </TableCell>
-                        <TableCell className="max-w-[160px]"><TableChips ids={job.inputTableIds} /></TableCell>
-                        <TableCell className="max-w-[160px]"><TableChips ids={job.outputTableIds} /></TableCell>
-                        <TableCell><DqStatusBadge tableIds={[...job.inputTableIds, ...job.outputTableIds]} /></TableCell>
-                        <TableCell><ScanProgressBar job={job} /></TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            {runStatusIcon(job.lastRunStatus)}
-                            <span className="text-xs text-gray-600">{runStatusLabel[job.lastRunStatus]}</span>
-                          </div>
+                        <TableCell><TableChips ids={job.inputTableIds} /></TableCell>
+                        <TableCell><TableChips ids={job.outputTableIds} /></TableCell>
+                        <TableCell className="whitespace-nowrap"><DqStatusBadge tableIds={[...job.inputTableIds, ...job.outputTableIds]} /></TableCell>
+                        <TableCell className="whitespace-nowrap"><ScanProgressBar job={job} /></TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Badge variant={job.lastRunStatus === 'success' ? 'success' : job.lastRunStatus === 'failed' ? 'destructive' : 'warning'}>
+                            <span className="inline-flex items-center gap-1">
+                              {runStatusIcon(job.lastRunStatus)}
+                              {runStatusLabel[job.lastRunStatus]}
+                            </span>
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-xs text-gray-600 whitespace-nowrap">{job.schedule}</TableCell>
                         <TableCell className="sticky right-0 z-10 sticky-right" onClick={e => e.stopPropagation()}>

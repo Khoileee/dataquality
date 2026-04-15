@@ -132,7 +132,7 @@ export function Dashboard() {
               onClick={() => setTimeRange(opt.value)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 timeRange === opt.value
-                  ? 'bg-gray-900 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >

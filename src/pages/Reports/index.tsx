@@ -9,7 +9,7 @@ import {
   Download, TrendingUp, TrendingDown, ArrowLeft, ChevronRight,
   ClipboardCheck, CheckCircle, AlertTriangle, FileWarning,
   BarChart3, ShieldCheck, Bug, Activity, Layers, Clock,
-  CheckCircle2, AlertCircle, XCircle,
+  CheckCircle2, AlertCircle, XCircle, Search, X,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,7 @@ import { getScoreColor, getGrade, getScoreBarColor, formatDateTime } from '@/lib
 import { mockDataSources, mockRules, mockIssues, mockTrendData, reconciliationResults } from '@/data/mockData'
 import { cn } from '@/lib/utils'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
+import { Label } from '@/components/ui/label'
 import type { QualityDimension } from '@/types'
 
 /* ─── Helpers ─── */
@@ -1459,34 +1460,39 @@ function OverviewTab() {
       {/* Filter bar */}
       <Card>
         <CardContent className="pt-5 pb-5">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Từ ngày</label>
-              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-40 text-sm" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Từ ngày</Label>
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Đến ngày</label>
-              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-40 text-sm" />
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Đến ngày</Label>
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Bảng dữ liệu</label>
-              <Select value={selectedTable} onChange={e => handleTableChange(e.target.value)} className="w-52 text-sm">
-                <option value="all">Tất cả bảng dữ liệu</option>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Bảng dữ liệu</Label>
+              <Select value={selectedTable} onChange={e => handleTableChange(e.target.value)}>
+                <option value="all">Tất cả</option>
                 {mockDataSources.map((ds) => (
                   <option key={ds.id} value={ds.id}>{ds.name}</option>
                 ))}
               </Select>
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Chiều dữ liệu</label>
-              <Select value={selectedDimension} onChange={e => setSelectedDimension(e.target.value)} className="w-48 text-sm">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Chiều dữ liệu</Label>
+              <Select value={selectedDimension} onChange={e => setSelectedDimension(e.target.value)}>
                 {DIMENSION_LABELS.map((d) => (
                   <option key={d.value} value={d.value}>{d.label}</option>
                 ))}
               </Select>
             </div>
-            <Button onClick={handleApply} className="self-end">
-              Áp dụng
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button size="sm" onClick={handleApply}>
+              <Search className="h-3.5 w-3.5 mr-1.5" />Tìm kiếm
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setFromDate(''); setToDate(''); setSelectedTable('all'); setSelectedDimension('all') }}>
+              <X className="h-3.5 w-3.5 mr-1.5" />Bỏ lọc
             </Button>
           </div>
         </CardContent>
@@ -1594,8 +1600,8 @@ function ReconciliationTab() {
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-gray-600">Báo cáo</label>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block">Báo cáo</Label>
                 <Select value={filterReport} onChange={e => setFilterReport(e.target.value)} className="w-56 text-sm">
                   <option value="all">Tất cả báo cáo</option>
                   {reportTableOptions.map(opt => (
