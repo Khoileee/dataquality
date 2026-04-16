@@ -149,6 +149,8 @@ export interface DataSource {
   partitionBy?: 'daily' | 'monthly' | 'none'
   mode?: 'append' | 'overwrite'
   area?: string
+  // HDFS layer classification
+  hdfsLayer?: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
 }
 
 export interface QualityRule {

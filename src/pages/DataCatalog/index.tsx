@@ -31,20 +31,55 @@ const PAGE_SIZE = 10
 
 const DIMENSIONS: QualityDimension[] = ['completeness', 'validity', 'consistency', 'uniqueness', 'accuracy', 'timeliness']
 
-const SQLWF_TABLES = [
-  { name: 'KH_KHACHHANG', area: 'bi_customer_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Nguyễn Văn A' },
-  { name: 'KH_TAIKHOAN', area: 'bi_customer_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Nguyễn Văn A' },
-  { name: 'GD_GIAODICH', area: 'bi_transaction_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Trần Thị B' },
-  { name: 'GD_GIAODICH_CTT', area: 'bi_transaction_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Trần Thị B' },
-  { name: 'TK_SOTIETKIEM', area: 'bi_saving_zone', mode: 'overwrite' as const, partitionBy: 'monthly' as const, owner: 'Lê Văn C' },
-  { name: 'SP_SANPHAM', area: 'bi_product_zone', mode: 'overwrite' as const, partitionBy: 'none' as const, owner: 'Phạm Thị D' },
-  { name: 'BC_DOANHTHU_NGAY', area: 'bi_report_zone', mode: 'overwrite' as const, partitionBy: 'daily' as const, owner: 'Trần Thị B' },
-  { name: 'BC_TONGHOP_THANG', area: 'bi_report_zone', mode: 'overwrite' as const, partitionBy: 'monthly' as const, owner: 'Nguyễn Văn A' },
-  { name: 'DM_CHINHANH', area: 'bi_master_zone', mode: 'overwrite' as const, partitionBy: 'none' as const, owner: 'Phạm Thị D' },
-  { name: 'DM_NHANVIEN', area: 'bi_master_zone', mode: 'overwrite' as const, partitionBy: 'none' as const, owner: 'Lê Văn C' },
-  { name: 'AML_GIAODICH_NGHINGO', area: 'bi_aml_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Nguyễn Văn A' },
-  { name: 'WALLET_VIEN', area: 'bi_wallet_zone', mode: 'append' as const, partitionBy: 'daily' as const, owner: 'Trần Thị B' },
+const HDFS_TABLE_REGISTRY: Array<{
+  name: string
+  layer: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
+  layerLabel: string
+  schema: string
+  owner: string
+  category?: string
+  // Legacy compat fields
+  area?: string
+  mode?: 'append' | 'overwrite'
+  partitionBy?: 'daily' | 'monthly' | 'none'
+}> = [
+  // L1 — Dữ liệu thô (Raw)
+  { name: 'KH_KHACHHANG_RAW', layer: 'L1', layerLabel: 'Dữ liệu thô (Raw)', schema: 'RAW', owner: 'datateam', category: 'Khách hàng', area: 'bi_customer_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'GD_GIAODICH_RAW', layer: 'L1', layerLabel: 'Dữ liệu thô (Raw)', schema: 'RAW', owner: 'datateam', category: 'Giao dịch', area: 'bi_transaction_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'TK_TAIKHOAN_RAW', layer: 'L1', layerLabel: 'Dữ liệu thô (Raw)', schema: 'RAW', owner: 'datateam', category: 'Tài khoản', area: 'bi_customer_zone', mode: 'append', partitionBy: 'daily' },
+  // L2 — Dữ liệu chuẩn hóa (Standardized)
+  { name: 'KH_KHACHHANG', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'phongdh', category: 'Khách hàng', area: 'bi_customer_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'GD_GIAODICH', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'phongdh', category: 'Giao dịch', area: 'bi_transaction_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'TK_TAIKHOAN', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'phongdh', category: 'Tài khoản', area: 'bi_customer_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'GD_THANHTOAN', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'phongdh', category: 'Giao dịch', area: 'bi_transaction_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'GD_HOANTIEN', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'phongdh', category: 'Giao dịch', area: 'bi_transaction_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'SP_SANPHAM', layer: 'L2', layerLabel: 'Chuẩn hóa (Standardized)', schema: 'DWH', owner: 'duyetnt', category: 'Sản phẩm', area: 'bi_product_zone', mode: 'overwrite', partitionBy: 'none' },
+  // L3 — Dữ liệu tổng hợp (Aggregated)
+  { name: 'RPT_GIAODICH_NGAY', layer: 'L3', layerLabel: 'Tổng hợp (Aggregated)', schema: 'AGG', owner: 'phongdh', category: 'Báo cáo', area: 'bi_report_zone', mode: 'overwrite', partitionBy: 'daily' },
+  { name: 'RPT_DOANHTHU', layer: 'L3', layerLabel: 'Tổng hợp (Aggregated)', schema: 'AGG', owner: 'phongdh', category: 'Báo cáo', area: 'bi_report_zone', mode: 'overwrite', partitionBy: 'daily' },
+  { name: 'RPT_KHACHHANG_THONGKE', layer: 'L3', layerLabel: 'Tổng hợp (Aggregated)', schema: 'AGG', owner: 'duyetnt', category: 'Báo cáo', area: 'bi_report_zone', mode: 'overwrite', partitionBy: 'monthly' },
+  // L4 — Data Mart
+  { name: 'DM_GIAODICH_FACT', layer: 'L4', layerLabel: 'Data Mart', schema: 'MART', owner: 'phongdh', category: 'Giao dịch', area: 'bi_master_zone', mode: 'append', partitionBy: 'daily' },
+  { name: 'DM_KHACHHANG_DIM', layer: 'L4', layerLabel: 'Data Mart', schema: 'MART', owner: 'duyetnt', category: 'Khách hàng', area: 'bi_master_zone', mode: 'overwrite', partitionBy: 'none' },
+  // L5 — Báo cáo (Reporting)
+  { name: 'BC_TONG_HOP_NGAY', layer: 'L5', layerLabel: 'Báo cáo (Reporting)', schema: 'RPT', owner: 'khoiln', category: 'Báo cáo', area: 'bi_report_zone', mode: 'overwrite', partitionBy: 'daily' },
+  { name: 'BC_DOANH_THU_THANG', layer: 'L5', layerLabel: 'Báo cáo (Reporting)', schema: 'RPT', owner: 'khoiln', category: 'Báo cáo', area: 'bi_report_zone', mode: 'overwrite', partitionBy: 'monthly' },
+  // L6 — Sandbox / Ad-hoc
+  { name: 'SANDBOX_ANALYST_01', layer: 'L6', layerLabel: 'Sandbox / Ad-hoc', schema: 'SANDBOX', owner: 'analyst', category: 'Ad-hoc', area: 'bi_sandbox_zone', mode: 'overwrite', partitionBy: 'none' },
 ]
+
+// Backward-compat alias so references to SQLWF_TABLES still work in bulk dialog & handleSave
+const SQLWF_TABLES = HDFS_TABLE_REGISTRY
+
+// Layer color map for badges
+const LAYER_COLORS: Record<string, string> = {
+  L1: 'bg-gray-100 text-gray-700 border-gray-200',
+  L2: 'bg-blue-100 text-blue-700 border-blue-200',
+  L3: 'bg-purple-100 text-purple-700 border-purple-200',
+  L4: 'bg-green-100 text-green-700 border-green-200',
+  L5: 'bg-orange-100 text-orange-700 border-orange-200',
+  L6: 'bg-rose-100 text-rose-700 border-rose-200',
+}
 
 const emptyThresholds = (): Record<string, { warning: string; critical: string }> => ({
   completeness: { warning: '', critical: '' },
@@ -66,6 +101,9 @@ const RULE_TEMPLATE_EXAMPLE = [
   'KH_KHACHHANG,format_regex,validity,EMAIL,,,^[\\w.-]+@[\\w.-]+$,,,,,,,,,,,,90,80',
   'KH_KHACHHANG,value_range,validity,TUOI,18,120,,,,,,,,,,,,,95,90',
 ].join('\n')
+
+const QUICK_IMPORT_HEADER = 'Tên bảng,Tag,Layer,Schema,Mẫu bảng'
+const QUICK_IMPORT_EXAMPLE = 'GD_GIAODICH,bảng,L2,DWH,Bảng giao dịch tài chính'
 
 function downloadCSV(filename: string, header: string, examples: string) {
   const content = header + '\n' + examples
@@ -478,6 +516,11 @@ export function DataCatalog() {
   const [sqlwfSynced, setSqlwfSynced] = useState(false)
   const [formDataRequiredByTime, setFormDataRequiredByTime] = useState('')
   const [autoFillToast, setAutoFillToast] = useState(false)
+  // Combobox state for Tên bảng field
+  const [tableComboOpen, setTableComboOpen] = useState(false)
+  const [tableComboSearch, setTableComboSearch] = useState('')
+  const [formManualTable, setFormManualTable] = useState(false)
+  const [formHdfsLayer, setFormHdfsLayer] = useState<string>('')
 
   // Bulk add state
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
@@ -541,6 +584,7 @@ export function DataCatalog() {
     setFormTable(''); setFormCategory('KH'); setFormOwner(mockUsers[0]?.name ?? ''); setFormTeam('Nhóm Khách hàng')
     setFormModuleType(activeTab); setFormSourceTableIds([]); setFormPeriodType('monthly'); setFormKpiFormula('')
     setFormThresholds(emptyThresholds()); setSqlwfSynced(false); setFormDataRequiredByTime('')
+    setTableComboOpen(false); setTableComboSearch(''); setFormManualTable(false); setFormHdfsLayer('')
     setDialogOpen(true)
   }
 
@@ -564,6 +608,8 @@ export function DataCatalog() {
     setFormThresholds(thr)
     setSqlwfSynced(ds.syncSource === 'sqlwf')
     setFormDataRequiredByTime(ds.dataRequiredByTime ?? '')
+    setTableComboOpen(false); setTableComboSearch(''); setFormManualTable(false)
+    setFormHdfsLayer(ds.hdfsLayer ?? '')
     setDialogOpen(true)
   }
 
@@ -601,6 +647,7 @@ export function DataCatalog() {
             partitionBy: sqlwfMatch?.partitionBy,
             mode: sqlwfMatch?.mode,
             area: sqlwfMatch?.area,
+            hdfsLayer: (formHdfsLayer as DataSource['hdfsLayer']) || sqlwfMatch?.layer || undefined,
             updatedAt: now,
           }
         : ds
@@ -623,6 +670,7 @@ export function DataCatalog() {
         partitionBy: sqlwfMatch?.partitionBy,
         mode: sqlwfMatch?.mode,
         area: sqlwfMatch?.area,
+        hdfsLayer: (formHdfsLayer as DataSource['hdfsLayer']) || sqlwfMatch?.layer || undefined,
       }
       setSources(prev => [newDs, ...prev])
     }
@@ -686,6 +734,7 @@ export function DataCatalog() {
     const now = new Date().toISOString()
     if (importType === 'table') {
       const h = importData.headers
+      const hasQuickTemplate = h.includes('Mẫu bảng')
       const newSources: DataSource[] = importData.rows.map(row => {
         const get = (col: string) => row[h.indexOf(col)] ?? ''
         const tag = get('Tag')
@@ -702,16 +751,18 @@ export function DataCatalog() {
             }
           }
         }
-        const sqlwf = SQLWF_TABLES.find(t => t.name.toLowerCase() === get('Tên bảng').toLowerCase())
+        const tableName = get('Tên bảng')
+        const registry = HDFS_TABLE_REGISTRY.find(t => t.name.toLowerCase() === tableName.toLowerCase())
+        const layerFromCsv = get('Layer') as DataSource['hdfsLayer'] | ''
         return {
           id: `ds-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          name: get('Tên bảng'),
+          name: tableName,
           description: '',
           type: (get('Loại kết nối') || 'database') as DataSource['type'],
-          schema: get('Schema') || sqlwf?.area || '',
-          tableName: get('Tên bảng'),
-          category: get('Danh mục') || 'KH',
-          owner: get('Chủ sở hữu') || sqlwf?.owner || '',
+          schema: get('Schema') || registry?.schema || registry?.area || '',
+          tableName,
+          category: get('Danh mục') || registry?.category || 'KH',
+          owner: get('Chủ sở hữu') || registry?.owner || '',
           team: get('Nhóm') || 'Nhóm Quản trị DL',
           status: 'active' as const,
           rowCount: 0, overallScore: 0,
@@ -719,19 +770,24 @@ export function DataCatalog() {
           createdAt: now, updatedAt: now,
           moduleType: modType,
           thresholdOverrides: Object.keys(thresholds).length > 0 ? thresholds : undefined,
-          syncSource: sqlwf ? 'sqlwf' : 'manual',
-          partitionBy: sqlwf?.partitionBy, mode: sqlwf?.mode, area: sqlwf?.area,
+          syncSource: registry ? 'sqlwf' : 'manual',
+          partitionBy: registry?.partitionBy, mode: registry?.mode, area: registry?.area,
+          hdfsLayer: layerFromCsv || registry?.layer || undefined,
         }
       })
       setSources(prev => [...newSources, ...prev])
-      // Trigger post-import template dialog
-      setLastImportedTables(newSources)
+      // For quick-import (has "Mẫu bảng" column), template is already declared — skip PostImportTemplateDialog
+      if (hasQuickTemplate) {
+        setLastImportedTables([])
+      } else {
+        setLastImportedTables(newSources)
+      }
     }
     // Rule import is display-only for demo (rules are managed in Rules page)
     setImportDialogOpen(false)
     setImportData(null); setImportValidation(null)
-    // Open post-import dialog only for table import
-    if (importType === 'table') {
+    // Open post-import dialog only for table import WITHOUT quick template
+    if (importType === 'table' && !importData.headers.includes('Mẫu bảng')) {
       setTimeout(() => setPostImportOpen(true), 300)
     }
   }
@@ -1150,33 +1206,132 @@ export function DataCatalog() {
               <Input placeholder="CORE, REPORT, DM..." value={formSchema} onChange={e => setFormSchema(e.target.value)} />
             </div>
             <div>
-              <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Tên bảng <InfoTooltip text="Tên bảng trên hệ thống lưu trữ (HDFS/DB). Nên lấy từ SQLWF để đảm bảo chính xác" /></span></Label>
-              <Input placeholder="VD: KH_KHACHHANG" value={formTable} onChange={e => {
-                const val = e.target.value
-                setFormTable(val)
-                const match = SQLWF_TABLES.find(t => t.name.toLowerCase() === val.toLowerCase())
-                if (match) {
-                  setFormSchema(match.area)
-                  const ownerMatch = mockUsers.find(u => u.name === match.owner)
-                  if (ownerMatch) setFormOwner(ownerMatch.name)
-                  setSqlwfSynced(true)
-                } else {
+              <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Tên bảng <InfoTooltip text="Tên bảng trên hệ thống lưu trữ (HDFS/DB). Chọn từ registry HDFS để tự điền metadata chính xác" /></span></Label>
+              {formManualTable ? (
+                // Manual free-text fallback
+                <Input placeholder="VD: KH_KHACHHANG" value={formTable} onChange={e => {
+                  const val = e.target.value
+                  setFormTable(val)
+                  const catalogMatch = mockDataSources.find(ds => ds.tableName.toLowerCase() === val.toLowerCase() || ds.name.toLowerCase() === val.toLowerCase())
+                  if (catalogMatch) {
+                    if (catalogMatch.schema) setFormSchema(catalogMatch.schema)
+                    if (catalogMatch.owner) setFormOwner(catalogMatch.owner)
+                    if (catalogMatch.description) setFormDesc(catalogMatch.description)
+                    setAutoFillToast(true)
+                    setTimeout(() => setAutoFillToast(false), 3000)
+                  }
                   setSqlwfSynced(false)
-                }
-                // Auto-fill from catalog (mockDataSources)
-                const catalogMatch = mockDataSources.find(ds => ds.tableName.toLowerCase() === val.toLowerCase() || ds.name.toLowerCase() === val.toLowerCase())
-                if (catalogMatch) {
-                  if (catalogMatch.schema) setFormSchema(catalogMatch.schema)
-                  if (catalogMatch.owner) setFormOwner(catalogMatch.owner)
-                  if (catalogMatch.description) setFormDesc(catalogMatch.description)
-                  setAutoFillToast(true)
-                  setTimeout(() => setAutoFillToast(false), 3000)
-                }
-              }} />
-              {sqlwfSynced && (
+                }} />
+              ) : (
+                // Searchable combobox
+                <div className="relative">
+                  <div
+                    className="flex items-center border border-gray-300 rounded-md bg-white cursor-pointer"
+                    onClick={() => setTableComboOpen(o => !o)}
+                  >
+                    <Search className="h-4 w-4 text-gray-400 ml-3 shrink-0 pointer-events-none" />
+                    <input
+                      type="text"
+                      className="flex-1 px-2 py-2 text-sm outline-none bg-transparent"
+                      placeholder="Tìm bảng trong HDFS Registry..."
+                      value={tableComboOpen ? tableComboSearch : (formTable || '')}
+                      onChange={e => { setTableComboSearch(e.target.value); setTableComboOpen(true) }}
+                      onClick={e => { e.stopPropagation(); setTableComboOpen(true) }}
+                    />
+                    {formTable && (
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border mr-2 ${formHdfsLayer ? LAYER_COLORS[formHdfsLayer] : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        {formHdfsLayer || '—'}
+                      </span>
+                    )}
+                  </div>
+                  {tableComboOpen && (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                      {(() => {
+                        const q = tableComboSearch.toLowerCase()
+                        const filtered = HDFS_TABLE_REGISTRY.filter(t =>
+                          !q || t.name.toLowerCase().includes(q) || t.schema.toLowerCase().includes(q) || (t.category ?? '').toLowerCase().includes(q)
+                        )
+                        // Group by layer
+                        const layers: Array<'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'> = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
+                        const groups = layers.map(l => ({ layer: l, items: filtered.filter(t => t.layer === l) })).filter(g => g.items.length > 0)
+                        if (groups.length === 0) return (
+                          <div className="px-4 py-3 text-sm text-gray-400 text-center">Không tìm thấy bảng nào</div>
+                        )
+                        return groups.map(group => (
+                          <div key={group.layer}>
+                            <div className={`px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider sticky top-0 flex items-center gap-2 ${LAYER_COLORS[group.layer]} bg-opacity-60`}>
+                              <span className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${LAYER_COLORS[group.layer]}`}>{group.layer}</span>
+                              {group.items[0]?.layerLabel}
+                            </div>
+                            {group.items.map(t => (
+                              <button
+                                key={t.name}
+                                type="button"
+                                className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-blue-50 transition-colors ${formTable === t.name ? 'bg-blue-50' : ''}`}
+                                onClick={() => {
+                                  setFormTable(t.name)
+                                  setFormHdfsLayer(t.layer)
+                                  setFormSchema(t.schema)
+                                  // Try to find owner in mockUsers list, otherwise keep as-is
+                                  const ownerUser = mockUsers.find(u => u.name.toLowerCase().includes(t.owner.toLowerCase()) || t.owner.toLowerCase().includes(u.name.toLowerCase().split(' ').pop() ?? ''))
+                                  if (ownerUser) setFormOwner(ownerUser.name)
+                                  // Auto-fill category
+                                  if (t.category) {
+                                    const catMap: Record<string, string> = {
+                                      'Khách hàng': 'KH', 'Giao dịch': 'GD', 'Tài khoản': 'TK',
+                                      'Sản phẩm': 'SP', 'Báo cáo': 'BC', 'Ad-hoc': 'QTRI',
+                                    }
+                                    const mapped = catMap[t.category]
+                                    if (mapped) setFormCategory(mapped)
+                                  }
+                                  setSqlwfSynced(true)
+                                  setTableComboOpen(false)
+                                  setTableComboSearch('')
+                                }}
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-semibold text-sm text-gray-900">{t.name}</span>
+                                  <span className="text-xs text-gray-400 ml-2">{t.schema}</span>
+                                </div>
+                                {t.category && <span className="text-[10px] text-gray-400 shrink-0">{t.category}</span>}
+                              </button>
+                            ))}
+                          </div>
+                        ))
+                      })()}
+                      <div className="border-t border-gray-100 px-3 py-2">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500">
+                          <input
+                            type="checkbox"
+                            checked={formManualTable}
+                            onChange={e => { setFormManualTable(e.target.checked); setTableComboOpen(false) }}
+                            className="rounded border-gray-300"
+                          />
+                          Nhập tên bảng thủ công
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                  {tableComboOpen && (
+                    <div className="fixed inset-0 z-40" onClick={() => setTableComboOpen(false)} />
+                  )}
+                </div>
+              )}
+              {formManualTable && (
+                <label className="flex items-center gap-2 mt-1.5 cursor-pointer text-xs text-gray-500">
+                  <input
+                    type="checkbox"
+                    checked={formManualTable}
+                    onChange={e => { setFormManualTable(e.target.checked); if (!e.target.checked) { setFormTable(''); setFormHdfsLayer('') } }}
+                    className="rounded border-gray-300"
+                  />
+                  Nhập tên bảng thủ công
+                </label>
+              )}
+              {sqlwfSynced && !formManualTable && (
                 <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />
-                  Đã đồng bộ metadata từ SQLWF (area, owner)
+                  Đã đồng bộ metadata từ HDFS Registry (schema, owner, layer)
                 </p>
               )}
             </div>
@@ -1221,18 +1376,18 @@ export function DataCatalog() {
                 <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Mode <InfoTooltip text="Append = thêm dữ liệu mới theo partition (ngày/tháng). Overwrite = ghi đè toàn bộ mỗi lần chạy ETL" /></span></Label>
                 <div className="text-sm text-gray-600 bg-gray-50 border rounded-md px-3 py-2">
                   {sqlwfSynced
-                    ? (SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.mode ?? '—')
+                    ? (HDFS_TABLE_REGISTRY.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.mode ?? '—')
                     : '—'}
-                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ SQLWF)</span>}
+                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ Registry)</span>}
                 </div>
               </div>
               <div>
                 <Label className="text-sm font-medium mb-1 block"><span className="inline-flex items-center gap-1">Partition <InfoTooltip text="Cách phân vùng dữ liệu: Daily (hàng ngày), Monthly (hàng tháng), None (không phân vùng). Ảnh hưởng lịch quét DQ tự động" /></span></Label>
                 <div className="text-sm text-gray-600 bg-gray-50 border rounded-md px-3 py-2">
                   {sqlwfSynced
-                    ? (SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.partitionBy ?? '—')
+                    ? (HDFS_TABLE_REGISTRY.find(t => t.name.toLowerCase() === formTable.toLowerCase())?.partitionBy ?? '—')
                     : '—'}
-                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ SQLWF)</span>}
+                  {sqlwfSynced && <span className="text-xs text-gray-400 ml-1">(từ Registry)</span>}
                 </div>
               </div>
               <div>
@@ -1244,7 +1399,7 @@ export function DataCatalog() {
 
           {/* B5: Gợi ý mẫu bảng — match theo moduleType + mode + partition */}
           {(() => {
-            const sqlwfMatch = SQLWF_TABLES.find(t => t.name.toLowerCase() === formTable.toLowerCase())
+            const sqlwfMatch = HDFS_TABLE_REGISTRY.find(t => t.name.toLowerCase() === formTable.toLowerCase())
             const currentMode = sqlwfMatch?.mode
             const currentPartition = sqlwfMatch?.partitionBy
             const matched = mockTableProfiles.filter(tpl => {
@@ -1467,7 +1622,7 @@ export function DataCatalog() {
               Bước 1: Tải template
             </Label>
             <p className="text-xs text-blue-600 mb-3">Tải file mẫu, điền dữ liệu theo format rồi upload lại. Các cột ngưỡng (W/C) để trống = kế thừa mặc định.</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -1484,7 +1639,18 @@ export function DataCatalog() {
               >
                 <FileDown className="h-3 w-3 mr-1" />Template quy tắc (rules)
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadCSV('template_import_nhanh.csv', QUICK_IMPORT_HEADER, QUICK_IMPORT_EXAMPLE)}
+                className="text-xs border-green-300 text-green-700 hover:bg-green-50"
+              >
+                <FileDown className="h-3 w-3 mr-1" />Template import nhanh (có Mẫu bảng)
+              </Button>
             </div>
+            <p className="text-[11px] text-blue-500 mt-1.5">
+              Template import nhanh: điền sẵn "Mẫu bảng" để hệ thống bỏ qua bước áp mẫu thủ công.
+            </p>
           </div>
 
           {/* Step 2: Upload */}

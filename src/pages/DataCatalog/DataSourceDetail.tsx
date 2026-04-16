@@ -622,7 +622,33 @@ VD: W:90/C:80 nghĩa là dưới 90 cảnh báo, dưới 80 không đạt." /></
               </div>
               <div>
                 <Label>Tên bảng vật lý *</Label>
-                <Input value={formTable} onChange={e => setFormTable(e.target.value)} placeholder="KH_KHACHHANG" />
+                <div className="relative">
+                  <Input value={formTable} onChange={e => setFormTable(e.target.value)} placeholder="KH_KHACHHANG" className="pr-16" />
+                  {ds.hdfsLayer && (
+                    <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                      ds.hdfsLayer === 'L1' ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                      ds.hdfsLayer === 'L2' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                      ds.hdfsLayer === 'L3' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                      ds.hdfsLayer === 'L4' ? 'bg-green-100 text-green-700 border-green-200' :
+                      ds.hdfsLayer === 'L5' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                      'bg-rose-100 text-rose-700 border-rose-200'
+                    }`}>
+                      {ds.hdfsLayer}
+                    </span>
+                  )}
+                </div>
+                {ds.hdfsLayer && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Lớp HDFS: {
+                      ds.hdfsLayer === 'L1' ? 'Dữ liệu thô (Raw)' :
+                      ds.hdfsLayer === 'L2' ? 'Chuẩn hóa (Standardized)' :
+                      ds.hdfsLayer === 'L3' ? 'Tổng hợp (Aggregated)' :
+                      ds.hdfsLayer === 'L4' ? 'Data Mart' :
+                      ds.hdfsLayer === 'L5' ? 'Báo cáo (Reporting)' :
+                      'Sandbox / Ad-hoc'
+                    }
+                  </p>
+                )}
               </div>
               <div>
                 <Label>Danh mục</Label>

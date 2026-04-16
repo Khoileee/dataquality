@@ -45,7 +45,7 @@ const ISSUE_STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
 ]
 
 function exportCSV(issues: Issue[]) {
-  const header = ['STT', 'ID', 'Tiêu đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
+  const header = ['STT', 'ID', 'Vấn đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
   const rows = issues.map((iss, i) => [
     i + 1,
     iss.id.toUpperCase(),
@@ -391,7 +391,7 @@ export function Issues() {
               <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                <Input className="pl-8" placeholder="Tìm theo tiêu đề..." value={search} onChange={e => setSearch(e.target.value)} />
+                <Input className="pl-8" placeholder="Tìm theo vấn đề..." value={search} onChange={e => setSearch(e.target.value)} />
               </div>
             </div>
             <div>
@@ -485,7 +485,7 @@ export function Issues() {
               <TableRow>
                 <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
                 <TableHead className="w-24">ID</TableHead>
-                <TableHead><span className="inline-flex items-center gap-1">Tiêu đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
+                <TableHead><span className="inline-flex items-center gap-1">Vấn đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
                 <TableHead className="w-32"><span className="inline-flex items-center gap-1">Mức độ <InfoTooltip text="Mức độ nghiêm trọng: Critical (khẩn cấp, SLA 24h), High (cao), Medium (trung bình), Low (thấp)" /></span></TableHead>
                 <TableHead className="w-36">Bảng dữ liệu</TableHead>
                 <TableHead className="w-24">Loại</TableHead>

@@ -2465,17 +2465,55 @@ function MetricTemplatesSubTab({ onUseTemplate, onBulkApplyTemplate, metricTempl
             </div>
           )}
 
-          {/* Threshold */}
-          <div>
-            <Label className="mb-2 block">Ngưỡng mặc định</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-red-700">Critical (%)</Label>
-                <Input type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} placeholder="85" />
+          {/* Threshold — Dual Range Slider */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Ngưỡng đánh giá</Label>
+            {/* Slider */}
+            <div className="relative h-10 select-none">
+              {/* Color zones bar */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 rounded-full overflow-hidden flex">
+                <div className="bg-red-400 transition-all duration-150" style={{ width: `${Number(formCritical)}%` }} />
+                <div className="bg-amber-400 transition-all duration-150" style={{ width: `${Number(formWarning) - Number(formCritical)}%` }} />
+                <div className="bg-green-400 transition-all duration-150" style={{ width: `${100 - Number(formWarning)}%` }} />
               </div>
-              <div>
-                <Label className="text-xs text-yellow-700">Warning (%)</Label>
-                <Input type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} placeholder="95" />
+              {/* Critical handle */}
+              <input
+                type="range" min={0} max={100}
+                value={formCritical}
+                onChange={e => {
+                  const v = +e.target.value
+                  if (v < Number(formWarning)) setFormCritical(String(v))
+                }}
+                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-red-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
+                style={{ zIndex: Number(formCritical) > 50 ? 2 : 1 }}
+              />
+              {/* Warning handle */}
+              <input
+                type="range" min={0} max={100}
+                value={formWarning}
+                onChange={e => {
+                  const v = +e.target.value
+                  if (v > Number(formCritical)) setFormWarning(String(v))
+                }}
+                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-amber-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
+                style={{ zIndex: Number(formWarning) < 50 ? 2 : 1 }}
+              />
+            </div>
+            {/* Legend */}
+            <div className="flex items-center justify-between text-xs px-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-red-400" />
+                <span className="text-red-700 font-semibold">C = {formCritical}%</span>
+                <span className="text-gray-400">Không đạt</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-amber-400" />
+                <span className="text-amber-700 font-semibold">W = {formWarning}%</span>
+                <span className="text-gray-400">Cảnh báo</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-green-400" />
+                <span className="text-gray-400">Đạt</span>
               </div>
             </div>
           </div>

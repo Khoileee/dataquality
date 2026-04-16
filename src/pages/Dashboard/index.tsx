@@ -576,7 +576,7 @@ export function Dashboard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tiêu đề</TableHead>
+                <TableHead>Vấn đề</TableHead>
                 <TableHead>Mức độ</TableHead>
                 <TableHead>Bảng dữ liệu</TableHead>
                 <TableHead>Loại</TableHead>
