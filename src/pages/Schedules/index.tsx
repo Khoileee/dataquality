@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Dialog } from '@/components/ui/dialog'
+import { SearchableCombobox } from '@/components/ui/SearchableCombobox'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { StatusBadge } from '@/components/common/StatusBadge'
@@ -244,12 +245,18 @@ function ScheduleDialog({ open, editSchedule, initialTableId, onClose, onSave }:
 
         <div className="space-y-1.5">
           <Label>Bảng dữ liệu <span className="text-red-500">*</span></Label>
-          <Select value={form.tableId} onChange={set('tableId')}>
-            <option value="">-- Chọn bảng dữ liệu --</option>
-            {mockDataSources.map(ds => (
-              <option key={ds.id} value={ds.id}>{ds.name}</option>
-            ))}
-          </Select>
+          <SearchableCombobox
+            value={form.tableId || null}
+            onChange={v => set('tableId')({ target: { value: v } } as any)}
+            items={mockDataSources.map(ds => ({
+              value: ds.id,
+              label: ds.name,
+              group: ds.hdfsLayer ?? ds.category,
+              description: ds.schema,
+            }))}
+            placeholder="Chọn bảng dữ liệu..."
+            searchPlaceholder="Tìm theo tên bảng..."
+          />
         </div>
 
         {/* B3: Auto-suggest card */}
@@ -291,7 +298,10 @@ function ScheduleDialog({ open, editSchedule, initialTableId, onClose, onSave }:
 
         {showCron && (
           <div className="space-y-1.5">
-            <Label>Cron expression</Label>
+            <Label className="inline-flex items-center gap-1">
+              Cron expression
+              <InfoTooltip text={"Định dạng: phút giờ ngày tháng thứ. VD: 0 6 * * 1-5 = 06:00 thứ 2-6. 0 0 L * * = 00:00 ngày cuối tháng. Tham khảo: crontab.guru"} />
+            </Label>
             <Input value={form.cronExpression} onChange={set('cronExpression')} placeholder="0 6 * * *" className="font-mono text-sm" />
             <p className="text-xs text-gray-500">Định dạng: phút giờ ngày tháng thứ — VD: <code className="bg-gray-100 px-1 rounded">0 6 * * *</code></p>
           </div>

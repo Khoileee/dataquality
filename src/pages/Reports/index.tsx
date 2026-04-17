@@ -367,7 +367,7 @@ function OverviewDashboard({ onSelectTable }: { onSelectTable: (id: string) => v
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12 text-center">STT</TableHead>
-                    <TableHead>Vấn đề</TableHead>
+                    <TableHead>Tiêu đề</TableHead>
                     <TableHead>Bảng</TableHead>
                     <TableHead className="text-center">Mức độ</TableHead>
                     <TableHead className="text-center">Trạng thái</TableHead>
@@ -857,7 +857,7 @@ function OverviewDashboard({ onSelectTable }: { onSelectTable: (id: string) => v
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10 text-center">STT</TableHead>
-                  <TableHead>Vấn đề</TableHead>
+                  <TableHead>Tiêu đề</TableHead>
                   <TableHead>Bảng</TableHead>
                   <TableHead className="text-center">Mức độ</TableHead>
                   <TableHead className="text-center">Trạng thái</TableHead>
@@ -1023,7 +1023,7 @@ function TableDetailDashboard({ tableId }: { tableId: string }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10 text-center">STT</TableHead>
-                    <TableHead>Vấn đề</TableHead>
+                    <TableHead>Tiêu đề</TableHead>
                     <TableHead className="text-center">Mức độ</TableHead>
                     <TableHead className="text-center">Trạng thái</TableHead>
                     <TableHead className="text-center">Phát hiện</TableHead>

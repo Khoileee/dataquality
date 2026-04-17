@@ -6,6 +6,7 @@ import {
   CheckCircle, Layers, RefreshCw, Bell, Play, Shield, ChevronDown, ChevronUp,
   UserPlus, X,
 } from 'lucide-react'
+import { SearchableCombobox } from '@/components/ui/SearchableCombobox'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -45,7 +46,7 @@ const ISSUE_STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
 ]
 
 function exportCSV(issues: Issue[]) {
-  const header = ['STT', 'ID', 'Vấn đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
+  const header = ['STT', 'ID', 'Tiêu đề', 'Mức độ', 'Trạng thái', 'Bảng dữ liệu', 'Chiều dữ liệu', 'Phát hiện lúc', 'Gán cho']
   const rows = issues.map((iss, i) => [
     i + 1,
     iss.id.toUpperCase(),
@@ -285,6 +286,8 @@ export function Issues() {
   const [toDate, setToDate] = useState('')
   const [page, setPage] = useState(1)
   const [openDropdown, setOpenDropdown] = useState<{ type: 'assign' | 'status'; issueId: string } | null>(null)
+  const [selectedIssueIds, setSelectedIssueIds] = useState<Set<string>>(new Set())
+  const [bulkAssignee, setBulkAssignee] = useState('')
 
   // Merge mock issues with auto-generated issues from rule runs (newest first)
   const [localIssues, setLocalIssues] = useState<Issue[]>(() => [..._ruleGeneratedIssues, ...mockIssues])
@@ -313,7 +316,29 @@ export function Issues() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const handleSearch = () => setPage(1)
+  const handleSearch = () => { setPage(1); setSelectedIssueIds(new Set()) }
+
+  // Clear bulk selection on page change
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    setSelectedIssueIds(new Set())
+  }
+
+  const bulkAssign = () => {
+    if (!bulkAssignee) return
+    setLocalIssues(prev => prev.map(i =>
+      selectedIssueIds.has(i.id) ? { ...i, assignedTo: bulkAssignee } : i
+    ))
+    setSelectedIssueIds(new Set())
+    setBulkAssignee('')
+  }
+
+  const bulkClose = () => {
+    setLocalIssues(prev => prev.map(i =>
+      selectedIssueIds.has(i.id) ? { ...i, status: 'closed' as const } : i
+    ))
+    setSelectedIssueIds(new Set())
+  }
 
   const handleAssign = (issueId: string, userName: string) => {
     setLocalIssues(prev => prev.map(i => i.id === issueId ? { ...i, assignedTo: userName } : i))
@@ -391,7 +416,7 @@ export function Issues() {
               <Label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</Label>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                <Input className="pl-8" placeholder="Tìm theo vấn đề..." value={search} onChange={e => setSearch(e.target.value)} />
+                <Input className="pl-8" placeholder="Tìm theo tiêu đề..." value={search} onChange={e => setSearch(e.target.value)} />
               </div>
             </div>
             <div>
@@ -471,6 +496,28 @@ export function Issues() {
         </CardContent>
       </Card>
 
+      {/* Bulk action bar */}
+      {selectedIssueIds.size > 0 && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+          <span className="text-sm font-medium text-blue-900">Đã chọn {selectedIssueIds.size} vấn đề</span>
+          <SearchableCombobox
+            value={bulkAssignee || null}
+            onChange={v => setBulkAssignee(v)}
+            items={mockUsers.filter(u => u.role !== 'viewer').map(u => ({ value: u.name, label: u.name }))}
+            placeholder="Gán cho..."
+            searchPlaceholder="Tìm người..."
+            className="w-48"
+          />
+          <Button variant="outline" size="sm" onClick={bulkAssign} disabled={!bulkAssignee}>Gán</Button>
+          <Button variant="outline" size="sm" onClick={bulkClose}>
+            <CheckCircle className="w-4 h-4 mr-1" /> Đóng tất cả
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedIssueIds(new Set())}>
+            Bỏ chọn
+          </Button>
+        </div>
+      )}
+
       {/* Table */}
       <Card>
         <CardHeader className="pb-3">
@@ -483,9 +530,27 @@ export function Issues() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
+                <TableHead className="w-10 text-center sticky left-0 z-10 sticky-left">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 cursor-pointer"
+                    checked={paged.length > 0 && paged.every(i => selectedIssueIds.has(i.id))}
+                    onChange={e => {
+                      if (e.target.checked) {
+                        setSelectedIssueIds(prev => new Set([...prev, ...paged.map(i => i.id)]))
+                      } else {
+                        setSelectedIssueIds(prev => {
+                          const next = new Set(prev)
+                          paged.forEach(i => next.delete(i.id))
+                          return next
+                        })
+                      }
+                    }}
+                  />
+                </TableHead>
+                <TableHead className="w-12 text-center">STT</TableHead>
                 <TableHead className="w-24">ID</TableHead>
-                <TableHead><span className="inline-flex items-center gap-1">Vấn đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
+                <TableHead><span className="inline-flex items-center gap-1">Tiêu đề <InfoTooltip text="Mô tả ngắn gọn vấn đề, được tự động sinh từ tên rule vi phạm" /></span></TableHead>
                 <TableHead className="w-32"><span className="inline-flex items-center gap-1">Mức độ <InfoTooltip text="Mức độ nghiêm trọng: Critical (khẩn cấp, SLA 24h), High (cao), Medium (trung bình), Low (thấp)" /></span></TableHead>
                 <TableHead className="w-36">Bảng dữ liệu</TableHead>
                 <TableHead className="w-24">Loại</TableHead>
@@ -500,14 +565,29 @@ export function Issues() {
             <TableBody>
               {paged.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-12 text-gray-400">
+                  <TableCell colSpan={13} className="text-center py-12 text-gray-400">
                     Không tìm thấy vấn đề nào
                   </TableCell>
                 </TableRow>
               ) : (
                 paged.map((issue, idx) => (
-                  <TableRow key={issue.id} className="hover:bg-gray-50">
-                    <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
+                  <TableRow key={issue.id} className={`hover:bg-gray-50 ${selectedIssueIds.has(issue.id) ? 'bg-blue-50/40' : ''}`}>
+                    <TableCell className="text-center sticky left-0 z-10 sticky-left">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 cursor-pointer"
+                        checked={selectedIssueIds.has(issue.id)}
+                        onChange={e => {
+                          setSelectedIssueIds(prev => {
+                            const next = new Set(prev)
+                            if (e.target.checked) next.add(issue.id)
+                            else next.delete(issue.id)
+                            return next
+                          })
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-gray-500 font-medium">
                       {(page - 1) * PAGE_SIZE + idx + 1}
                     </TableCell>
                     <TableCell>
@@ -650,7 +730,7 @@ export function Issues() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => handlePageChange(Math.max(1, page - 1))}
                   disabled={page === 1}
                 >
                   Trước
@@ -660,7 +740,7 @@ export function Issues() {
                     key={p}
                     variant={p === page ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setPage(p)}
+                    onClick={() => handlePageChange(p)}
                     className="w-8 h-8 p-0"
                   >
                     {p}
@@ -669,7 +749,7 @@ export function Issues() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
                 >
                   Sau

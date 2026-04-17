@@ -12,7 +12,9 @@ import { StatusBadge } from '@/components/common/StatusBadge'
 import { PageHeader } from '@/components/common/PageHeader'
 import { mockNotifications, mockDataSources, getDownstreamJobs, cascadeConfig as defaultCascadeConfig } from '@/data/mockData'
 import type { NotificationConfig, CascadeConfig } from '@/types'
-import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle, Link2, Send } from 'lucide-react'
+import { Mail, MessageSquare, Webhook, Plus, Pencil, Trash2, Zap, Bell, CheckCircle, Link2, Send, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PAGE_SIZE = 10
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 
 const TYPE_ICONS: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
@@ -30,6 +32,8 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 export function Notifications() {
   const [items, setItems] = useState<NotificationConfig[]>(mockNotifications)
+  const [searchText, setSearchText] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [showDialog, setShowDialog] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
@@ -43,6 +47,7 @@ export function Notifications() {
   })
   const [testSent, setTestSent] = useState<string | null>(null)
   const [cascadeCfg, setCascadeCfg] = useState<CascadeConfig>({ ...defaultCascadeConfig })
+  const [tableFilterSearch, setTableFilterSearch] = useState('')
 
   const openAdd = () => {
     setEditingId(null)
@@ -96,6 +101,12 @@ export function Notifications() {
   const handleDelete = (id: string) => setItems(prev => prev.filter(i => i.id !== id))
   const toggleActive = (id: string) => setItems(prev => prev.map(i => i.id === id ? { ...i, isActive: !i.isActive } : i))
 
+  const filteredItems = items.filter(i =>
+    !searchText || i.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
+  const pagedItems = filteredItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
   const handleTest = (id: string) => {
     setTestSent(id)
     setTimeout(() => setTestSent(null), 3000)
@@ -130,9 +141,23 @@ export function Notifications() {
         </div>
       </div>
 
+      {/* Search bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <Input
+            className="pl-8"
+            placeholder="Tìm kiếm theo tên cấu hình..."
+            value={searchText}
+            onChange={e => { setSearchText(e.target.value); setCurrentPage(1) }}
+          />
+        </div>
+        <span className="text-sm text-gray-500">{filteredItems.length} cấu hình</span>
+      </div>
+
       {/* Notification cards */}
       <div className="space-y-3">
-        {items.map(item => {
+        {pagedItems.map(item => {
           const typeInfo = TYPE_ICONS[item.type]
           const TypeIcon = typeInfo.icon
           return (
@@ -202,6 +227,34 @@ export function Notifications() {
           )
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm text-slate-500">
+            Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredItems.length)} / {filteredItems.length} cấu hình
+          </span>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+              <Button
+                key={p}
+                variant={p === currentPage ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCurrentPage(p)}
+                className="w-8 h-8 p-0"
+              >
+                {p}
+              </Button>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Cascade Settings */}
       <div className="mt-8">
@@ -334,7 +387,10 @@ export function Notifications() {
                 <span className="text-sm font-semibold text-slate-700">Nội dung email</span>
               </div>
               <div>
-                <Label>Tiêu đề email</Label>
+                <Label className="inline-flex items-center gap-1">
+                  Tiêu đề email
+                  <InfoTooltip text={"Hỗ trợ biến động: {{table}} (tên bảng), {{severity}} (mức độ), {{score}} (điểm), {{dimension}} (chiều DQ), {{threshold}} (ngưỡng)."} />
+                </Label>
                 <Input className="mt-1" placeholder="[DQ ALERT] {{severity}} - Bảng {{table}} cần xử lý ngay"
                   value={form.emailSubject} onChange={e => setForm(f => ({ ...f, emailSubject: e.target.value }))} />
               </div>
@@ -379,16 +435,29 @@ export function Notifications() {
               </label>
             </div>
             {!form.allTables && (
-              <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-1">
-                {mockDataSources.map(ds => (
-                  <label key={ds.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 rounded px-1">
-                    <input type="checkbox"
-                      checked={form.selectedTables.includes(ds.id)}
-                      onChange={e => setForm(f => ({ ...f, selectedTables: e.target.checked ? [...f.selectedTables, ds.id] : f.selectedTables.filter(id => id !== ds.id) }))}
-                    />
-                    {ds.name}
-                  </label>
-                ))}
+              <div className="border rounded-md p-3 space-y-1">
+                <Input
+                  placeholder="Tìm bảng..."
+                  value={tableFilterSearch}
+                  onChange={e => setTableFilterSearch(e.target.value)}
+                  className="mb-2 h-8 text-sm"
+                />
+                <div className="max-h-32 overflow-y-auto space-y-1">
+                  {mockDataSources
+                    .filter(ds => ds.name.toLowerCase().includes(tableFilterSearch.toLowerCase()))
+                    .map(ds => (
+                      <label key={ds.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 rounded px-1">
+                        <input type="checkbox"
+                          checked={form.selectedTables.includes(ds.id)}
+                          onChange={e => setForm(f => ({ ...f, selectedTables: e.target.checked ? [...f.selectedTables, ds.id] : f.selectedTables.filter(id => id !== ds.id) }))}
+                        />
+                        {ds.name}
+                      </label>
+                    ))}
+                  {mockDataSources.filter(ds => ds.name.toLowerCase().includes(tableFilterSearch.toLowerCase())).length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-2">Không tìm thấy bảng nào</p>
+                  )}
+                </div>
               </div>
             )}
           </div>

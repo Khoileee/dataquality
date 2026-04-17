@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Dialog } from '@/components/ui/dialog'
+import { SearchableCombobox } from '@/components/ui/SearchableCombobox'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { DimensionBadge } from '@/components/common/DimensionBadge'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -17,6 +18,13 @@ import {
   XCircle, Send, AlertTriangle, Database, BookOpen,
 } from 'lucide-react'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
+
+const ROLE_LABEL: Record<string, string> = {
+  admin: 'Quản trị viên',
+  data_steward: 'Data Steward',
+  analyst: 'Phân tích viên',
+  viewer: 'Người xem',
+}
 
 const EVENT_ICONS: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   created: { icon: AlertTriangle, color: 'text-blue-600', bg: 'bg-blue-100' },
@@ -254,12 +262,26 @@ export function IssueDetail() {
             <CardContent className="space-y-3">
               <div>
                 <Label className="text-xs">Gán cho</Label>
-                <Select className="mt-1" value={assignee} onChange={e => setAssignee(e.target.value)}>
-                  <option value="">Chưa gán</option>
-                  {mockUsers.filter(u => u.role !== 'viewer').map(u => (
-                    <option key={u.id} value={u.name}>{u.name} ({u.team})</option>
-                  ))}
-                </Select>
+                <div className="mt-1">
+                  <SearchableCombobox
+                    value={assignee || null}
+                    onChange={v => setAssignee(v)}
+                    items={[
+                      { value: '', label: 'Chưa gán', group: '' },
+                      ...mockUsers
+                        .filter(u => u.role !== 'viewer')
+                        .map(u => ({
+                          value: u.name,
+                          label: u.name,
+                          group: ROLE_LABEL[u.role] ?? u.role,
+                          description: u.email,
+                        })),
+                    ]}
+                    placeholder="Chưa gán"
+                    searchPlaceholder="Tìm người dùng..."
+                    allowClear
+                  />
+                </div>
               </div>
               <div>
                 <Label className="text-xs">Mức độ ưu tiên</Label>

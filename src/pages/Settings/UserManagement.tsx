@@ -12,7 +12,9 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { mockUsers, mockDataSources } from '@/data/mockData'
 import type { User } from '@/types'
 import { formatDateTime } from '@/lib/utils'
-import { Plus, Pencil, Trash2, Shield, Users } from 'lucide-react'
+import { Plus, Pencil, Trash2, Shield, Users, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PAGE_SIZE = 10
 
 const ROLE_CONFIG: Record<string, { label: string; variant: 'destructive' | 'default' | 'warning' | 'secondary'; desc: string }> = {
   admin: { label: 'Quản trị viên', variant: 'destructive', desc: 'Toàn quyền hệ thống' },
@@ -24,16 +26,21 @@ const ROLE_CONFIG: Record<string, { label: string; variant: 'destructive' | 'def
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>(mockUsers)
   const [search, setSearch] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [showDialog, setShowDialog] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
     name: '', email: '', role: 'analyst' as User['role'],
     team: 'Nhóm Khách hàng', dataOwnership: [] as string[], isActive: true,
   })
+  const [tableOwnerSearch, setTableOwnerSearch] = useState('')
 
   const filtered = users.filter(u =>
     !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
   )
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const openAdd = () => {
     setEditingId(null)
@@ -104,7 +111,7 @@ export function UserManagement() {
             <span className="font-semibold">Danh sách người dùng</span>
             <Badge variant="secondary">{filtered.length} người dùng</Badge>
           </div>
-          <Input placeholder="Tìm kiếm theo tên, email..." value={search} onChange={e => setSearch(e.target.value)} className="w-64 h-8" />
+          <Input placeholder="Tìm kiếm theo tên, email..." value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1) }} className="w-64 h-8" />
         </div>
         <CardContent className="p-0">
           <Table>
@@ -121,12 +128,12 @@ export function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((user, idx) => {
+              {paginated.map((user, idx) => {
                 const roleConfig = ROLE_CONFIG[user.role]
                 return (
                   <TableRow key={user.id}>
                     <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
-                      {idx + 1}
+                      {(currentPage - 1) * PAGE_SIZE + idx + 1}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
@@ -174,6 +181,34 @@ export function UserManagement() {
               })}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+              <span className="text-sm text-slate-500">
+                Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / {filtered.length} người dùng
+              </span>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <Button
+                    key={p}
+                    variant={p === currentPage ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCurrentPage(p)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {p}
+                  </Button>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -214,19 +249,32 @@ export function UserManagement() {
           {(form.role === 'data_steward' || form.role === 'admin') && (
             <div>
               <Label>Bảng dữ liệu quản lý</Label>
-              <div className="mt-1 border rounded-md p-3 max-h-48 overflow-y-auto grid grid-cols-2 gap-1">
-                {mockDataSources.map(ds => (
-                  <label key={ds.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50 rounded px-1">
-                    <input type="checkbox"
-                      checked={form.dataOwnership.includes(ds.id)}
-                      onChange={e => setForm(f => ({ ...f, dataOwnership: e.target.checked ? [...f.dataOwnership, ds.id] : f.dataOwnership.filter(id => id !== ds.id) }))}
-                    />
-                    <div>
-                      <div className="font-medium text-xs">{ds.name}</div>
-                      <div className="text-xs text-gray-400">{ds.schema}</div>
-                    </div>
-                  </label>
-                ))}
+              <div className="mt-1 border rounded-md p-3">
+                <Input
+                  placeholder="Tìm bảng..."
+                  value={tableOwnerSearch}
+                  onChange={e => setTableOwnerSearch(e.target.value)}
+                  className="mb-2 h-8 text-sm"
+                />
+                <div className="max-h-36 overflow-y-auto grid grid-cols-2 gap-1">
+                  {mockDataSources
+                    .filter(ds => ds.name.toLowerCase().includes(tableOwnerSearch.toLowerCase()))
+                    .map(ds => (
+                      <label key={ds.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50 rounded px-1">
+                        <input type="checkbox"
+                          checked={form.dataOwnership.includes(ds.id)}
+                          onChange={e => setForm(f => ({ ...f, dataOwnership: e.target.checked ? [...f.dataOwnership, ds.id] : f.dataOwnership.filter(id => id !== ds.id) }))}
+                        />
+                        <div>
+                          <div className="font-medium text-xs">{ds.name}</div>
+                          <div className="text-xs text-gray-400">{ds.schema}</div>
+                        </div>
+                      </label>
+                    ))}
+                  {mockDataSources.filter(ds => ds.name.toLowerCase().includes(tableOwnerSearch.toLowerCase())).length === 0 && (
+                    <p className="col-span-2 text-sm text-gray-400 text-center py-2">Không tìm thấy bảng nào</p>
+                  )}
+                </div>
               </div>
             </div>
           )}

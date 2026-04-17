@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   BookOpen, LayoutGrid, Search, Plus, Edit, Trash2, X, Play,
   ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2,
-  History, Copy,
+  History, Copy, ToggleRight, ToggleLeft,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { InfoTooltip } from '@/components/common/InfoTooltip'
 import { cn, formatDateTime } from '@/lib/utils'
 import { SearchableMultiSelect } from '@/components/common/SearchableMultiSelect'
+import { SearchableCombobox } from '@/components/ui/SearchableCombobox'
 import { mockRules, mockRuleTemplates, mockDataSources, mockColumnProfiles, mockTableProfiles } from '@/data/mockData'
 import { getGlobalThreshold, getTableThreshold } from '@/pages/Thresholds'
 import type { QualityDimension, RuleStatus, MetricType, MetricConfig, QualityRule, RuleTemplate, IssueSeverity, Issue, ModuleType, ColumnProfileTemplate, TableProfileTemplate } from '@/types'
@@ -229,6 +230,25 @@ const COLUMNS_BY_TABLE: Record<string, string[]> = {
   'ds-015': ['NGAY','MA_KH','TONG_GD','TONG_TIEN','KENH_GD','MA_SP'],
 }
 
+// Helper: lấy danh sách cột từ tableName (dùng cho refTable/sourceTable combobox)
+function getColumnsByTableName(tableName: string): string[] {
+  if (!tableName) return []
+  const ds = mockDataSources.find(d => d.tableName === tableName || d.name === tableName)
+  if (!ds) return []
+  // Ưu tiên columns từ DataSource, fallback về COLUMNS_BY_TABLE
+  if (ds.columns && ds.columns.length > 0) return ds.columns
+  return COLUMNS_BY_TABLE[ds.id] ?? []
+}
+
+// Helper: lấy danh sách cột từ tableId (id của DataSource)
+function getColumnsByTableId(tableId: string): string[] {
+  if (!tableId) return []
+  const ds = mockDataSources.find(d => d.id === tableId)
+  if (!ds) return []
+  if (ds.columns && ds.columns.length > 0) return ds.columns
+  return COLUMNS_BY_TABLE[ds.id] ?? []
+}
+
 interface RuleForm {
   name: string
   description: string
@@ -317,6 +337,13 @@ function MetricConfigFields({
   templateMode?: boolean
   multiColumnMode?: boolean
 }) {
+  const [columnSearch, setColumnSearch] = useState('')
+
+  // Reset column search when tableId changes
+  useEffect(() => {
+    setColumnSearch('')
+  }, [form.tableId])
+
   const set = (field: keyof RuleForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }))
@@ -361,6 +388,12 @@ function MetricConfigFields({
           </Label>
           {tableColumns.length > 0 ? (
             <>
+              <Input
+                placeholder="Tìm cột..."
+                value={columnSearch}
+                onChange={e => setColumnSearch(e.target.value)}
+                className="h-8 text-sm mb-1.5"
+              />
               <div className="flex items-center gap-2 mb-1.5">
                 <button
                   type="button"
@@ -381,7 +414,9 @@ function MetricConfigFields({
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 bg-white rounded border border-blue-200">
-                {tableColumns.map(c => (
+                {tableColumns
+                  .filter(c => c.toLowerCase().includes(columnSearch.toLowerCase()))
+                  .map(c => (
                   <button
                     key={c}
                     type="button"
@@ -399,11 +434,10 @@ function MetricConfigFields({
               </div>
             </>
           ) : (
-            <Input
-              value={form.columns.join(', ')}
-              onChange={e => setForm(p => ({ ...p, columns: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
-              placeholder="col1, col2, col3"
-            />
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-sm text-amber-800 font-medium">Bảng này chưa có metadata cột.</p>
+              <p className="text-xs text-amber-600 mt-0.5">Vui lòng chạy Profiling trước để lấy danh sách cột.</p>
+            </div>
           )}
         </div>
       )}
@@ -431,7 +465,10 @@ function MetricConfigFields({
               ))}
             </div>
           ) : (
-            <Input value={form.columns.join(', ')} onChange={e => setForm(p => ({ ...p, columns: e.target.value.split(',').map(s => s.trim()) }))} placeholder="col1, col2, col3" />
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-sm text-amber-800 font-medium">Bảng này chưa có metadata cột.</p>
+              <p className="text-xs text-amber-600 mt-0.5">Vui lòng chạy Profiling trước để lấy danh sách cột.</p>
+            </div>
           )}
           {form.columns.length > 0 && (
             <p className="text-xs text-blue-600">Đã chọn: {form.columns.join(', ')}</p>
@@ -442,7 +479,10 @@ function MetricConfigFields({
       {/* Fill rate threshold */}
       {mt === 'fill_rate' && (
         <div className="space-y-1">
-          <Label className="text-sm">Tỷ lệ điền tối thiểu (%) <span className="text-red-500">*</span></Label>
+          <Label className="text-sm inline-flex items-center gap-1">
+            Tỷ lệ điền tối thiểu (%) <span className="text-red-500">*</span>
+            <InfoTooltip text="Tỷ lệ điền đủ = % dòng có giá trị khác NULL và khác chuỗi rỗng. VD: 95 = ít nhất 95% dòng phải có giá trị." />
+          </Label>
           <Input type="number" min={0} max={100} value={form.minFillPct} onChange={set('minFillPct')} placeholder="95" className="w-32" />
         </div>
       )}
@@ -450,7 +490,10 @@ function MetricConfigFields({
       {/* Regex pattern */}
       {mt === 'format_regex' && (
         <div className="space-y-1">
-          <Label className="text-sm">Biểu thức chính quy <span className="text-red-500">*</span></Label>
+          <Label className="text-sm inline-flex items-center gap-1">
+            Biểu thức chính quy <span className="text-red-500">*</span>
+            <InfoTooltip text={"Biểu thức chính quy (regex). VD: ^[0-9]{9,12}$ = 9 đến 12 chữ số. ^[A-Z]{2}\\d+ = 2 chữ cái viết hoa + số."} />
+          </Label>
           <Input value={form.pattern} onChange={set('pattern')} placeholder="^[0-9]{10}$" className="font-mono text-sm" />
           <p className="text-xs text-gray-500">Ví dụ SĐT: <code className="bg-gray-100 px-1 rounded">^(03|07|08|09)\d{8}$</code></p>
         </div>
@@ -517,14 +560,45 @@ function MetricConfigFields({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-sm">Bảng tham chiếu <span className="text-red-500">*</span></Label>
-              <Select value={form.refTable} onChange={set('refTable')}>
-                <option value="">-- Chọn bảng --</option>
-                {mockDataSources.map(ds => <option key={ds.id} value={ds.tableName}>{ds.name}</option>)}
-              </Select>
+              <SearchableCombobox
+                value={form.refTable || null}
+                onChange={v => setForm(prev => ({ ...prev, refTable: v, refColumn: '' }))}
+                items={mockDataSources.map(ds => ({
+                  value: ds.tableName,
+                  label: ds.name,
+                  group: ds.hdfsLayer ?? ds.category,
+                  description: ds.schema,
+                }))}
+                placeholder="Chọn bảng tham chiếu..."
+                searchPlaceholder="Tìm bảng..."
+              />
             </div>
             <div className="space-y-1">
-              <Label className="text-sm">Cột tham chiếu <span className="text-red-500">*</span></Label>
-              <Input value={form.refColumn} onChange={set('refColumn')} placeholder="MA_KH, MA_SP..." />
+              <Label className="text-sm inline-flex items-center gap-1">
+                Cột tham chiếu <span className="text-red-500">*</span>
+                <InfoTooltip text="Cột trong bảng tham chiếu để so khớp. Giá trị trong cột hiện tại phải tồn tại trong cột này của bảng tham chiếu." />
+              </Label>
+              {(() => {
+                const refCols = getColumnsByTableName(form.refTable)
+                return refCols.length > 0 ? (
+                  <SearchableCombobox
+                    value={form.refColumn || null}
+                    onChange={v => setForm(prev => ({ ...prev, refColumn: v }))}
+                    items={refCols.map(c => ({ value: c, label: c }))}
+                    placeholder="Chọn cột tham chiếu..."
+                    searchPlaceholder="Tìm cột..."
+                    allowClear
+                  />
+                ) : (
+                  <SearchableCombobox
+                    value={form.refColumn || null}
+                    onChange={v => setForm(prev => ({ ...prev, refColumn: v }))}
+                    items={[]}
+                    placeholder="Chọn bảng tham chiếu trước"
+                    disabled={!form.refTable}
+                  />
+                )
+              })()}
             </div>
           </div>
         </>
@@ -549,14 +623,45 @@ function MetricConfigFields({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-sm">Bảng chuẩn <span className="text-red-500">*</span></Label>
-              <Select value={form.refTable} onChange={set('refTable')}>
-                <option value="">-- Chọn bảng chuẩn --</option>
-                {mockDataSources.map(ds => <option key={ds.id} value={ds.tableName}>{ds.name}</option>)}
-              </Select>
+              <SearchableCombobox
+                value={form.refTable || null}
+                onChange={v => setForm(prev => ({ ...prev, refTable: v, refColumn: '' }))}
+                items={mockDataSources.map(ds => ({
+                  value: ds.tableName,
+                  label: ds.name,
+                  group: ds.hdfsLayer ?? ds.category,
+                  description: ds.schema,
+                }))}
+                placeholder="Chọn bảng chuẩn..."
+                searchPlaceholder="Tìm bảng..."
+              />
             </div>
             <div className="space-y-1">
-              <Label className="text-sm">Cột chuẩn <span className="text-red-500">*</span></Label>
-              <Input value={form.refColumn} onChange={set('refColumn')} placeholder="Cột tham chiếu..." />
+              <Label className="text-sm inline-flex items-center gap-1">
+                Cột chuẩn <span className="text-red-500">*</span>
+                <InfoTooltip text="Cột trong bảng chuẩn chứa giá trị đúng để so khớp (VD: tỷ giá chính thức ngày, mã chi nhánh chuẩn)." />
+              </Label>
+              {(() => {
+                const refCols = getColumnsByTableName(form.refTable)
+                return refCols.length > 0 ? (
+                  <SearchableCombobox
+                    value={form.refColumn || null}
+                    onChange={v => setForm(prev => ({ ...prev, refColumn: v }))}
+                    items={refCols.map(c => ({ value: c, label: c }))}
+                    placeholder="Chọn cột chuẩn..."
+                    searchPlaceholder="Tìm cột..."
+                    allowClear
+                  />
+                ) : (
+                  <SearchableCombobox
+                    value={form.refColumn || null}
+                    onChange={v => setForm(prev => ({ ...prev, refColumn: v }))}
+                    items={[]}
+                    placeholder="Chọn bảng chuẩn trước"
+                    disabled={!form.refTable}
+                  />
+                )
+              })()}
             </div>
           </div>
         </>
@@ -566,11 +671,17 @@ function MetricConfigFields({
       {mt === 'on_time' && (
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-sm">Thời hạn SLA (HH:MM) <span className="text-red-500">*</span></Label>
+            <Label className="text-sm inline-flex items-center gap-1">
+              Thời hạn SLA (HH:MM) <span className="text-red-500">*</span>
+              <InfoTooltip text="Giờ tối đa dữ liệu phải sẵn sàng (HH:mm). Hệ thống cảnh báo nếu đến giờ này chưa có dữ liệu mới." />
+            </Label>
             <Input type="time" value={form.slaTime} onChange={set('slaTime')} />
           </div>
           <div className="space-y-1">
-            <Label className="text-sm">Cửa sổ cảnh báo (phút)</Label>
+            <Label className="text-sm inline-flex items-center gap-1">
+              Cửa sổ cảnh báo (phút)
+              <InfoTooltip text="Số phút cho phép trễ sau SLA trước khi kích hoạt cảnh báo. VD: 15 = trễ 15 phút mới cảnh báo, tránh báo giả do ETL chậm nhẹ." />
+            </Label>
             <Input type="number" min={0} value={form.alertWindowMinutes} onChange={set('alertWindowMinutes')} placeholder="30" />
           </div>
         </div>
@@ -597,7 +708,10 @@ function MetricConfigFields({
       {/* Blacklist pattern */}
       {mt === 'blacklist_pattern' && (
         <div className="space-y-1">
-          <Label className="text-sm">Pattern blacklist (regex, dùng | để OR) <span className="text-red-500">*</span></Label>
+          <Label className="text-sm inline-flex items-center gap-1">
+            Pattern blacklist (regex, dùng | để OR) <span className="text-red-500">*</span>
+            <InfoTooltip text="Danh sách giá trị cấm, phân tách bằng dấu |. VD: test|null|xxx|N/A. Dòng chứa giá trị khớp sẽ bị đánh dấu vi phạm." />
+          </Label>
           <Input value={form.blacklistPattern} onChange={set('blacklistPattern')} placeholder="TEST|FAKE|N/A|0000-00-00" />
           <p className="text-xs text-gray-500">Giá trị khớp pattern sẽ bị coi là vi phạm. VD: TEST|NULL|^-$</p>
         </div>
@@ -724,7 +838,10 @@ function MetricConfigFields({
       {mt === 'expression_pct' && (
         <>
           <div className="space-y-1">
-            <Label className="text-sm">Biểu thức SparkSQL (cross-column) <span className="text-red-500">*</span></Label>
+            <Label className="text-sm inline-flex items-center gap-1">
+              Biểu thức SparkSQL (cross-column) <span className="text-red-500">*</span>
+              <InfoTooltip text="Biểu thức SparkSQL trả về TRUE/FALSE cho mỗi dòng. VD: SO_TIEN > 0 AND TRANG_THAI != 'TEST'. Hệ thống tính % dòng thỏa mãn." />
+            </Label>
             <Textarea rows={2} value={form.expression} onChange={set('expression')} placeholder="SO_TIEN > 0 AND MA_TK IS NOT NULL" />
             <p className="text-xs text-gray-500">Biểu thức trả về true/false cho từng dòng</p>
           </div>
@@ -775,7 +892,10 @@ function MetricConfigFields({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-sm">Khoảng kiểm (số ngày)</Label>
+              <Label className="text-sm inline-flex items-center gap-1">
+                Khoảng kiểm (số ngày)
+                <InfoTooltip text="Số ngày tối thiểu phải có dữ liệu khi nhìn lại. VD: 30 = kiểm tra 30 ngày gần nhất đều có partition." />
+              </Label>
               <Input type="number" min={1} value={form.coverageDays} onChange={set('coverageDays')} placeholder="30" />
             </div>
             <div className="space-y-1">
@@ -795,12 +915,18 @@ function MetricConfigFields({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-sm">Nhìn lại N ngày trước <span className="text-red-500">*</span></Label>
+              <Label className="text-sm inline-flex items-center gap-1">
+                Nhìn lại N ngày trước <span className="text-red-500">*</span>
+                <InfoTooltip text="Số ngày lấy dữ liệu trước đó để tính giá trị trung bình làm baseline. VD: 7 = lấy trung bình 7 ngày trước làm chuẩn so sánh." />
+              </Label>
               <Input type="number" min={1} value={form.lookbackPeriod} onChange={set('lookbackPeriod')} placeholder="7" />
               <p className="text-xs text-gray-500">So sánh số dòng với trung bình N ngày gần nhất</p>
             </div>
             <div className="space-y-1">
-              <Label className="text-sm">% thay đổi tối đa cho phép <span className="text-red-500">*</span></Label>
+              <Label className="text-sm inline-flex items-center gap-1">
+                % thay đổi tối đa cho phép <span className="text-red-500">*</span>
+                <InfoTooltip text="% biến động tối đa so với baseline. VD: 30 = nếu số dòng tăng/giảm hơn 30% so với trung bình kỳ trước thì cảnh báo." />
+              </Label>
               <Input type="number" min={1} max={100} value={form.maxChangePct} onChange={set('maxChangePct')} placeholder="30" />
             </div>
           </div>
@@ -835,14 +961,42 @@ function MetricConfigFields({
         <>
           <div className="space-y-1">
             <Label className="text-sm">Bảng nguồn liên kết <span className="text-red-500">*</span></Label>
-            <Select value={form.sourceTableId} onChange={set('sourceTableId')}>
-              <option value="">-- Chọn bảng nguồn --</option>
-              {mockDataSources.filter(d => d.moduleType === 'source').map(ds => <option key={ds.id} value={ds.id}>{ds.name}</option>)}
-            </Select>
+            <SearchableCombobox
+              value={form.sourceTableId || null}
+              onChange={v => setForm(prev => ({ ...prev, sourceTableId: v, sourceColumn: '' }))}
+              items={mockDataSources.filter(d => d.moduleType === 'source').map(ds => ({
+                value: ds.id,
+                label: ds.name,
+                group: ds.hdfsLayer ?? ds.category,
+                description: ds.schema,
+              }))}
+              placeholder="Chọn bảng nguồn..."
+              searchPlaceholder="Tìm bảng nguồn..."
+            />
           </div>
           <div className="space-y-1">
             <Label className="text-sm">Cột nguồn (SUM)</Label>
-            <Input value={form.sourceColumn} onChange={set('sourceColumn')} placeholder="VD: SO_TIEN" />
+            {(() => {
+              const srcCols = getColumnsByTableId(form.sourceTableId)
+              return srcCols.length > 0 ? (
+                <SearchableCombobox
+                  value={form.sourceColumn || null}
+                  onChange={v => setForm(prev => ({ ...prev, sourceColumn: v }))}
+                  items={srcCols.map(c => ({ value: c, label: c }))}
+                  placeholder="Chọn cột nguồn..."
+                  searchPlaceholder="Tìm cột..."
+                  allowClear
+                />
+              ) : (
+                <SearchableCombobox
+                  value={form.sourceColumn || null}
+                  onChange={v => setForm(prev => ({ ...prev, sourceColumn: v }))}
+                  items={[]}
+                  placeholder="Chọn bảng nguồn trước"
+                  disabled={!form.sourceTableId}
+                />
+              )
+            })()}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -933,7 +1087,10 @@ function MetricConfigFields({
             </div>
           </div>
           <div className="space-y-1">
-            <Label className="text-sm">Biểu thức tổng KPI con</Label>
+            <Label className="text-sm inline-flex items-center gap-1">
+              Biểu thức tổng KPI con
+              <InfoTooltip text="Biểu thức tính tổng KPI con. VD: SUM(gia_tri) FROM kpi_con WHERE kpi_cha_id = :id. Tổng phải bằng giá trị KPI cha." />
+            </Label>
             <Input value={form.childSumExpression} onChange={set('childSumExpression')} placeholder="SUM(sub_kpi_value)" className="font-mono text-sm" />
           </div>
         </>
@@ -1225,12 +1382,18 @@ function RuleDialog({ open, editRule, initialForm, onClose, onSave }: RuleDialog
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label>Bảng dữ liệu <span className="text-red-500">*</span></Label>
-            <Select value={form.tableId} onChange={set('tableId')}>
-              <option value="">-- Chọn bảng --</option>
-              {mockDataSources.map(ds => (
-                <option key={ds.id} value={ds.id}>{ds.name}</option>
-              ))}
-            </Select>
+            <SearchableCombobox
+              value={form.tableId || null}
+              onChange={v => setForm(prev => ({ ...prev, tableId: v }))}
+              items={mockDataSources.map(ds => ({
+                value: ds.id,
+                label: ds.name,
+                group: ds.hdfsLayer ?? ds.category,
+                description: ds.schema,
+              }))}
+              placeholder="Chọn bảng dữ liệu..."
+              searchPlaceholder="Tìm theo tên bảng..."
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Kích hoạt ngay</Label>
@@ -1455,6 +1618,7 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
   const [dialogInitialForm, setDialogInitialForm] = useState<Partial<RuleForm> | undefined>()
 
   const [bulkApplyToast, setBulkApplyToast] = useState<{ count: number; template: string } | null>(null)
+  const [selectedRuleIds, setSelectedRuleIds] = useState<Set<string>>(new Set())
 
   // Open add dialog with template pre-fill
   useEffect(() => {
@@ -1464,6 +1628,11 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
       onTemplateUsed?.()
     }
   }, [pendingTemplate])
+
+  // Clear selection when page changes
+  useEffect(() => {
+    setSelectedRuleIds(new Set())
+  }, [page])
 
   // B2: Bulk apply template → tạo N rules (mỗi bảng 1 rule)
   useEffect(() => {
@@ -1499,8 +1668,20 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
     onBulkApplyUsed?.()
   }, [pendingBulkApply])
 
-  const handleSearch = () => { setAppliedFilter({ search, dim: dimFilter, table: tableFilter, status: statusFilter, module: moduleFilter }); setPage(1) }
-  const handleClear = () => { setSearch(''); setDimFilter('all'); setTableFilter('all'); setStatusFilter('all'); setModuleFilter('all'); setAppliedFilter(null); setPage(1) }
+  const handleSearch = () => { setAppliedFilter({ search, dim: dimFilter, table: tableFilter, status: statusFilter, module: moduleFilter }); setPage(1); setSelectedRuleIds(new Set()) }
+  const handleClear = () => { setSearch(''); setDimFilter('all'); setTableFilter('all'); setStatusFilter('all'); setModuleFilter('all'); setAppliedFilter(null); setPage(1); setSelectedRuleIds(new Set()) }
+
+  const bulkToggle = (active: boolean) => {
+    setRules(prev => prev.map(r =>
+      selectedRuleIds.has(r.id) ? { ...r, status: active ? 'active' : 'inactive' } : r
+    ))
+    setSwitchStates(prev => {
+      const next = { ...prev }
+      selectedRuleIds.forEach(id => { next[id] = active })
+      return next
+    })
+    setSelectedRuleIds(new Set())
+  }
 
   const filtered = rules.filter(r => {
     const f = appliedFilter ?? { search: '', dim: 'all', table: 'all', status: 'all', module: 'all' }
@@ -1642,6 +1823,22 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
         </CardContent>
       </Card>
 
+      {/* Bulk action bar */}
+      {selectedRuleIds.size > 0 && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+          <span className="text-sm font-medium text-blue-900">Đã chọn {selectedRuleIds.size} quy tắc</span>
+          <Button variant="outline" size="sm" onClick={() => bulkToggle(true)}>
+            <ToggleRight className="w-4 h-4 mr-1" /> Bật tất cả
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => bulkToggle(false)}>
+            <ToggleLeft className="w-4 h-4 mr-1" /> Tắt tất cả
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedRuleIds(new Set())}>
+            Bỏ chọn
+          </Button>
+        </div>
+      )}
+
       {/* Table card */}
       <Card>
         <CardHeader className="pb-3">
@@ -1653,7 +1850,25 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 text-center sticky left-0 z-10 sticky-left">STT</TableHead>
+                <TableHead className="w-10 text-center sticky left-0 z-10 sticky-left">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 cursor-pointer"
+                    checked={paged.length > 0 && paged.every(r => selectedRuleIds.has(r.id))}
+                    onChange={e => {
+                      if (e.target.checked) {
+                        setSelectedRuleIds(prev => new Set([...prev, ...paged.map(r => r.id)]))
+                      } else {
+                        setSelectedRuleIds(prev => {
+                          const next = new Set(prev)
+                          paged.forEach(r => next.delete(r.id))
+                          return next
+                        })
+                      }
+                    }}
+                  />
+                </TableHead>
+                <TableHead className="w-12 text-center">STT</TableHead>
                 <TableHead>Tên quy tắc</TableHead>
                 <TableHead className="w-32">Chiều dữ liệu</TableHead>
                 <TableHead>Bảng · Chỉ số</TableHead>
@@ -1668,14 +1883,29 @@ function RuleListTab({ pendingTemplate, onTemplateUsed, pendingBulkApply, onBulk
             <TableBody>
               {paged.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-10 text-gray-400">Không tìm thấy quy tắc phù hợp</TableCell>
+                  <TableCell colSpan={11} className="text-center py-10 text-gray-400">Không tìm thấy quy tắc phù hợp</TableCell>
                 </TableRow>
               ) : (
                 paged.map((rule, idx) => {
                   const isRunning = runningIds[rule.id]
                   return (
-                    <TableRow key={rule.id} className="hover:bg-gray-50">
-                      <TableCell className="text-center text-sm text-gray-500 font-medium sticky left-0 z-10 sticky-left">
+                    <TableRow key={rule.id} className={`hover:bg-gray-50 ${selectedRuleIds.has(rule.id) ? 'bg-blue-50/40' : ''}`}>
+                      <TableCell className="text-center sticky left-0 z-10 sticky-left">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 cursor-pointer"
+                          checked={selectedRuleIds.has(rule.id)}
+                          onChange={e => {
+                            setSelectedRuleIds(prev => {
+                              const next = new Set(prev)
+                              if (e.target.checked) next.add(rule.id)
+                              else next.delete(rule.id)
+                              return next
+                            })
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-gray-500 font-medium">
                         {(page - 1) * PAGE_SIZE + idx + 1}
                       </TableCell>
                       <TableCell className="max-w-[320px]">
@@ -2465,55 +2695,17 @@ function MetricTemplatesSubTab({ onUseTemplate, onBulkApplyTemplate, metricTempl
             </div>
           )}
 
-          {/* Threshold — Dual Range Slider */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Ngưỡng đánh giá</Label>
-            {/* Slider */}
-            <div className="relative h-10 select-none">
-              {/* Color zones bar */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 rounded-full overflow-hidden flex">
-                <div className="bg-red-400 transition-all duration-150" style={{ width: `${Number(formCritical)}%` }} />
-                <div className="bg-amber-400 transition-all duration-150" style={{ width: `${Number(formWarning) - Number(formCritical)}%` }} />
-                <div className="bg-green-400 transition-all duration-150" style={{ width: `${100 - Number(formWarning)}%` }} />
+          {/* Threshold */}
+          <div>
+            <Label className="mb-2 block">Ngưỡng mặc định</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-red-700">Critical (%)</Label>
+                <Input type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} placeholder="85" />
               </div>
-              {/* Critical handle */}
-              <input
-                type="range" min={0} max={100}
-                value={formCritical}
-                onChange={e => {
-                  const v = +e.target.value
-                  if (v < Number(formWarning)) setFormCritical(String(v))
-                }}
-                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-red-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
-                style={{ zIndex: Number(formCritical) > 50 ? 2 : 1 }}
-              />
-              {/* Warning handle */}
-              <input
-                type="range" min={0} max={100}
-                value={formWarning}
-                onChange={e => {
-                  const v = +e.target.value
-                  if (v > Number(formCritical)) setFormWarning(String(v))
-                }}
-                className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-amber-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:border-0"
-                style={{ zIndex: Number(formWarning) < 50 ? 2 : 1 }}
-              />
-            </div>
-            {/* Legend */}
-            <div className="flex items-center justify-between text-xs px-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-red-400" />
-                <span className="text-red-700 font-semibold">C = {formCritical}%</span>
-                <span className="text-gray-400">Không đạt</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-amber-400" />
-                <span className="text-amber-700 font-semibold">W = {formWarning}%</span>
-                <span className="text-gray-400">Cảnh báo</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-green-400" />
-                <span className="text-gray-400">Đạt</span>
+              <div>
+                <Label className="text-xs text-yellow-700">Warning (%)</Label>
+                <Input type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} placeholder="95" />
               </div>
             </div>
           </div>

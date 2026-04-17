@@ -151,6 +151,8 @@ export interface DataSource {
   area?: string
   // HDFS layer classification
   hdfsLayer?: 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
+  // Column metadata (from profiling or manual registration)
+  columns?: string[]
 }
 
 export interface QualityRule {
