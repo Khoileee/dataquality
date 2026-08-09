@@ -1,54 +1,175 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { Dashboard } from '@/pages/Dashboard'
-import { DataCatalog } from '@/pages/DataCatalog'
-import { DataSourceDetail } from '@/pages/DataCatalog/DataSourceDetail'
-import { Profiling } from '@/pages/Profiling'
-import { ProfilingDetail } from '@/pages/Profiling/ProfilingDetail'
-import { Rules } from '@/pages/Rules'
-import { Schedules } from '@/pages/Schedules'
-import { Thresholds } from '@/pages/Thresholds'
-import { Issues } from '@/pages/Issues'
-import { IssueDetail } from '@/pages/Issues/IssueDetail'
-import { Reports } from '@/pages/Reports'
-import { Notifications } from '@/pages/Notifications'
-import { PipelinePage } from '@/pages/Pipeline'
-import { PipelineMonitorPage } from '@/pages/PipelineMonitor'
-import { PipelineMonitorDetail } from '@/pages/PipelineMonitor/PipelineMonitorDetail'
-import { DefaultThresholds } from '@/pages/Settings/DefaultThresholds'
-import { DefaultRules } from '@/pages/Settings/DefaultRules'
-import { DefaultSchedules } from '@/pages/Settings/DefaultSchedules'
-import { UserManagement } from '@/pages/Settings/UserManagement'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AppShell } from '@/components/layout/AppShell'
+import { ToastProvider } from '@/components/common/Overlay'
+import { UserProvider } from '@/app/UserContext'
+import { EmptyState, ActionButton, PageHeader } from '@/components/common'
 
-function App() {
+/* ① Data Catalog */
+import { CatalogSearch } from '@/pages/catalog/Search'
+import { TableList } from '@/pages/catalog/TableList'
+import { TableCreate } from '@/pages/catalog/TableCreate'
+import { TableDetail } from '@/pages/catalog/TableDetail'
+import { SystemList, SystemDetail, SystemCreate } from '@/pages/catalog/Systems'
+import { ChannelList, ChannelDetail, ChannelCreate } from '@/pages/catalog/Channels'
+import { ReportList, ReportDetail, MetricDetail, ReportCreate, MetricCreate } from '@/pages/catalog/Reports'
+import { GroupList, GroupCreate, DomainList, DomainCreate, RefdataList, RefdataDetail, RefdataCreate } from '@/pages/catalog/Basics'
+
+/* ② Governance */
+import { GlossaryList, GlossaryDetail, GlossaryCreate } from '@/pages/governance/Glossary'
+import { Classification, ClassificationCreate } from '@/pages/governance/Classification'
+import { LineagePage, LineageCreate } from '@/pages/governance/Lineage'
+import { Approvals } from '@/pages/governance/Approvals'
+import { MetadataStandard } from '@/pages/governance/Standard'
+
+/* ③ Data Quality */
+import { RuleLibrary, RuleCreate, QualityBoard, RuleAssign } from '@/pages/quality/Rules'
+import { IncidentList, IncidentDetail } from '@/pages/quality/Incidents'
+import { Profiling, AlertList, AlertCreate } from '@/pages/quality/Misc'
+
+/* ④ Nạp & Điều phối */
+import { JobList, JobDetail, JobCreate } from '@/pages/orchestration/Jobs'
+import { TemplateList, TemplateDetail, TemplateCreate, Quarantine, PipelineMonitor } from '@/pages/orchestration/Ingestion'
+
+/* ⑤ Data Security */
+import { UserList } from '@/pages/security/Users'
+import { Policies, MaskCreate, RowFilterCreate } from '@/pages/security/Policies'
+import { RequestList, RequestCreate, RequestApprove } from '@/pages/security/Requests'
+import { AuditLog, PermReport } from '@/pages/security/Audit'
+
+/* ⑥ Chính sách & Tuân thủ */
+import { PolicyList, PolicyDetail, PolicyCreate, Lifecycle, AssessmentList, AssessmentDetail } from '@/pages/compliance/Compliance'
+
+/* ⑦ Dữ liệu chủ */
+import { MdmModelList, MdmModelDetail, MdmModelCreate, MdmSources, MdmDuplicates, MdmGolden } from '@/pages/mdm/Mdm'
+
+/* ⑧ Operations */
+import { Health, Settings } from '@/pages/operations/Operations'
+
+function NotFound() {
   return (
-    <HashRouter>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/data-catalog" element={<DataCatalog />} />
-          <Route path="/data-catalog/:id" element={<DataSourceDetail />} />
-          <Route path="/profiling" element={<Profiling />} />
-          <Route path="/profiling/:id" element={<ProfilingDetail />} />
-          <Route path="/rules" element={<Rules />} />
-          <Route path="/schedules" element={<Schedules />} />
-          <Route path="/thresholds" element={<Thresholds />} />
-          <Route path="/issues" element={<Issues />} />
-          <Route path="/issues/:id" element={<IssueDetail />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/pipeline" element={<PipelinePage />} />
-          <Route path="/pipeline-monitor" element={<PipelineMonitorPage />} />
-          <Route path="/pipeline-monitor/:jobId" element={<PipelineMonitorDetail />} />
-          <Route path="/settings" element={<Navigate to="/settings/default-thresholds" replace />} />
-          <Route path="/settings/default-thresholds" element={<DefaultThresholds />} />
-          <Route path="/settings/default-rules" element={<DefaultRules />} />
-          <Route path="/settings/default-schedules" element={<DefaultSchedules />} />
-          <Route path="/settings/users" element={<UserManagement />} />
-        </Routes>
-      </MainLayout>
-    </HashRouter>
+    <>
+      <PageHeader title="Không tìm thấy trang" desc="Đường dẫn bạn truy cập không tồn tại trong bản demo này" />
+      <EmptyState text="Trang không tồn tại" action={<ActionButton to="/operations/health">Về bảng điều khiển</ActionButton>} />
+    </>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <UserProvider>
+        <ToastProvider>
+          <AppShell>
+            <Routes>
+              <Route path="/" element={<Navigate to="/operations/health" replace />} />
+
+              {/* ① DATA CATALOG */}
+              <Route path="/catalog" element={<Navigate to="/catalog/tables" replace />} />
+              <Route path="/catalog/search" element={<CatalogSearch />} />
+              <Route path="/catalog/tables" element={<TableList />} />
+              <Route path="/catalog/tables/create" element={<TableCreate />} />
+              <Route path="/catalog/tables/:id" element={<TableDetail />} />
+              <Route path="/catalog/tables/:id/:tab" element={<TableDetail />} />
+              <Route path="/catalog/systems" element={<SystemList />} />
+              <Route path="/catalog/systems/create" element={<SystemCreate />} />
+              <Route path="/catalog/systems/:id" element={<SystemDetail />} />
+              <Route path="/catalog/channels" element={<ChannelList />} />
+              <Route path="/catalog/channels/create" element={<ChannelCreate />} />
+              <Route path="/catalog/channels/:id" element={<ChannelDetail />} />
+              <Route path="/catalog/reports" element={<ReportList />} />
+              <Route path="/catalog/reports/create" element={<ReportCreate />} />
+              <Route path="/catalog/reports/metrics/create" element={<MetricCreate />} />
+              <Route path="/catalog/reports/metrics/:id" element={<MetricDetail />} />
+              <Route path="/catalog/reports/:id" element={<ReportDetail />} />
+              <Route path="/catalog/groups" element={<GroupList />} />
+              <Route path="/catalog/groups/create" element={<GroupCreate />} />
+              <Route path="/catalog/domains" element={<DomainList />} />
+              <Route path="/catalog/domains/create" element={<DomainCreate />} />
+              <Route path="/catalog/refdata" element={<RefdataList />} />
+              <Route path="/catalog/refdata/create" element={<RefdataCreate />} />
+              <Route path="/catalog/refdata/:id" element={<RefdataDetail />} />
+
+              {/* ② GOVERNANCE */}
+              <Route path="/governance" element={<Navigate to="/governance/glossary" replace />} />
+              <Route path="/governance/glossary" element={<GlossaryList />} />
+              <Route path="/governance/glossary/create" element={<GlossaryCreate />} />
+              <Route path="/governance/glossary/:id" element={<GlossaryDetail />} />
+              <Route path="/governance/classification" element={<Classification />} />
+              <Route path="/governance/classification/create" element={<ClassificationCreate />} />
+              <Route path="/governance/lineage" element={<LineagePage />} />
+              <Route path="/governance/lineage/create" element={<LineageCreate />} />
+              <Route path="/governance/approvals" element={<Approvals />} />
+              <Route path="/governance/standard" element={<MetadataStandard />} />
+
+              {/* ③ DATA QUALITY */}
+              <Route path="/quality" element={<Navigate to="/quality/board" replace />} />
+              <Route path="/quality/rules" element={<RuleLibrary />} />
+              <Route path="/quality/rules/create" element={<RuleCreate />} />
+              <Route path="/quality/board" element={<QualityBoard />} />
+              <Route path="/quality/assign" element={<RuleAssign />} />
+              <Route path="/quality/profiling" element={<Profiling />} />
+              <Route path="/quality/incidents" element={<IncidentList />} />
+              <Route path="/quality/incidents/:id" element={<IncidentDetail />} />
+              <Route path="/quality/alerts" element={<AlertList />} />
+              <Route path="/quality/alerts/create" element={<AlertCreate />} />
+
+              {/* ④ NẠP & ĐIỀU PHỐI */}
+              <Route path="/orchestration" element={<Navigate to="/orchestration/jobs" replace />} />
+              <Route path="/orchestration/jobs" element={<JobList />} />
+              <Route path="/orchestration/jobs/create" element={<JobCreate />} />
+              <Route path="/orchestration/jobs/:id" element={<JobDetail />} />
+              <Route path="/orchestration/jobs/:id/:tab" element={<JobDetail />} />
+              <Route path="/orchestration/monitor" element={<PipelineMonitor />} />
+              <Route path="/ingestion" element={<Navigate to="/ingestion/templates" replace />} />
+              <Route path="/ingestion/templates" element={<TemplateList />} />
+              <Route path="/ingestion/templates/create" element={<TemplateCreate />} />
+              <Route path="/ingestion/quarantine" element={<Quarantine />} />
+              <Route path="/ingestion/templates/:id" element={<TemplateDetail />} />
+
+              {/* ⑤ DATA SECURITY */}
+              <Route path="/security" element={<Navigate to="/security/users" replace />} />
+              <Route path="/security/users" element={<UserList />} />
+              <Route path="/security/policies" element={<Navigate to="/security/policies/data" replace />} />
+              <Route path="/security/policies/mask/create" element={<MaskCreate />} />
+              <Route path="/security/policies/rowfilter/create" element={<RowFilterCreate />} />
+              <Route path="/security/policies/:tab" element={<Policies />} />
+              <Route path="/security/requests" element={<RequestList />} />
+              <Route path="/security/requests/create" element={<RequestCreate />} />
+              <Route path="/security/requests/:id" element={<RequestApprove />} />
+              <Route path="/security/audit" element={<AuditLog />} />
+              <Route path="/security/report" element={<PermReport />} />
+
+              {/* ⑥ CHÍNH SÁCH & TUÂN THỦ */}
+              <Route path="/compliance" element={<Navigate to="/compliance/policies" replace />} />
+              <Route path="/compliance/policies" element={<PolicyList />} />
+              <Route path="/compliance/policies/create" element={<PolicyCreate />} />
+              <Route path="/compliance/policies/:id" element={<PolicyDetail />} />
+              <Route path="/compliance/lifecycle" element={<Lifecycle />} />
+              <Route path="/compliance/assessments" element={<AssessmentList />} />
+              <Route path="/compliance/assessments/:id" element={<AssessmentDetail />} />
+
+              {/* ⑦ DỮ LIỆU CHỦ */}
+              <Route path="/mdm" element={<Navigate to="/mdm/models" replace />} />
+              <Route path="/mdm/models" element={<MdmModelList />} />
+              <Route path="/mdm/models/create" element={<MdmModelCreate />} />
+              <Route path="/mdm/models/:id" element={<MdmModelDetail />} />
+              <Route path="/mdm/sources" element={<MdmSources />} />
+              <Route path="/mdm/duplicates" element={<MdmDuplicates />} />
+              <Route path="/mdm/golden" element={<MdmGolden />} />
+              <Route path="/mdm/golden/:id" element={<MdmGolden />} />
+
+              {/* ⑧ OPERATIONS */}
+              <Route path="/operations" element={<Navigate to="/operations/health" replace />} />
+              <Route path="/operations/health" element={<Health />} />
+              <Route path="/operations/health/by-domain" element={<Health />} />
+              <Route path="/operations/health/progress" element={<Health />} />
+              <Route path="/operations/settings" element={<Settings />} />
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppShell>
+        </ToastProvider>
+      </UserProvider>
+    </BrowserRouter>
+  )
+}
