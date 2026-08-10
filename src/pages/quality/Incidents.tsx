@@ -37,7 +37,7 @@ export function IncidentList() {
   return (
     <>
       <PageHeader
-        code="3.4"
+        code="3.3"
         title="Sự cố chất lượng"
         desc="Biến cảnh báo thành việc có người chịu trách nhiệm và có hạn — vòng đời 7 trạng thái, có kiểm tra lại tự động và nguyên tắc 4 mắt"
         crumbs={[{ label: 'Data Quality' }, { label: 'Sự cố chất lượng' }]}
@@ -97,7 +97,7 @@ export function IncidentList() {
       <div className="mt-4 grid grid-cols-2 gap-4">
         <Note tone="bad" title="Sự cố SC-0229 chưa ai nhận">
           Bảng <span className="mono">rr.diem_rui_ro_kh</span> chưa gán đầu mối nghiệp vụ nên hệ thống <b>không tự gán được người xử lý</b>.
-          Đây là hệ quả trực tiếp của việc {fmt(7578)} bảng chưa có người phụ trách ở menu 1.2.
+          Đây là hệ quả trực tiếp của việc {fmt(7578)} bảng chưa có người phụ trách ở menu 1.1.
         </Note>
         <Note tone="warn" title="Bổ sung sau review: trạng thái “Chờ kiểm tra lại”">
           GĐ3 · FR-04 yêu cầu <i>"kiểm tra lại dữ liệu sau khi xử lý để xác nhận lỗi đã được khắc phục trước khi đóng"</i>.
@@ -130,7 +130,7 @@ export function IncidentDetail() {
   return (
     <>
       <PageHeader
-        code="3.4"
+        code="3.3"
         title={inc.title}
         desc={`${inc.id} · ${inc.objectId}${inc.column ? `.${inc.column}` : ''} · luật ${inc.ruleId}`}
         crumbs={[{ label: 'Data Quality' }, { label: 'Sự cố chất lượng', href: '/quality/incidents' }, { label: inc.id }]}
@@ -228,7 +228,7 @@ export function IncidentDetail() {
             {!inc.assignee && (
               <Note tone="bad" title="Không tự gán được người xử lý" className="mt-3">
                 Bảng <span className="mono">{inc.objectId}</span> chưa có đầu mối nghiệp vụ.
-                Hãy gán người phụ trách cho bảng tại menu 1.2 để lần sau hệ thống tự gán.
+                Hãy gán người phụ trách cho bảng tại menu 1.1 để lần sau hệ thống tự gán.
               </Note>
             )}
           </Panel>

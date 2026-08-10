@@ -30,7 +30,7 @@ export function ReportList() {
   return (
     <>
       <PageHeader
-        code="1.5"
+        code="1.3"
         title="Báo cáo & Chỉ tiêu"
         desc="Thông tin nghiệp vụ — đích cuối của mọi luồng dữ liệu. Đây là nhóm đối tượng số 5 trong 7 nhóm bắt buộc của GĐ2"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Báo cáo & Chỉ tiêu' }]}
@@ -163,7 +163,7 @@ export function ReportDetail() {
   return (
     <>
       <PageHeader
-        code="1.5"
+        code="1.3"
         title={r.name}
         desc={`${r.id} · ${r.description}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Báo cáo & Chỉ tiêu', href: '/catalog/reports' }, { label: r.id }]}
@@ -252,7 +252,7 @@ export function ReportDetail() {
                 />
                 <Note tone="info" title="Về bản chất, báo cáo có phải chỉ là một bảng đầu ra không" className="mt-3">
                   <b>Đúng một nửa.</b> Số liệu của báo cáo này nằm sẵn trong bảng <span className="mono">{r.backingTables[0]}</span> —
-                  nên bảng đó được đánh dấu <b>Bảng phục vụ báo cáo</b> ở menu 1.2 và được ưu tiên gán luật chất lượng.
+                  nên bảng đó được đánh dấu <b>Bảng phục vụ báo cáo</b> ở menu 1.1 và được ưu tiên gán luật chất lượng.
                   <div className="mt-1.5">
                     <b>Nhưng không đủ.</b> Báo cáo có <b>8 nhóm thông tin mà bảng không có chỗ để lưu</b>: mục đích sử dụng ·
                     đơn vị sở hữu · danh sách chỉ tiêu và công thức từng chỉ tiêu · điều kiện lọc và quy tắc tổng hợp ·
@@ -380,7 +380,7 @@ export function MetricDetail() {
   return (
     <>
       <PageHeader
-        code="1.5"
+        code="1.3"
         title={m.name}
         desc={`${m.id} · ${m.definition}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Báo cáo & Chỉ tiêu', href: '/catalog/reports' }, { label: m.id }]}
@@ -508,7 +508,7 @@ export function ReportCreate() {
   return (
     <>
       <PageHeader
-        code="1.5"
+        code="1.3"
         title="Thêm báo cáo"
         desc="Bộ 8 nhóm trường theo tiêu chuẩn GĐ2 mục 5.5"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Báo cáo & Chỉ tiêu', href: '/catalog/reports' }, { label: 'Thêm báo cáo' }]}
@@ -563,7 +563,7 @@ export function ReportCreate() {
           {step === 2 && (
             <div>
               <Note tone="warn" className="mb-3">
-                Chỉ chọn được bảng <b>đã có trong danh mục</b> (ràng buộc RB2). Bảng chưa khai thì phải khai ở menu 1.2 trước.
+                Chỉ chọn được bảng <b>đã có trong danh mục</b> (ràng buộc RB2). Bảng chưa khai thì phải khai ở menu 1.1 trước.
               </Note>
               <div className="max-h-[380px] space-y-1.5 overflow-y-auto">
                 {[...new Set(picked.flatMap(p => metricById(p)?.sourceTables ?? []))].concat(
@@ -655,7 +655,7 @@ export function MetricCreate() {
   return (
     <>
       <PageHeader
-        code="1.5"
+        code="1.3"
         title="Thêm chỉ tiêu"
         desc="Chỉ tiêu phải có định nghĩa và công thức tính rõ ràng, kiểm tra lại được (GĐ2 mục 5.5)"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Báo cáo & Chỉ tiêu', href: '/catalog/reports' }, { label: 'Thêm chỉ tiêu' }]}

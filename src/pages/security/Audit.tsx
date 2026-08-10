@@ -115,7 +115,7 @@ export function AuditLog() {
 
 /* ═════════ 5.5 Báo cáo quyền & Giám sát truy cập ═════════ */
 
-export function PermReport() {
+export function PermReport({ embedded }: { embedded?: boolean } = {}) {
   const [tab, setTab] = useState('report')
   const [userId, setUserId] = useState('U-004')
   const [pick, setPick] = useState<any>(null)
@@ -126,13 +126,15 @@ export function PermReport() {
 
   return (
     <>
-      <PageHeader
-        code="5.5"
-        title="Báo cáo quyền & Giám sát truy cập"
-        desc="Trả lời “một người đang có quyền gì trên toàn hệ thống” ở một chỗ, và phát hiện truy cập bất thường"
-        crumbs={[{ label: 'Data Security' }, { label: 'Báo cáo quyền & Giám sát' }]}
-        actions={<ActionButton variant="ghost" icon="export">Xuất báo cáo</ActionButton>}
-      />
+      {!embedded && (
+        <PageHeader
+          code="5.2"
+          title="Báo cáo quyền & Giám sát truy cập"
+          desc="Trả lời “một người đang có quyền gì trên toàn hệ thống” ở một chỗ, và phát hiện truy cập bất thường"
+          crumbs={[{ label: 'Data Security' }, { label: 'Báo cáo quyền & Giám sát' }]}
+          actions={<ActionButton variant="ghost" icon="export">Xuất báo cáo</ActionButton>}
+        />
+      )}
 
       <InlineTabs
         items={[

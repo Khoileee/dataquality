@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import {
-  PageHeader, KpiRow, FilterBar, DataTable, CellTitle, CellStack, Panel, Note, Chip, StatusChip,
+  RouteTabs, PageHeader, KpiRow, FilterBar, DataTable, CellTitle, CellStack, Panel, Note, Chip, StatusChip,
   ActionButton, IconBtn, RowActions, EntityLink, InfoGrid, ProgressBar, EmptyState,
   Field, TextInput, TextArea, SelectInput, Steps, SectionTitle, FlowDiagram,
 } from '@/components/common'
 import { systems, systemById, tables, channels, domains, domainName, STATS, fmt, lineageEdges } from '@/data'
 import { SYSTEM_KINDS, ENVIRONMENTS, SYSTEM_STATUS, ORG_UNITS, usersByRole } from '@/data/enums'
 import { match, useDemoSave } from '@/lib/demo'
+import { ChannelList } from './Channels'
+import { NextStep } from '@/components/common'
 
-export function SystemList() {
+export function SystemList({ embedded }: { embedded?: boolean } = {}) {
   const [q, setQ] = useState('')
   const [kind, setKind] = useState('')
   const [env, setEnv] = useState('')
@@ -23,18 +25,6 @@ export function SystemList() {
 
   return (
     <>
-      <PageHeader
-        code="1.3"
-        title="Hệ thống & Nguồn dữ liệu"
-        desc="Quản lý hệ thống tạo ra dữ liệu và nơi dữ liệu được lưu trữ — nhóm đối tượng số 1 trong 7 nhóm bắt buộc của GĐ2"
-        crumbs={[{ label: 'Data Catalog' }, { label: 'Hệ thống & Nguồn dữ liệu' }]}
-        actions={
-          <>
-            <ActionButton variant="ghost" icon="import">Nạp từ file</ActionButton>
-            <ActionButton icon="plus" to="/catalog/systems/create">Thêm hệ thống</ActionButton>
-          </>
-        }
-      />
 
       <KpiRow
         items={[
@@ -111,10 +101,19 @@ export function SystemList() {
           GĐ2 mục 5.1 yêu cầu quản lý hệ thống như một <b>đối tượng metadata</b>: mục đích sử dụng · đơn vị quản lý · đầu mối kỹ thuật · môi trường · trạng thái sử dụng.
         </Note>
         <Note tone="info" title="Khai ở đây, dùng ở đâu">
-          Mỗi bảng ở menu 1.2 bắt buộc trỏ về một hệ thống ở đây · Kênh trao đổi ở 1.4 khai hệ thống gửi và hệ thống nhận ·
+          Mỗi bảng ở menu 1.1 bắt buộc trỏ về một hệ thống ở đây · Kênh trao đổi ở 1.2 khai hệ thống gửi và hệ thống nhận ·
           Truy vết luồng dữ liệu mức <b>hệ thống</b> ở menu 2.3 vẽ trực tiếp từ dữ liệu này.
         </Note>
       </div>
+
+      <NextStep
+        done="khai hệ thống nguồn"
+        steps={[
+          { label: 'Khai kênh trao đổi', desc: 'Đường dữ liệu giữa hai hệ thống', to: '/catalog/systems/channels' },
+          { label: 'Khai bảng thuộc hệ thống', desc: 'Trung tâm của cả tool — 1.1', to: '/catalog/tables' },
+          { label: 'Khai mẫu nạp dữ liệu', desc: 'Đưa dữ liệu từ hệ thống về — 4.2', to: '/ingestion/templates' },
+        ]}
+      />
     </>
   )
 }
@@ -131,7 +130,7 @@ export function SystemDetail() {
   return (
     <>
       <PageHeader
-        code="1.3"
+        code="1.2"
         title={s.name}
         desc={`${s.id} · ${s.purpose}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Hệ thống & Nguồn dữ liệu', href: '/catalog/systems' }, { label: s.name }]}
@@ -271,7 +270,7 @@ export function SystemCreate() {
   return (
     <>
       <PageHeader
-        code="1.3"
+        code="1.2"
         title="Thêm hệ thống / nguồn dữ liệu"
         desc="Bộ trường theo tiêu chuẩn thông tin mô tả GĐ2 mục 5.1"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Hệ thống & Nguồn dữ liệu', href: '/catalog/systems' }, { label: 'Thêm mới' }]}
@@ -365,6 +364,54 @@ export function SystemCreate() {
             : <ActionButton disabled={!ok} onClick={() => save('Đã gửi phê duyệt hệ thống mới')}>Gửi phê duyệt</ActionButton>}
         </div>
       </div>
+    </>
+  )
+}
+
+
+/**
+ * Menu 1.1 — Hệ thống & Nguồn dữ liệu.
+ * Gộp menu cũ 1.4 "Kênh trao đổi dữ liệu" thành tab: kênh là QUAN HỆ giữa hai hệ thống,
+ * không phải một thực thể đứng riêng (nguyên tắc NT7).
+ */
+export function SystemsPage() {
+  const { pathname } = useLocation()
+  const tab = pathname.endsWith('/channels') ? 'channels' : 'systems'
+
+  return (
+    <>
+      <PageHeader
+        code="1.1"
+        title="Hệ thống & Nguồn dữ liệu"
+        desc={
+          tab === 'systems'
+            ? 'Quản lý hệ thống tạo ra dữ liệu và nơi dữ liệu được lưu trữ — nhóm đối tượng số 1 trong 7 nhóm bắt buộc của GĐ2'
+            : 'Đường trao đổi dữ liệu giữa hai hệ thống — cả chiều nhận về và chiều gửi đi'
+        }
+        crumbs={[{ label: 'Data Catalog' }, { label: 'Hệ thống & Nguồn dữ liệu' }]}
+        actions={
+          tab === 'systems' ? (
+            <>
+              <ActionButton variant="ghost" icon="import">Nạp từ file</ActionButton>
+              <ActionButton icon="plus" to="/catalog/systems/create">Thêm hệ thống</ActionButton>
+            </>
+          ) : (
+            <>
+              <ActionButton variant="ghost" icon="import">Nạp từ file</ActionButton>
+              <ActionButton icon="plus" to="/catalog/channels/create">Thêm kênh</ActionButton>
+            </>
+          )
+        }
+      />
+
+      <RouteTabs
+        items={[
+          { label: 'Hệ thống', to: '/catalog/systems', end: true, badge: systems.length },
+          { label: 'Kênh trao đổi', to: '/catalog/systems/channels', badge: channels.length },
+        ]}
+      />
+
+      {tab === 'systems' ? <SystemList embedded /> : <ChannelList embedded />}
     </>
   )
 }

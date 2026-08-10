@@ -390,7 +390,7 @@ export function RequestApprove() {
             <DataTable
               dense
               rows={[
-                { k: 'Người xin đã có quyền gì', v: `${users.find(u => u.name === r.requester)?.tableGrants ?? 0} bảng`, note: 'Xem chi tiết ở menu 5.5' },
+                { k: 'Người xin đã có quyền gì', v: `${users.find(u => u.name === r.requester)?.tableGrants ?? 0} bảng`, note: 'Xem chi tiết ở menu 5.2' },
                 { k: 'Đã từng xin đối tượng này', v: accessRequests.filter(x => x.requester === r.requester && x.objectId === r.objectId).length > 1 ? 'Có — lần thứ 2' : 'Chưa từng', note: '' },
                 { k: 'Mức phân loại đối tượng', v: t?.confidentiality ?? '—', note: t?.confidentiality === 'Mật' ? 'Tối đa 6 tháng' : t?.confidentiality === 'Hạn chế truy cập' ? 'Tối đa 3 tháng' : '' },
                 { k: 'Số cột nhạy cảm', v: `${sensitiveCols.length} cột`, note: sensitiveCols.map(c => c.name).join(', ') },

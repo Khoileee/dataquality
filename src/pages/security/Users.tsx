@@ -107,7 +107,7 @@ export function UserList() {
               </div>
               <div className="mt-2">
                 Người dùng <b>Lý Thanh Bình</b> còn đăng nhập ngày 07/08 từ <span className="mono">IP 203.113.88.4</span> — ngoài dải nội bộ.
-                Đã sinh cảnh báo BT-0040 ở menu 5.5.
+                Đã sinh cảnh báo BT-0040 ở menu 5.2.
               </div>
             </Note>
 

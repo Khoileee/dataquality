@@ -10,6 +10,7 @@ import { jobs, jobById, stepsOf, runsOf, versionsOf, tables, tableById, STATS, f
 import { match, useDemoSave } from '@/lib/demo'
 import { JOB_GROUPS, usersByRole } from '@/data/enums'
 import type { FlowNode, FlowEdge } from '@/components/common/Viz'
+import { NextStep } from '@/components/common'
 
 export function JobList() {
   const [q, setQ] = useState('')
@@ -119,6 +120,15 @@ export function JobList() {
           Bảng đích Tier 1 thì <b>không tắt được</b>.
         </Note>
       </div>
+
+      <NextStep
+        done="khai job"
+        steps={[
+          { label: 'Xem sơ đồ pipeline', desc: 'Job đã sinh quan hệ nguồn gốc — 4.3', to: '/orchestration/monitor' },
+          { label: 'Gán luật cho bảng đích', desc: 'Chạy ngay sau khi job ghi xong — 3.2', to: '/quality/board' },
+          { label: 'Khai giờ cam kết', desc: 'Để đo job có chạy đúng giờ không — 8.2', to: '/operations/settings' },
+        ]}
+      />
     </>
   )
 }
@@ -235,7 +245,7 @@ export function JobDetail() {
                 </>
               ) : (
                 <Note tone="bad" title="Bảng đích chưa có trong danh mục">
-                  Job ghi vào <span className="mono">{j.targetTable}</span> nhưng bảng này chưa được khai ở menu 1.2.
+                  Job ghi vào <span className="mono">{j.targetTable}</span> nhưng bảng này chưa được khai ở menu 1.1.
                   Không gán được luật chất lượng, không phân quyền được, không xuất hiện trong lineage.
                 </Note>
               )}
@@ -582,7 +592,7 @@ export function JobCreate() {
           </Panel>
           <Note tone="info" title="Job này sinh ra gì">
             Sau khi chạy, job tự sinh <b>quan hệ luồng dữ liệu</b> ở menu 2.3 (bảng nguồn → job → bảng đích),
-            cập nhật <b>độ tươi</b> của bảng đích ở menu 1.2, và kích hoạt <b>luật chất lượng theo sự kiện</b> nếu có.
+            cập nhật <b>độ tươi</b> của bảng đích ở menu 1.1, và kích hoạt <b>luật chất lượng theo sự kiện</b> nếu có.
           </Note>
         </div>
       </div>

@@ -3,7 +3,7 @@
 Demo front-end chạy được của **DMP (Data Management Platform)** — công cụ quản trị dữ liệu tập trung,
 tách ra từ SQLWF và mở rộng theo yêu cầu của đội BDA (Giai đoạn 1 → 5).
 
-> **8 module · 34 menu · 96 màn hình** — bấm được, chuyển tab được, mở popup được, có wizard nhiều bước và các ràng buộc nghiệp vụ thật.
+> **8 module · 27 menu · 96 màn hình** — bấm được, chuyển tab được, mở popup được, có wizard nhiều bước và các ràng buộc nghiệp vụ thật.
 
 ---
 
@@ -33,7 +33,7 @@ Tệp `vercel.json` đã có sẵn quy tắc rewrite cho ứng dụng một tran
 
 ---
 
-## Tám module · 34 menu
+## Tám module · 27 menu
 
 | Module | Menu | Phục vụ giai đoạn BDA |
 |---|---|---|
@@ -98,7 +98,7 @@ KENH-01 → NAP-012 → raw.doi_soat_A_tho → JOB-0412 → bi.doi_soat_giao_dic
 src/
 ├── config.ts                  ⭐ tên tool · 5 vai trò · danh sách người dùng demo
 ├── app/
-│   ├── menu.ts                ⭐ 8 module × 34 menu — sửa ở đây là sửa cả thanh bên
+│   ├── menu.ts                ⭐ 8 module × 27 menu — sửa ở đây là sửa cả thanh bên
 │   └── UserContext.tsx        đổi vai khi trình bày
 ├── components/
 │   ├── layout/                AppShell · Sidebar · Topbar

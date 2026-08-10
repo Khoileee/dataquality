@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import {
-  PageHeader, KpiRow, FilterBar, DataTable, CellTitle, Panel, Note, Chip, StatusChip,
+  RouteTabs, PageHeader, KpiRow, FilterBar, DataTable, CellTitle, Panel, Note, Chip, StatusChip,
   ActionButton, IconBtn, RowActions, EntityLink, InfoGrid, EmptyState, InlineTabs, Modal,
   useToast, Field, TextInput, TextArea, SelectInput, Steps, SectionTitle, ProgressBar,
   Timeline, FlowDiagram, StatusFlow, Toggle, CodeBlock,
@@ -344,7 +344,7 @@ export function MdmModelCreate() {
 
 /* ═════════ 7.2 Bản ghi nguồn ═════════ */
 
-export function MdmSources() {
+export function MdmSources({ embedded }: { embedded?: boolean } = {}) {
   const [model, setModel] = useState('MDM-KH')
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
@@ -362,18 +362,20 @@ export function MdmSources() {
 
   return (
     <>
-      <PageHeader
-        code="7.2"
-        title="Bản ghi nguồn"
-        desc="Dữ liệu thu thập từ các hệ thống nguồn, đã hoặc chưa chuẩn hoá — bước ① và ② của quy trình MDM"
-        crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Bản ghi nguồn' }]}
-        actions={
-          <>
-            <ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang thu thập', 'Kết nối 4 hệ thống nguồn để lấy dữ liệu mới — minh hoạ.')}>Thu thập lại</ActionButton>
-            <ActionButton variant="ghost" onClick={() => toast.info('Đang chuẩn hoá', 'Áp quy tắc chuẩn hoá cho bản ghi chưa xử lý — minh hoạ.')}>Chuẩn hoá</ActionButton>
-          </>
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          code="7.2"
+          title="Bản ghi nguồn"
+          desc="Dữ liệu thu thập từ các hệ thống nguồn, đã hoặc chưa chuẩn hoá — bước ① và ② của quy trình MDM"
+          crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Bản ghi nguồn' }]}
+          actions={
+            <>
+              <ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang thu thập', 'Kết nối 4 hệ thống nguồn để lấy dữ liệu mới — minh hoạ.')}>Thu thập lại</ActionButton>
+              <ActionButton variant="ghost" onClick={() => toast.info('Đang chuẩn hoá', 'Áp quy tắc chuẩn hoá cho bản ghi chưa xử lý — minh hoạ.')}>Chuẩn hoá</ActionButton>
+            </>
+          }
+        />
+      )}
 
       <Panel className="mb-4">
         <div className="flex items-end gap-3">
@@ -492,7 +494,7 @@ function maskValue(v: string) {
 
 /* ═════════ 7.3 Nghi ngờ trùng & Hợp nhất ═════════ */
 
-export function MdmDuplicates() {
+export function MdmDuplicates({ embedded }: { embedded?: boolean } = {}) {
   const [status, setStatus] = useState('')
   const [pick, setPick] = useState<any>(null)
   const [note, setNote] = useState('')
@@ -502,12 +504,14 @@ export function MdmDuplicates() {
 
   return (
     <>
-      <PageHeader
-        code="7.3"
-        title="Nghi ngờ trùng & Hợp nhất"
-        desc="Danh sách bản ghi nghi ngờ trùng để đầu mối quản trị dữ liệu xem xét — hệ thống không tự hợp nhất khi chưa xác nhận"
-        crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Nghi ngờ trùng & Hợp nhất' }]}
-      />
+      {!embedded && (
+        <PageHeader
+          code="7.2"
+          title="Nghi ngờ trùng & Hợp nhất"
+          desc="Danh sách bản ghi nghi ngờ trùng để đầu mối quản trị dữ liệu xem xét — hệ thống không tự hợp nhất khi chưa xác nhận"
+          crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Nghi ngờ trùng & Hợp nhất' }]}
+        />
+      )}
 
       <StatusFlow
         steps={[
@@ -657,7 +661,7 @@ function DuplicateCompare({ dup, note, setNote }: { dup: any; note: string; setN
 
 /* ═════════ 7.4 Bản ghi chuẩn & Phân phối ═════════ */
 
-export function MdmGolden() {
+export function MdmGolden({ embedded }: { embedded?: boolean } = {}) {
   const [tab, setTab] = useState('golden')
   const [q, setQ] = useState('')
   const [pick, setPick] = useState<any>(null)
@@ -667,13 +671,15 @@ export function MdmGolden() {
 
   return (
     <>
-      <PageHeader
-        code="7.4"
-        title="Bản ghi chuẩn & Phân phối"
-        desc="Golden Record — nguồn dữ liệu chuẩn duy nhất, có liên kết ngược tới bản ghi nguồn và lịch sử thay đổi"
-        crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Bản ghi chuẩn & Phân phối' }]}
-        actions={<ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang phân phối', 'Đẩy bản ghi chuẩn tới các hệ thống đăng ký — minh hoạ.')}>Phân phối lại</ActionButton>}
-      />
+      {!embedded && (
+        <PageHeader
+          code="7.2"
+          title="Bản ghi chuẩn & Phân phối"
+          desc="Golden Record — nguồn dữ liệu chuẩn duy nhất, có liên kết ngược tới bản ghi nguồn và lịch sử thay đổi"
+          crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Bản ghi chuẩn & Phân phối' }]}
+          actions={<ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang phân phối', 'Đẩy bản ghi chuẩn tới các hệ thống đăng ký — minh hoạ.')}>Phân phối lại</ActionButton>}
+        />
+      )}
 
       <KpiRow
         items={[
@@ -810,6 +816,81 @@ export function MdmGolden() {
           </div>
         )}
       </Modal>
+    </>
+  )
+}
+
+
+/**
+ * Menu 7.2 — Dữ liệu chủ.
+ * Gộp ba menu cũ 7.2 Bản ghi nguồn · 7.3 Nghi ngờ trùng · 7.4 Bản ghi chuẩn thành ba tab:
+ * đây là BA TRẠNG THÁI của cùng một bản ghi, đi một chiều nguồn → nghi ngờ → chuẩn.
+ */
+export function MdmRecords() {
+  const { pathname } = useLocation()
+  const tab = pathname.endsWith('/duplicates') ? 'duplicates'
+    : pathname.endsWith('/golden') ? 'golden'
+    : 'sources'
+
+  const nSources = mdmSourceRecords.length
+  const nDup = mdmDuplicates.filter(d => d.status === 'Chưa xem xét' || d.status === 'Đang xem xét').length
+  const nGolden = goldenRecords.length
+
+  const step = (id: string, no: string, label: string, count: number, to: string) => {
+    const active = tab === id
+    const done = (id === 'sources' && tab !== 'sources') || (id === 'duplicates' && tab === 'golden')
+    return (
+      <Link
+        key={id}
+        to={to}
+        className={
+          'flex flex-1 items-center gap-2.5 rounded-lg border px-3.5 py-2.5 transition-colors ' +
+          (active
+            ? 'border-blue-300 bg-blue-50'
+            : done
+              ? 'border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50'
+              : 'border-slate-200 bg-white hover:bg-slate-50')
+        }
+      >
+        <span
+          className={
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ' +
+            (active ? 'bg-blue-600 text-white' : done ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500')
+          }
+        >
+          {done ? '✓' : no}
+        </span>
+        <span className="min-w-0">
+          <span className={'block truncate text-[12.5px] ' + (active ? 'font-bold text-slate-900' : 'text-slate-600')}>
+            {label}
+          </span>
+          <span className="block text-[11px] text-slate-400">{fmt(count)} bản ghi</span>
+        </span>
+      </Link>
+    )
+  }
+
+  return (
+    <>
+      <PageHeader
+        code="7.2"
+        title="Dữ liệu chủ"
+        desc="Ba bước của một dây chuyền — gom bản ghi từ các hệ thống nguồn, tìm bản trùng, chốt bản ghi chuẩn duy nhất"
+        crumbs={[{ label: 'Dữ liệu chủ (MDM)' }, { label: 'Dữ liệu chủ' }]}
+        actions={<ActionButton variant="ghost" icon="export">Xuất danh sách</ActionButton>}
+      />
+
+      <div className="mb-4 flex items-center gap-2">
+        {step('sources', '1', 'Bản ghi nguồn', nSources, '/mdm/records')}
+        <span className="text-slate-300">→</span>
+        {step('duplicates', '2', 'Nghi ngờ trùng', nDup, '/mdm/records/duplicates')}
+        <span className="text-slate-300">→</span>
+        {step('golden', '3', 'Bản ghi chuẩn', nGolden, '/mdm/records/golden')}
+      </div>
+
+      {tab === 'sources' && <MdmSources embedded />}
+      {tab === 'duplicates' && <MdmDuplicates embedded />}
+      {tab === 'golden' && <MdmGolden embedded />}
     </>
   )
 }

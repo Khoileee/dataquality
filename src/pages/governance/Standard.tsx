@@ -8,7 +8,7 @@ import { FIELDS, FIELD_GROUPS, ORIGIN_LABEL, ORIGIN_TONE, fieldStats, type Field
 import { ENUM_REGISTRY } from '@/data/enums'
 import { match } from '@/lib/demo'
 
-export function MetadataStandard() {
+export function MetadataStandard({ embedded }: { embedded?: boolean } = {}) {
   const [tab, setTab] = useState('fields')
   const [q, setQ] = useState('')
   const [group, setGroup] = useState('')
@@ -27,13 +27,15 @@ export function MetadataStandard() {
 
   return (
     <>
-      <PageHeader
-        code="2.5"
-        title="Tiêu chuẩn thông tin mô tả"
-        desc="Từ điển mọi trường thông tin trên hệ thống — mỗi trường trả lời được hai câu: giá trị từ đâu ra, và khai xong dùng ở đâu"
-        crumbs={[{ label: 'Governance' }, { label: 'Tiêu chuẩn thông tin mô tả' }]}
-        actions={<ActionButton variant="ghost" icon="export">Xuất bộ tiêu chuẩn</ActionButton>}
-      />
+      {!embedded && (
+        <PageHeader
+          code="8.2"
+          title="Tiêu chuẩn thông tin mô tả"
+          desc="Từ điển mọi trường thông tin trên hệ thống — mỗi trường trả lời được hai câu: giá trị từ đâu ra, và khai xong dùng ở đâu"
+          crumbs={[{ label: 'Governance' }, { label: 'Tiêu chuẩn thông tin mô tả' }]}
+          actions={<ActionButton variant="ghost" icon="export">Xuất bộ tiêu chuẩn</ActionButton>}
+        />
+      )}
 
       <Note tone="info" title="Đây là kết quả đầu ra bắt buộc của Giai đoạn 1" className="mb-4">
         GĐ1 mục 2.4 yêu cầu <i>"thống nhất các thông tin mô tả cần quản lý đối với từng loại đối tượng, làm chuẩn chung trước khi xây dựng hệ thống"</i>,

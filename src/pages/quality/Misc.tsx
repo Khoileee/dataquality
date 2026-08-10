@@ -11,9 +11,9 @@ import { match, useDemoSave } from '@/lib/demo'
 
 /* ═════════ 3.3 Phân tích dữ liệu (Profiling) ═════════ */
 
-export function Profiling() {
+export function Profiling({ embedded, tableId }: { embedded?: boolean; tableId?: string } = {}) {
   const [sp] = useSearchParams()
-  const [table, setTable] = useState(sp.get('table') ?? 'bi.doi_soat_giao_dich_A')
+  const [table, setTable] = useState(tableId ?? sp.get('table') ?? 'bi.doi_soat_giao_dich_A')
   const [tab, setTab] = useState('columns')
   const [q, setQ] = useState('')
   const [suggest, setSuggest] = useState<any>(null)
@@ -24,18 +24,20 @@ export function Profiling() {
 
   return (
     <>
-      <PageHeader
-        code="3.3"
-        title="Phân tích dữ liệu"
-        desc="Nơi duy nhất đo chỉ số thống kê của cột — tab Cột ở menu 1.2 đọc lại kết quả từ đây, không đo lần thứ hai (nguyên tắc NT3)"
-        crumbs={[{ label: 'Data Quality' }, { label: 'Phân tích dữ liệu' }]}
-        actions={
-          <>
-            <ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang quét', `Quét lại toàn bộ cột của ${table} — minh hoạ.`)}>Quét lại ngay</ActionButton>
-            <ActionButton variant="ghost" icon="export">Xuất kết quả</ActionButton>
-          </>
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          code="1.1"
+          title="Phân tích dữ liệu"
+          desc="Nơi duy nhất đo chỉ số thống kê của cột — tab Cột ở menu 1.1 đọc lại kết quả từ đây, không đo lần thứ hai (nguyên tắc NT3)"
+          crumbs={[{ label: 'Data Quality' }, { label: 'Phân tích dữ liệu' }]}
+          actions={
+            <>
+              <ActionButton variant="ghost" icon="run" onClick={() => toast.info('Đang quét', `Quét lại toàn bộ cột của ${table} — minh hoạ.`)}>Quét lại ngay</ActionButton>
+              <ActionButton variant="ghost" icon="export">Xuất kết quả</ActionButton>
+            </>
+          }
+        />
+      )}
 
       <Panel className="mb-4">
         <div className="flex items-end gap-3">
@@ -189,7 +191,7 @@ export function AlertList() {
   return (
     <>
       <PageHeader
-        code="3.5"
+        code="3.4"
         title="Cảnh báo"
         desc="Cấu hình ai nhận cảnh báo gì, qua kênh nào, gửi ngay hay gom lô — chống trùng để không làm người dùng chai lì"
         crumbs={[{ label: 'Data Quality' }, { label: 'Cảnh báo' }]}
@@ -315,7 +317,7 @@ export function AlertCreate() {
   return (
     <>
       <PageHeader
-        code="3.5"
+        code="3.4"
         title="Thêm quy tắc cảnh báo"
         desc="Cảnh báo gửi quá nhiều thì người dùng bỏ qua — dùng chế độ gom lô và chống trùng để giữ tín hiệu có giá trị"
         crumbs={[{ label: 'Data Quality' }, { label: 'Cảnh báo', href: '/quality/alerts' }, { label: 'Thêm quy tắc' }]}
@@ -388,7 +390,7 @@ export function AlertCreate() {
               </Field>
               <Note tone="info" title="Tự động gán theo vai trò">
                 Có thể dùng biến động: <span className="mono">Đầu mối nghiệp vụ của bảng</span>, <span className="mono">Đầu mối kỹ thuật của bảng</span>,
-                <span className="mono"> Người sở hữu dữ liệu</span> — hệ thống tự tra từ metadata ở menu 1.2.
+                <span className="mono"> Người sở hữu dữ liệu</span> — hệ thống tự tra từ metadata ở menu 1.1.
               </Note>
             </div>
           )}

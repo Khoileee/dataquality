@@ -9,6 +9,7 @@ import { tables, domainName, systemById, STATS, fmt, columnsOf, reportsBackedBy 
 import { match } from '@/lib/demo'
 import { cn } from '@/lib/utils'
 import type { TableRow } from '@/data/types'
+import { NextStep } from '@/components/common'
 
 const TABS = [
   { id: 'all', label: 'Tất cả bảng' },
@@ -44,7 +45,7 @@ export function TableList() {
   return (
     <>
       <PageHeader
-        code="1.2"
+        code="1.1"
         title="Bảng dữ liệu"
         desc="Nguồn sự thật duy nhất về bảng và cột. Mọi module khác tham chiếu mã bảng từ đây."
         crumbs={[{ label: 'Data Catalog' }, { label: 'Bảng dữ liệu' }]}
@@ -52,6 +53,7 @@ export function TableList() {
           <>
             <ActionButton variant="ghost" icon="import" onClick={() => setImportOpen(true)}>Nạp từ file</ActionButton>
             <ActionButton variant="ghost" icon="export" onClick={() => toast.info('Xuất danh mục', 'Chức năng xuất Excel — minh hoạ.')}>Xuất</ActionButton>
+            <ActionButton variant="ghost" icon="plus" to="/catalog/groups">Tạo nhóm bảng</ActionButton>
             <ActionButton icon="plus" to="/catalog/tables/create">Thêm bảng mới</ActionButton>
           </>
         }
@@ -253,6 +255,15 @@ export function TableList() {
           />
         </div>
       </Modal>
+
+      <NextStep
+        done="khai bảng dữ liệu"
+        steps={[
+          { label: 'Gán luật chất lượng', desc: 'Bảng mới chưa có luật nào — 3.2', to: '/quality/board' },
+          { label: 'Gắn nhãn cột nhạy cảm', desc: 'Để chính sách che tự áp — 2.2', to: '/governance/classification' },
+          { label: 'Khai job sinh ra bảng', desc: 'Để có sơ đồ nguồn gốc — 4.1', to: '/orchestration/jobs' },
+        ]}
+      />
     </>
   )
 }

@@ -39,7 +39,7 @@ export function TableCreate() {
   return (
     <>
       <PageHeader
-        code="1.2"
+        code="1.1"
         title={editing ? `Sửa bảng ${editing}` : 'Thêm bảng dữ liệu mới'}
         desc="Bảng chưa có trong danh mục thì không gán được luật, không phân quyền được và job không ghi vào được (ràng buộc RB1, RB2)"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Bảng dữ liệu', href: '/catalog/tables' }, { label: editing ? 'Sửa' : 'Thêm mới' }]}

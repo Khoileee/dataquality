@@ -9,6 +9,7 @@ import {
 import { ruleTypes, ruleTypeById, ruleInstances, tables, columnsOf, refdata, profilesOf, STATS, fmt, tableById, metrics, reports } from '@/data'
 import { match, useDemoSave } from '@/lib/demo'
 import { RULE_SCHEDULES, SEVERITIES } from '@/data/enums'
+import { NextStep } from '@/components/common'
 
 /* ═════════ 3.1 Thư viện luật ═════════ */
 
@@ -87,7 +88,7 @@ export function RuleLibrary() {
               <li key={u.id}><span className="mono font-semibold">{u.code}</span> — {u.name}: {u.description.replace('⚠️ ', '')}</li>
             ))}
           </ul>
-          Đây là hai loại kiểm tra <b>quan trọng nhất với dữ liệu đối soát</b> nhưng chưa chạy được vì thiếu bước nối sang Danh mục tham chiếu (menu 1.8).
+          Đây là hai loại kiểm tra <b>quan trọng nhất với dữ liệu đối soát</b> nhưng chưa chạy được vì thiếu bước nối sang Danh mục tham chiếu (menu 1.5).
         </Note>
         <Note tone="info" title="Ngưỡng ba cấp">
           Mỗi loại kiểm tra có <b>ngưỡng mặc định</b> khai ở đây. Khi gán cho một bảng có thể <b>đè ngưỡng theo bảng</b>,
@@ -394,6 +395,15 @@ export function QualityBoard() {
           </div>
         )}
       </Drawer>
+
+      <NextStep
+        done="gán luật chất lượng"
+        steps={[
+          { label: 'Xem sự cố đang mở', desc: 'Luật hỏng sinh phiếu tự động — 3.3', to: '/quality/incidents' },
+          { label: 'Khai quy tắc cảnh báo', desc: 'Ai nhận thông báo khi luật hỏng — 3.4', to: '/quality/alerts' },
+          { label: 'Chặn dữ liệu xấu tại cửa nạp', desc: 'Kiểm trước khi ghi vào bảng — 4.2', to: '/ingestion/templates' },
+        ]}
+      />
     </>
   )
 }
@@ -425,7 +435,7 @@ export function RuleAssign() {
   const STEP_LABELS = ['Chọn đối tượng', 'Chọn loại kiểm tra', 'Tham số', 'Ngưỡng & lịch', 'Hành động khi hỏng']
 
   const FAIL_ACTIONS = [
-    { id: 'alert', label: 'Gửi cảnh báo', desc: 'Email · Telegram · SMS theo cấu hình ở menu 3.5' },
+    { id: 'alert', label: 'Gửi cảnh báo', desc: 'Email · Telegram · SMS theo cấu hình ở menu 3.4' },
     { id: 'incident', label: 'Tạo phiếu sự cố', desc: 'Tự gán cho đầu mối nghiệp vụ của bảng, có hạn xử lý' },
     { id: 'block', label: 'Chặn job hạ nguồn', desc: 'Job đọc bảng này sẽ không chạy cho tới khi khắc phục' },
     { id: 'quarantine', label: 'Giữ lô ở vùng chờ', desc: 'Áp dụng khi luật gắn với cửa nạp dữ liệu' },
@@ -570,7 +580,7 @@ export function RuleAssign() {
                     </SelectInput>
                   </Field>
                   <Note tone="warn" title="Loại kiểm tra này hiện có lượt dùng bằng 0">
-                    Cần mở API cho module Chất lượng gọi vào Danh mục tham chiếu (menu 1.8). Đây là việc <b>nối</b>, không phải xây mới.
+                    Cần mở API cho module Chất lượng gọi vào Danh mục tham chiếu (menu 1.5). Đây là việc <b>nối</b>, không phải xây mới.
                   </Note>
                 </>
               )}

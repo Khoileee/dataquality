@@ -9,8 +9,8 @@ import { CatalogSearch } from '@/pages/catalog/Search'
 import { TableList } from '@/pages/catalog/TableList'
 import { TableCreate } from '@/pages/catalog/TableCreate'
 import { TableDetail } from '@/pages/catalog/TableDetail'
-import { SystemList, SystemDetail, SystemCreate } from '@/pages/catalog/Systems'
-import { ChannelList, ChannelDetail, ChannelCreate } from '@/pages/catalog/Channels'
+import { SystemsPage, SystemDetail, SystemCreate } from '@/pages/catalog/Systems'
+import { ChannelDetail, ChannelCreate } from '@/pages/catalog/Channels'
 import { ReportList, ReportDetail, MetricDetail, ReportCreate, MetricCreate } from '@/pages/catalog/Reports'
 import { GroupList, GroupCreate, DomainList, DomainCreate, RefdataList, RefdataDetail, RefdataCreate } from '@/pages/catalog/Basics'
 
@@ -19,12 +19,11 @@ import { GlossaryList, GlossaryDetail, GlossaryCreate } from '@/pages/governance
 import { Classification, ClassificationCreate } from '@/pages/governance/Classification'
 import { LineagePage, LineageCreate } from '@/pages/governance/Lineage'
 import { Approvals } from '@/pages/governance/Approvals'
-import { MetadataStandard } from '@/pages/governance/Standard'
 
 /* ③ Data Quality */
 import { RuleLibrary, RuleCreate, QualityBoard, RuleAssign } from '@/pages/quality/Rules'
 import { IncidentList, IncidentDetail } from '@/pages/quality/Incidents'
-import { Profiling, AlertList, AlertCreate } from '@/pages/quality/Misc'
+import { AlertList, AlertCreate } from '@/pages/quality/Misc'
 
 /* ④ Nạp & Điều phối */
 import { JobList, JobDetail, JobCreate } from '@/pages/orchestration/Jobs'
@@ -34,13 +33,13 @@ import { TemplateList, TemplateDetail, TemplateCreate, Quarantine, PipelineMonit
 import { UserList } from '@/pages/security/Users'
 import { Policies, MaskCreate, RowFilterCreate } from '@/pages/security/Policies'
 import { RequestList, RequestCreate, RequestApprove } from '@/pages/security/Requests'
-import { AuditLog, PermReport } from '@/pages/security/Audit'
+import { AuditLog } from '@/pages/security/Audit'
 
 /* ⑥ Chính sách & Tuân thủ */
 import { PolicyList, PolicyDetail, PolicyCreate, Lifecycle, AssessmentList, AssessmentDetail } from '@/pages/compliance/Compliance'
 
 /* ⑦ Dữ liệu chủ */
-import { MdmModelList, MdmModelDetail, MdmModelCreate, MdmSources, MdmDuplicates, MdmGolden } from '@/pages/mdm/Mdm'
+import { MdmModelList, MdmModelDetail, MdmModelCreate, MdmRecords } from '@/pages/mdm/Mdm'
 
 /* ⑧ Operations */
 import { Health, Settings } from '@/pages/operations/Operations'
@@ -70,10 +69,11 @@ export default function App() {
               <Route path="/catalog/tables/create" element={<TableCreate />} />
               <Route path="/catalog/tables/:id" element={<TableDetail />} />
               <Route path="/catalog/tables/:id/:tab" element={<TableDetail />} />
-              <Route path="/catalog/systems" element={<SystemList />} />
+              <Route path="/catalog/systems" element={<SystemsPage />} />
+              <Route path="/catalog/systems/channels" element={<SystemsPage />} />
               <Route path="/catalog/systems/create" element={<SystemCreate />} />
               <Route path="/catalog/systems/:id" element={<SystemDetail />} />
-              <Route path="/catalog/channels" element={<ChannelList />} />
+              <Route path="/catalog/channels" element={<Navigate to="/catalog/systems/channels" replace />} />
               <Route path="/catalog/channels/create" element={<ChannelCreate />} />
               <Route path="/catalog/channels/:id" element={<ChannelDetail />} />
               <Route path="/catalog/reports" element={<ReportList />} />
@@ -99,7 +99,7 @@ export default function App() {
               <Route path="/governance/lineage" element={<LineagePage />} />
               <Route path="/governance/lineage/create" element={<LineageCreate />} />
               <Route path="/governance/approvals" element={<Approvals />} />
-              <Route path="/governance/standard" element={<MetadataStandard />} />
+              <Route path="/governance/standard" element={<Navigate to="/operations/settings" replace />} />
 
               {/* ③ DATA QUALITY */}
               <Route path="/quality" element={<Navigate to="/quality/board" replace />} />
@@ -107,7 +107,7 @@ export default function App() {
               <Route path="/quality/rules/create" element={<RuleCreate />} />
               <Route path="/quality/board" element={<QualityBoard />} />
               <Route path="/quality/assign" element={<RuleAssign />} />
-              <Route path="/quality/profiling" element={<Profiling />} />
+              <Route path="/quality/profiling" element={<Navigate to="/catalog/tables/bi.doi_soat_giao_dich_A/columns" replace />} />
               <Route path="/quality/incidents" element={<IncidentList />} />
               <Route path="/quality/incidents/:id" element={<IncidentDetail />} />
               <Route path="/quality/alerts" element={<AlertList />} />
@@ -137,7 +137,7 @@ export default function App() {
               <Route path="/security/requests/create" element={<RequestCreate />} />
               <Route path="/security/requests/:id" element={<RequestApprove />} />
               <Route path="/security/audit" element={<AuditLog />} />
-              <Route path="/security/report" element={<PermReport />} />
+              <Route path="/security/report" element={<Navigate to="/security/policies/report" replace />} />
 
               {/* ⑥ CHÍNH SÁCH & TUÂN THỦ */}
               <Route path="/compliance" element={<Navigate to="/compliance/policies" replace />} />
@@ -153,10 +153,13 @@ export default function App() {
               <Route path="/mdm/models" element={<MdmModelList />} />
               <Route path="/mdm/models/create" element={<MdmModelCreate />} />
               <Route path="/mdm/models/:id" element={<MdmModelDetail />} />
-              <Route path="/mdm/sources" element={<MdmSources />} />
-              <Route path="/mdm/duplicates" element={<MdmDuplicates />} />
-              <Route path="/mdm/golden" element={<MdmGolden />} />
-              <Route path="/mdm/golden/:id" element={<MdmGolden />} />
+              <Route path="/mdm/records" element={<MdmRecords />} />
+              <Route path="/mdm/records/duplicates" element={<MdmRecords />} />
+              <Route path="/mdm/records/golden" element={<MdmRecords />} />
+              <Route path="/mdm/sources" element={<Navigate to="/mdm/records" replace />} />
+              <Route path="/mdm/duplicates" element={<Navigate to="/mdm/records/duplicates" replace />} />
+              <Route path="/mdm/golden" element={<Navigate to="/mdm/records/golden" replace />} />
+              <Route path="/mdm/golden/:id" element={<Navigate to="/mdm/records/golden" replace />} />
 
               {/* ⑧ OPERATIONS */}
               <Route path="/operations" element={<Navigate to="/operations/health" replace />} />

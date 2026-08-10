@@ -269,7 +269,7 @@ export function TemplateCreate() {
           {step === 1 && (
             <div className="grid grid-cols-2 gap-4">
               <Field label="Tên mẫu nạp" required full><TextInput value={f.name} onChange={set('name')} placeholder="File đối soát đối tác A" /></Field>
-              <Field label="Kênh trao đổi dữ liệu" required full hint="Chọn kênh đã khai ở menu 1.4 để lineage nối được từ nguồn">
+              <Field label="Kênh trao đổi dữ liệu" required full hint="Chọn kênh đã khai ở menu 1.2 để lineage nối được từ nguồn">
                 <SelectInput value={f.source} onChange={set('source')}>
                   <option value="">— Chọn kênh —</option>
                   {channels.map(c => <option key={c.id} value={c.id}>{c.id} — {c.name}</option>)}
@@ -624,8 +624,8 @@ export function PipelineMonitor() {
               rows={[
                 { level: 'Cổng chất lượng tại cửa nạp', where: 'menu 4.2', effect: 'Chặn dữ liệu xấu trước khi vào kho' },
                 { level: 'Luật chặn job hạ nguồn', where: 'menu 3.2', effect: 'Job đọc bảng lỗi sẽ không chạy' },
-                { level: 'Cảnh báo lan truyền', where: 'menu 3.5', effect: 'Báo cho người dùng báo cáo hạ nguồn' },
-                { level: 'Đánh dấu báo cáo nghi ngờ', where: 'menu 1.5', effect: 'Hiện cảnh báo trên báo cáo dùng dữ liệu lỗi' },
+                { level: 'Cảnh báo lan truyền', where: 'menu 3.4', effect: 'Báo cho người dùng báo cáo hạ nguồn' },
+                { level: 'Đánh dấu báo cáo nghi ngờ', where: 'menu 1.3', effect: 'Hiện cảnh báo trên báo cáo dùng dữ liệu lỗi' },
               ]}
               columns={[
                 { key: 'level', label: 'Lớp chặn', render: r => <span className="font-semibold">{r.level}</span> },

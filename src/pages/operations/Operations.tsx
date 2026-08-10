@@ -10,6 +10,7 @@ import {
 } from '@/data'
 import { MENU } from '@/app/menu'
 import { useLocation } from 'react-router-dom'
+import { MetadataStandard } from '@/pages/governance/Standard'
 
 /* ═════════ 8.1 Sức khoẻ dữ liệu ═════════ */
 
@@ -282,6 +283,7 @@ export function Settings() {
           { id: 'tiers', label: 'Định nghĩa mức quan trọng', badge: tierDefinitions.length },
           { id: 'naming', label: 'Chuẩn đặt tên', badge: namingRules.length },
           { id: 'params', label: 'Tham số hệ thống', badge: systemParams.length },
+          { id: 'standard', label: 'Tiêu chuẩn thông tin mô tả' },
         ]}
         active={tab}
         onChange={setTab}
@@ -331,8 +333,8 @@ export function Settings() {
             ))}
           </div>
           <Note tone="info" title="Mức quan trọng quyết định gì" className="mt-4">
-            Điều kiện bắt buộc khi khai bảng (menu 1.2) · ngưỡng chất lượng mặc định (menu 3.2) ·
-            thời hạn xử lý sự cố (menu 3.4) · có bắt buộc bật quét lineage không (menu 4.1) ·
+            Điều kiện bắt buộc khi khai bảng (menu 1.1) · ngưỡng chất lượng mặc định (menu 3.2) ·
+            thời hạn xử lý sự cố (menu 3.3) · có bắt buộc bật quét lineage không (menu 4.1) ·
             thứ tự ưu tiên khi phân bổ nguồn lực cải thiện.
           </Note>
         </>
@@ -353,7 +355,7 @@ export function Settings() {
             ]}
           />
           <Note tone="warn" title="Chuẩn đặt tên là cổng chặn, không phải khuyến nghị" className="mt-4">
-            Form khai bảng ở menu 1.2 kiểm tên theo biểu thức <span className="mono">CT-01</span> ngay khi gõ.
+            Form khai bảng ở menu 1.1 kiểm tên theo biểu thức <span className="mono">CT-01</span> ngay khi gõ.
             Tên sai chuẩn thì <b>không lưu được</b>. Đây là cách duy nhất giữ được tính nhất quán khi có
             {' '}{fmt(STATS.totalTables)} bảng và nhiều đội cùng khai.
           </Note>
@@ -379,6 +381,8 @@ export function Settings() {
           </Note>
         </>
       )}
+
+      {tab === 'standard' && <MetadataStandard embedded />}
 
       <Modal
         open={!!test}

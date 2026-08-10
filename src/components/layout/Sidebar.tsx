@@ -1,11 +1,22 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { MENU } from '@/app/menu'
+import { MENU, MENU_COUNT, ROLE_META } from '@/app/menu'
+import { pendingApprovals, incidents, accessRequests, assessments, lifecycleRules, mdmDuplicates } from '@/data'
 import { APP } from '@/config'
 import { Database } from 'lucide-react'
 
 export function Sidebar() {
   const { pathname } = useLocation()
+
+  // Số việc đang chờ người xử lý — hiện bên phải nhãn menu nhóm 🟪
+  const COUNTS: Record<string, number> = {
+    approvals: pendingApprovals.length,
+    incidents: incidents.filter(i => i.status !== 'Đã đóng').length,
+    requests: accessRequests.filter(r => r.status === 'Chờ phê duyệt').length,
+    assessments: assessments.filter(a => a.status === 'Đang đánh giá' || a.status === 'Chờ khắc phục').length,
+    duplicates: mdmDuplicates.filter(d => d.status === 'Chưa xem xét' || d.status === 'Đang xem xét').length,
+    lifecycle: lifecycleRules.filter(r => r.status === 'Chờ phê duyệt').length,
+  }
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
@@ -46,9 +57,23 @@ export function Sidebar() {
                     active ? 'bg-[#2B3A5C] font-semibold text-white' : 'text-[#C3CEE2] hover:bg-[#1E2E4F] hover:text-white'
                   )}
                 >
-                  {active && <span className="absolute left-0 top-0 h-full w-[3px] bg-[#0EA5A5]" />}
+                  <span
+                    title={ROLE_META[item.role].label}
+                    className={cn('absolute left-0 top-0 h-full w-[3px]', active ? 'bg-[#0EA5A5]' : ROLE_META[item.role].bar, active ? '' : 'opacity-70')}
+                  />
                   <Icon className={cn('h-[15px] w-[15px] shrink-0', active ? 'text-[#7FD8D8]' : 'text-[#7286AD]')} />
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  {item.countKey && COUNTS[item.countKey] > 0 && (
+                    <span
+                      title={`${COUNTS[item.countKey]} việc đang chờ xử lý`}
+                      className={cn(
+                        'shrink-0 rounded-full px-1.5 text-[10px] font-bold tabular-nums',
+                        active ? 'bg-white/25 text-white' : 'bg-violet-400/25 text-violet-200'
+                      )}
+                    >
+                      {COUNTS[item.countKey]}
+                    </span>
+                  )}
                   {item.isNew && (
                     <span
                       title="Menu bổ sung sau khi review đối chiếu yêu cầu BDA"
@@ -65,7 +90,15 @@ export function Sidebar() {
       </nav>
 
       <div className="shrink-0 px-4 py-3 text-[10px] leading-relaxed text-[#5B6D91]" style={{ borderTop: '1px solid #2B3A5C' }}>
-        {APP.version} · 8 module · 34 menu
+        <div className="mb-2 space-y-1">
+          {(Object.keys(ROLE_META) as (keyof typeof ROLE_META)[]).map(k => (
+            <div key={k} className="flex items-center gap-1.5">
+              <span className={cn('h-2 w-2 shrink-0 rounded-sm', ROLE_META[k].bar)} />
+              <span className="truncate text-[#8FA3C8]">{ROLE_META[k].label}</span>
+            </div>
+          ))}
+        </div>
+        {APP.version} · 8 module · {MENU_COUNT} menu
         <br />
         Dữ liệu minh hoạ — không kết nối hệ thống thật
       </div>

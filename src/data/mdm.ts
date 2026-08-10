@@ -55,14 +55,14 @@ export const mdmModels: MdmModel[] = [
   },
   {
     id: 'MDM-DM', name: 'Danh mục dùng chung', entity: 'Danh mục dùng chung',
-    codeRule: 'Theo từng danh mục — kế thừa menu 1.8',
+    codeRule: 'Theo từng danh mục — kế thừa menu 1.5',
     matchKeys: ['ma_danh_muc + ma_gia_tri'],
     survivorship: 'Danh mục tham chiếu là nguồn duy nhất',
     owner: 'Lê Minh Tuấn', steward: 'Lê Minh Tuấn',
     sourceSystems: ['HT-03'],
     goldenCount: 261, sourceCount: 261, duplicatePending: 0, approval: 'Dự thảo',
     attributes: [
-      { name: 'ma_danh_muc', label: 'Mã danh mục', type: 'string(10)', required: true, identity: true, standardRule: 'Tham chiếu menu 1.8', confidentiality: 'Công khai' },
+      { name: 'ma_danh_muc', label: 'Mã danh mục', type: 'string(10)', required: true, identity: true, standardRule: 'Tham chiếu menu 1.5', confidentiality: 'Công khai' },
       { name: 'ma_gia_tri', label: 'Mã giá trị', type: 'string(20)', required: true, identity: true, standardRule: 'Duy nhất trong danh mục', confidentiality: 'Công khai' },
       { name: 'ten_gia_tri', label: 'Tên giá trị', type: 'string(150)', required: true, identity: false, standardRule: '—', confidentiality: 'Công khai' },
     ],

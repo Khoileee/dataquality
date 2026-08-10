@@ -38,7 +38,7 @@ export function CatalogSearch() {
   return (
     <>
       <PageHeader
-        code="1.1"
+        
         title="Tìm kiếm toàn hệ thống"
         desc="Một ô tìm cho mọi loại đối tượng — bảng, cột, hệ thống, kênh, báo cáo, chỉ tiêu, thuật ngữ, job, danh mục (yêu cầu GĐ2 · FR-04)"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Tìm kiếm toàn hệ thống' }]}

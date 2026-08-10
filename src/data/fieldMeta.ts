@@ -65,7 +65,7 @@ export type FieldDef = {
 const F = (d: FieldDef) => d
 
 export const FIELDS: FieldDef[] = [
-  /* ─────────────── ① HỆ THỐNG & NGUỒN DỮ LIỆU (menu 1.3) ─────────────── */
+  /* ─────────────── ① HỆ THỐNG & NGUỒN DỮ LIỆU (menu 1.2) ─────────────── */
   F({
     key: 'system.id', label: 'Mã hệ thống', group: 'Hệ thống & nơi lưu trữ',
     desc: 'Mã định danh duy nhất của một hệ thống nguồn trong danh mục.',
@@ -81,7 +81,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'system.name', label: 'Tên hệ thống', group: 'Hệ thống & nơi lưu trữ', required: true,
     desc: 'Tên gọi nghiệp vụ của hệ thống, dùng để hiển thị ở mọi nơi tham chiếu tới.',
-    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.3', fromRoute: '/catalog/systems/create',
+    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.2', fromRoute: '/catalog/systems/create',
     uses: [
       { menu: '1.2 Bảng dữ liệu', route: '/catalog/tables', how: 'Hiển thị ở cột Hệ thống thay cho mã' },
       { menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health', how: 'Nhóm chỉ số theo hệ thống' },
@@ -90,7 +90,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'system.purpose', label: 'Mục đích sử dụng', group: 'Hệ thống & nơi lưu trữ', required: true,
     desc: 'Hệ thống này sinh ra để làm gì — viết cho người nghiệp vụ đọc hiểu.',
-    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.3', fromRoute: '/catalog/systems/create',
+    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.2', fromRoute: '/catalog/systems/create',
     uses: [
       { menu: '1.1 Tìm kiếm toàn hệ thống', route: '/catalog/search', how: 'Nội dung được đưa vào chỉ mục tìm kiếm' },
     ],
@@ -105,7 +105,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'system.tech', label: 'Công nghệ nền tảng', group: 'Hệ thống & nơi lưu trữ', required: true,
     desc: 'Sản phẩm và phiên bản đang chạy — ví dụ Oracle 19c, Apache Iceberg trên HDFS.',
-    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.3', fromRoute: '/catalog/systems/create',
+    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.2', fromRoute: '/catalog/systems/create',
     uses: [{ menu: '8.2 Cấu hình hệ thống', route: '/operations/settings', how: 'Đối chiếu khi khai kết nối kỹ thuật tới hệ thống' }],
   }),
   F({
@@ -144,18 +144,18 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'system.tableCount', label: 'Số bảng', group: 'Hệ thống & nơi lưu trữ',
     desc: 'Số bảng dữ liệu thuộc hệ thống này.',
-    origin: 'derived', from: 'Đếm số bản ghi tại menu 1.2 có trường Hệ thống bằng mã hệ thống này',
+    origin: 'derived', from: 'Đếm số bản ghi tại menu 1.1 có trường Hệ thống bằng mã hệ thống này',
     uses: [{ menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health', how: 'Tính độ phủ danh mục theo hệ thống' }],
   }),
   F({
     key: 'system.metadataScore', label: 'Độ hoàn thiện metadata', group: 'Hệ thống & nơi lưu trữ',
     desc: 'Tỷ lệ trường thông tin bắt buộc đã được điền so với bộ tiêu chuẩn.',
-    origin: 'derived', from: 'Số trường bắt buộc đã điền ÷ tổng số trường bắt buộc trong bộ tiêu chuẩn (menu 2.5) × 100',
+    origin: 'derived', from: 'Số trường bắt buộc đã điền ÷ tổng số trường bắt buộc trong bộ tiêu chuẩn (menu 8.2) × 100',
     fromRoute: '/governance/standard',
     uses: [{ menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health', how: 'Chỉ số nghiệm thu GĐ2 — tỷ lệ có mô tả, tỷ lệ có người phụ trách' }],
   }),
 
-  /* ─────────────── ② BẢNG DỮ LIỆU (menu 1.2) ─────────────── */
+  /* ─────────────── ② BẢNG DỮ LIỆU (menu 1.1) ─────────────── */
   F({
     key: 'table.id', label: 'Tên bảng', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Tên kỹ thuật đầy đủ của bảng, gồm tiền tố vùng lưu trữ.',
@@ -172,7 +172,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.description', label: 'Mô tả nghiệp vụ', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Bảng này chứa dữ liệu gì, phục vụ nghiệp vụ nào — viết cho người nghiệp vụ.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.2', fromRoute: '/catalog/tables/create',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.1', fromRoute: '/catalog/tables/create',
     uses: [
       { menu: '1.1 Tìm kiếm toàn hệ thống', route: '/catalog/search', how: 'Nội dung được đưa vào chỉ mục tìm kiếm toàn văn' },
       { menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health', how: 'Tính chỉ số Tỷ lệ có mô tả' },
@@ -181,15 +181,15 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.systemId', label: 'Hệ thống lưu trữ', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Bảng này nằm ở hệ thống nào.',
-    origin: 'ref', from: 'Danh mục hệ thống tại menu 1.3', fromRoute: '/catalog/systems',
+    origin: 'ref', from: 'Danh mục hệ thống tại menu 1.2', fromRoute: '/catalog/systems',
     values: 'Chỉ hệ thống có trạng thái Đang sử dụng',
     uses: [{ menu: '2.3 Truy vết luồng dữ liệu', route: '/governance/lineage', how: 'Dựng quan hệ mức hệ thống từ quan hệ mức bảng' }],
   }),
   F({
     key: 'table.domain', label: 'Miền dữ liệu', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Nhóm lĩnh vực nghiệp vụ mà bảng thuộc về.',
-    origin: 'ref', from: 'Danh mục miền dữ liệu tại menu 1.7', fromRoute: '/catalog/domains',
-    values: 'Cây miền phân cấp 2 cấp, khai tại menu 1.7',
+    origin: 'ref', from: 'Danh mục miền dữ liệu tại menu 1.4', fromRoute: '/catalog/domains',
+    values: 'Cây miền phân cấp 2 cấp, khai tại menu 1.4',
     uses: [
       { menu: '5.2 Chính sách truy cập', route: '/security/policies/data', how: 'Cấp quyền cho cả miền thay vì từng bảng' },
       { menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health/by-domain', how: 'Bảng sức khoẻ theo miền — mỗi miền có người chịu trách nhiệm' },
@@ -239,7 +239,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.confidentiality', label: 'Mức phân loại', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Mức độ nhạy cảm của toàn bộ bảng theo 4 cấp của GĐ4.',
-    origin: 'declare', from: 'Khai tay tại menu 1.2; hệ thống TỰ NÂNG lên mức cao hơn nếu bảng chứa cột mang nhãn nhạy cảm khai ở menu 2.2',
+    origin: 'declare', from: 'Khai tay tại menu 1.1; hệ thống TỰ NÂNG lên mức cao hơn nếu bảng chứa cột mang nhãn nhạy cảm khai ở menu 2.2',
     fromRoute: '/governance/classification',
     values: 'Công khai · Nội bộ · Mật · Hạn chế truy cập — 4 mức cố định theo GĐ4 mục 3',
     uses: [
@@ -251,7 +251,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.syncFrequency', label: 'Chu kỳ cập nhật', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Cam kết dữ liệu được cập nhật với tần suất nào, xong trước mấy giờ.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.2', fromRoute: '/catalog/tables/create',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.1', fromRoute: '/catalog/tables/create',
     uses: [
       { menu: '3.2 Luật & Kết quả', route: '/quality/board', how: '⭐ Là tham số của luật Độ tươi dữ liệu và luật Dữ liệu về đúng giờ cam kết — không khai chu kỳ thì không sinh được luật kịp thời' },
       { menu: '1.2 Bảng dữ liệu', route: '/catalog/tables', how: 'Đối chiếu với độ tươi thực tế để tô màu cảnh báo' },
@@ -298,7 +298,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.lifecycle', label: 'Trạng thái vòng đời', group: 'Bảng và cột dữ liệu', required: true,
     desc: 'Bảng đang ở giai đoạn nào trong vòng đời sử dụng.',
-    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.2', fromRoute: '/catalog/tables/create',
+    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.1', fromRoute: '/catalog/tables/create',
     values: 'Nháp · Đang dùng · Sắp ngừng · Đã ngừng',
     uses: [
       { menu: '1.5 Báo cáo & Chỉ tiêu', route: '/catalog/reports', how: 'Cảnh báo khi báo cáo còn dùng bảng đã ngừng' },
@@ -356,7 +356,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'table.servesReports', label: 'Bảng phục vụ báo cáo', group: 'Bảng và cột dữ liệu',
     desc: 'Đánh dấu bảng là bảng kết quả đầu ra phục vụ trực tiếp một hoặc nhiều báo cáo.',
-    origin: 'derived', from: 'Bảng được ít nhất một báo cáo tại menu 1.5 khai là Bảng kết quả đầu ra', fromRoute: '/catalog/reports',
+    origin: 'derived', from: 'Bảng được ít nhất một báo cáo tại menu 1.3 khai là Bảng kết quả đầu ra', fromRoute: '/catalog/reports',
     uses: [
       { menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: 'Bảng phục vụ báo cáo được ưu tiên gán luật đối chiếu tổng và luật kịp thời' },
       { menu: '2.3 Truy vết luồng dữ liệu', route: '/governance/lineage', how: 'Là mắt xích cuối trước khi tới báo cáo trên sơ đồ mức nghiệp vụ' },
@@ -380,7 +380,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'column.description', label: 'Mô tả cột', group: 'Bảng và cột dữ liệu',
     desc: 'Ý nghĩa nghiệp vụ của cột.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại tab Cột của menu 1.2',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại tab Cột của menu 1.1',
     uses: [{ menu: '1.1 Tìm kiếm toàn hệ thống', route: '/catalog/search', how: 'Đưa vào chỉ mục tìm kiếm' }],
   }),
   F({
@@ -407,27 +407,27 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'column.businessRule', label: 'Quy tắc nghiệp vụ', group: 'Bảng và cột dữ liệu',
     desc: 'Ràng buộc nghiệp vụ áp cho giá trị của cột, viết bằng lời.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại tab Cột của menu 1.2',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại tab Cột của menu 1.1',
     uses: [{ menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: '⭐ Là NGUỒN GỢI Ý tham số khi gán luật — ví dụ quy tắc "định dạng số điện thoại" gợi ý biểu thức chính quy cho luật Đúng định dạng' }],
   }),
   F({
     key: 'column.valueSet', label: 'Tập giá trị hợp lệ', group: 'Bảng và cột dữ liệu',
     desc: 'Danh sách giá trị mà cột được phép nhận.',
-    origin: 'declare', from: 'Khai tay tại tab Cột của menu 1.2, hoặc trỏ tới một danh mục tham chiếu ở menu 1.8',
+    origin: 'declare', from: 'Khai tay tại tab Cột của menu 1.1, hoặc trỏ tới một danh mục tham chiếu ở menu 1.5',
     fromRoute: '/catalog/refdata',
     uses: [{ menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: '⭐ Là tham số trực tiếp của luật Thuộc tập giá trị cho phép và luật Mã phải tồn tại trong danh mục' }],
   }),
   F({
     key: 'column.nullPct', label: 'Tỷ lệ rỗng', group: 'Bảng và cột dữ liệu',
     desc: 'Phần trăm bản ghi có giá trị rỗng ở cột này.',
-    origin: 'derived', from: 'Kết quả quét Phân tích dữ liệu tại menu 3.3 — ⭐ ĐO MỘT NƠI, HIỆN NHIỀU NƠI, tab Cột chỉ đọc lại',
+    origin: 'derived', from: 'Kết quả quét Phân tích dữ liệu tại menu 1.1 — ⭐ ĐO MỘT NƠI, HIỆN NHIỀU NƠI, tab Cột chỉ đọc lại',
     fromRoute: '/quality/profiling',
     uses: [{ menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: 'Gợi ý gán luật Tỷ lệ điền tối thiểu khi tỷ lệ rỗng vượt ngưỡng khuyến nghị' }],
   }),
   F({
     key: 'column.distinctCount', label: 'Số giá trị phân biệt', group: 'Bảng và cột dữ liệu',
     desc: 'Số giá trị khác nhau xuất hiện trong cột.',
-    origin: 'derived', from: 'Kết quả quét Phân tích dữ liệu tại menu 3.3', fromRoute: '/quality/profiling',
+    origin: 'derived', from: 'Kết quả quét Phân tích dữ liệu tại menu 1.1', fromRoute: '/quality/profiling',
     uses: [{ menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: 'Bằng số dòng thì gợi ý cột là khoá; ít giá trị thì gợi ý luật tập giá trị' }],
   }),
   F({
@@ -437,7 +437,7 @@ export const FIELDS: FieldDef[] = [
     uses: [{ menu: '8.1 Sức khoẻ dữ liệu', route: '/operations/health', how: 'Chỉ số Cột nhạy cảm đã có chính sách che' }],
   }),
 
-  /* ─────────────── ④ KÊNH TRAO ĐỔI DỮ LIỆU (menu 1.4) ─────────────── */
+  /* ─────────────── ④ KÊNH TRAO ĐỔI DỮ LIỆU (menu 1.2) ─────────────── */
   F({
     key: 'channel.kind', label: 'Loại kết nối', group: 'Kênh trao đổi dữ liệu', required: true,
     desc: 'Phương thức kỹ thuật dùng để trao đổi dữ liệu.',
@@ -456,27 +456,27 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'channel.fromSystem', label: 'Hệ thống gửi', group: 'Kênh trao đổi dữ liệu', required: true,
     desc: 'Hệ thống phát dữ liệu.',
-    origin: 'ref', from: 'Danh mục hệ thống tại menu 1.3', fromRoute: '/catalog/systems',
+    origin: 'ref', from: 'Danh mục hệ thống tại menu 1.2', fromRoute: '/catalog/systems',
     uses: [{ menu: '2.3 Truy vết luồng dữ liệu', route: '/governance/lineage', how: 'Dựng quan hệ mức hệ thống' }],
   }),
   F({
     key: 'channel.auth', label: 'Phương thức xác thực', group: 'Kênh trao đổi dữ liệu', required: true,
     desc: 'Cách hai đầu xác thực lẫn nhau khi trao đổi dữ liệu.',
-    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.4', fromRoute: '/catalog/channels/create',
+    origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 1.2', fromRoute: '/catalog/channels/create',
     uses: [{ menu: '6.3 Đánh giá tuân thủ', route: '/compliance/assessments', how: '⭐ Là bằng chứng cho mục kiểm tra về bảo vệ dữ liệu khi truyền — kênh không mã hoá bị đánh Không đạt' }],
   }),
   F({
     key: 'channel.linkedTables', label: 'Bảng dữ liệu liên quan', group: 'Kênh trao đổi dữ liệu',
     desc: 'Bảng nào nhận dữ liệu từ kênh hoặc cấp dữ liệu cho kênh.',
-    origin: 'ref', from: 'Danh mục bảng tại menu 1.2', fromRoute: '/catalog/tables',
+    origin: 'ref', from: 'Danh mục bảng tại menu 1.1', fromRoute: '/catalog/tables',
     uses: [{ menu: '2.3 Truy vết luồng dữ liệu', route: '/governance/lineage', how: 'Sinh quan hệ kênh → bảng, đây là mắt xích đầu tiên của chuỗi truy vết' }],
   }),
 
-  /* ─────────────── ⑤ BÁO CÁO & CHỈ TIÊU (menu 1.5) ─────────────── */
+  /* ─────────────── ⑤ BÁO CÁO & CHỈ TIÊU (menu 1.3) ─────────────── */
   F({
     key: 'report.backingTables', label: 'Bảng kết quả đầu ra', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)',
     desc: 'Bảng chứa sẵn số liệu đã tổng hợp mà báo cáo đọc trực tiếp để hiển thị.',
-    origin: 'ref', from: 'Danh mục bảng tại menu 1.2', fromRoute: '/catalog/tables',
+    origin: 'ref', from: 'Danh mục bảng tại menu 1.1', fromRoute: '/catalog/tables',
     values: 'Thường là bảng thuộc vùng mart hoặc bi. Để trống nếu công cụ BI tự truy vấn từ nhiều bảng nguồn',
     uses: [
       { menu: '1.2 Bảng dữ liệu', route: '/catalog/tables', how: '⭐ Bảng được chọn ở đây được đánh dấu là Bảng phục vụ báo cáo, ưu tiên gán luật chất lượng' },
@@ -486,7 +486,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'report.sourceTables', label: 'Bảng nguồn', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)', required: true,
     desc: 'Các bảng cung cấp dữ liệu để tính ra số liệu của báo cáo.',
-    origin: 'ref', from: 'Danh mục bảng tại menu 1.2', fromRoute: '/catalog/tables',
+    origin: 'ref', from: 'Danh mục bảng tại menu 1.1', fromRoute: '/catalog/tables',
     values: 'Chỉ bảng đã có trong danh mục — ràng buộc RB2',
     uses: [
       { menu: '1.2 tab Nguồn gốc', how: 'Phân tích ảnh hưởng: bảng hỏng thì báo cáo nào sai' },
@@ -496,13 +496,13 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'report.metricIds', label: 'Chỉ tiêu thể hiện', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)', required: true,
     desc: 'Danh sách chỉ tiêu xuất hiện trong báo cáo.',
-    origin: 'ref', from: 'Danh mục chỉ tiêu tại menu 1.5', fromRoute: '/catalog/reports',
+    origin: 'ref', from: 'Danh mục chỉ tiêu tại menu 1.3', fromRoute: '/catalog/reports',
     uses: [{ menu: '2.3 Truy vết luồng dữ liệu', route: '/governance/lineage', how: 'Mắt xích chỉ tiêu → báo cáo trên sơ đồ mức nghiệp vụ' }],
   }),
   F({
     key: 'report.readyBy', label: 'Thời gian dữ liệu sẵn sàng', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)', required: true,
     desc: 'Cam kết báo cáo có số liệu đúng trước mấy giờ.',
-    origin: 'declare', from: 'Đơn vị sở hữu báo cáo khai tay tại menu 1.5', fromRoute: '/catalog/reports/create',
+    origin: 'declare', from: 'Đơn vị sở hữu báo cáo khai tay tại menu 1.3', fromRoute: '/catalog/reports/create',
     uses: [
       { menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: '⭐ Là tham số của luật Dữ liệu về đúng giờ cam kết áp cho báo cáo' },
       { menu: '4.1 Luồng xử lý', route: '/orchestration/jobs', how: 'Đối chiếu ngược để đặt giờ cam kết cho job sinh ra bảng nguồn' },
@@ -511,7 +511,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'report.audience', label: 'Đối tượng sử dụng', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)', required: true,
     desc: 'Đơn vị hoặc vai trò nào dùng báo cáo này.',
-    origin: 'declare', from: 'Đơn vị sở hữu báo cáo khai tay tại menu 1.5', fromRoute: '/catalog/reports/create',
+    origin: 'declare', from: 'Đơn vị sở hữu báo cáo khai tay tại menu 1.3', fromRoute: '/catalog/reports/create',
     uses: [{ menu: '1.2 tab Nguồn gốc', how: '⭐ Là danh sách người cần thông báo khi phân tích ảnh hưởng — xuất ra được' }],
   }),
   F({
@@ -524,14 +524,14 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'report.viewsMonth', label: 'Lượt xem mỗi tháng', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)',
     desc: 'Số lượt mở báo cáo trong tháng gần nhất.',
-    origin: 'auto', from: 'Thu thập từ nhật ký sử dụng của công cụ BI (hệ thống HT-06) qua kênh trao đổi khai ở menu 1.4',
+    origin: 'auto', from: 'Thu thập từ nhật ký sử dụng của công cụ BI (hệ thống HT-06) qua kênh trao đổi khai ở menu 1.2',
     fromRoute: '/catalog/channels',
     uses: [{ menu: '1.2 tab Nguồn gốc', how: 'Ước lượng mức độ ảnh hưởng khi bảng nguồn thay đổi' }],
   }),
   F({
     key: 'metric.formula', label: 'Công thức tính', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)', required: true,
     desc: 'Cách tính ra giá trị của chỉ tiêu, viết đủ để người khác tính lại ra cùng con số.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.5', fromRoute: '/catalog/reports/metrics/create',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.3', fromRoute: '/catalog/reports/metrics/create',
     uses: [
       { menu: '2.1 Từ điển nghiệp vụ', route: '/governance/glossary', how: 'Đối chiếu với công thức của thuật ngữ liên kết để phát hiện lệch định nghĩa' },
       { menu: '3.2 Luật & Kết quả', route: '/quality/assign', how: 'Là cơ sở để viết luật Chỉ tiêu cha bằng tổng con' },
@@ -540,7 +540,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'metric.filterRule', label: 'Điều kiện lấy dữ liệu', group: 'Thông tin nghiệp vụ (báo cáo, chỉ tiêu)',
     desc: 'Cái gì bị loại trừ khi tính chỉ tiêu — đây là chỗ hay lệch số nhất giữa các đơn vị.',
-    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.5', fromRoute: '/catalog/reports/metrics/create',
+    origin: 'declare', from: 'Đầu mối nghiệp vụ khai tay tại menu 1.3', fromRoute: '/catalog/reports/metrics/create',
     uses: [{ menu: '3.4 Sự cố chất lượng', route: '/quality/incidents', how: 'Là căn cứ phân tích khi hai báo cáo cho ra số khác nhau' }],
   }),
 
@@ -564,7 +564,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'term.boundColumns', label: 'Cột đã gắn', group: 'Thuật ngữ nghiệp vụ',
     desc: 'Các cột dữ liệu đang mang thuật ngữ này.',
-    origin: 'derived', from: 'Đếm ngược từ trường Thuật ngữ của cột tại tab Cột của menu 1.2', fromRoute: '/catalog/tables',
+    origin: 'derived', from: 'Đếm ngược từ trường Thuật ngữ của cột tại tab Cột của menu 1.1', fromRoute: '/catalog/tables',
     uses: [{ menu: '2.1 Từ điển nghiệp vụ', route: '/governance/glossary', how: '⭐ Bằng 0 thì thuật ngữ vô dụng — không ai tra ra được, tô đỏ trong danh sách' }],
   }),
 
@@ -678,7 +678,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'incident.assignee', label: 'Người xử lý sự cố', group: 'Chất lượng dữ liệu',
     desc: 'Người chịu trách nhiệm khắc phục lỗi dữ liệu.',
-    origin: 'derived', from: '⭐ Hệ thống TỰ GÁN theo đầu mối của bảng khai ở menu 1.2: lỗi nghiệp vụ gán cho BDA, lỗi kỹ thuật gán cho DE. Bảng chưa có đầu mối thì để trống và cảnh báo',
+    origin: 'derived', from: '⭐ Hệ thống TỰ GÁN theo đầu mối của bảng khai ở menu 1.1: lỗi nghiệp vụ gán cho BDA, lỗi kỹ thuật gán cho DE. Bảng chưa có đầu mối thì để trống và cảnh báo',
     fromRoute: '/catalog/tables',
     uses: [{ menu: '3.4 Sự cố chất lượng', route: '/quality/incidents', how: '⭐ Nguyên tắc bốn mắt — người xử lý KHÔNG được tự đóng sự cố mình xử lý' }],
   }),
@@ -700,7 +700,7 @@ export const FIELDS: FieldDef[] = [
   F({
     key: 'job.targetTable', label: 'Bảng đích của job', group: 'Job và tiến trình xử lý', required: true,
     desc: 'Bảng mà job ghi kết quả vào.',
-    origin: 'ref', from: 'Danh mục bảng tại menu 1.2', fromRoute: '/catalog/tables',
+    origin: 'ref', from: 'Danh mục bảng tại menu 1.1', fromRoute: '/catalog/tables',
     values: '⚠️ Ràng buộc RB2 — chỉ chọn được bảng đã có trong danh mục. Bảng chưa khai thì job không lưu được',
     uses: [
       { menu: '1.2 Bảng dữ liệu', route: '/catalog/tables', how: 'Trường Sinh ra bởi job của bảng đích được suy ngược từ đây' },
@@ -718,7 +718,7 @@ export const FIELDS: FieldDef[] = [
     key: 'job.slaTime', label: 'Giờ cam kết của job', group: 'Job và tiến trình xử lý',
     desc: 'Job phải chạy xong trước mấy giờ.',
     origin: 'declare', from: 'Đầu mối kỹ thuật khai tay tại menu 4.1', fromRoute: '/orchestration/jobs/create',
-    values: 'Nên đặt sớm hơn Thời gian dữ liệu sẵn sàng của báo cáo dùng bảng đích (menu 1.5)',
+    values: 'Nên đặt sớm hơn Thời gian dữ liệu sẵn sàng của báo cáo dùng bảng đích (menu 1.3)',
     uses: [{ menu: '3.2 Luật & Kết quả', route: '/quality/board', how: 'Là tham số của luật Dữ liệu về đúng giờ cam kết trên bảng đích' }],
   }),
   F({

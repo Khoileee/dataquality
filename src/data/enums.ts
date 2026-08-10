@@ -49,16 +49,16 @@ export const ORG_UNITS_SRC = S('catalog', 'Mô hình dữ liệu chủ MDM-DV �
 
 /** Miền dữ liệu — suy từ danh mục miền */
 export const DOMAIN_OPTIONS = () => domains.map(d => ({ value: d.id, label: `${d.parentId ? '  ↳ ' : ''}${d.name}` }))
-export const DOMAIN_SRC = S('catalog', 'Danh mục miền dữ liệu — menu 1.7', '/catalog/domains')
+export const DOMAIN_SRC = S('catalog', 'Danh mục miền dữ liệu — menu 1.4', '/catalog/domains')
 
 /** Hệ thống nguồn — suy từ danh mục hệ thống, chỉ lấy hệ thống đang dùng */
 export const SYSTEM_OPTIONS = (onlyActive = true) =>
   systems.filter(s => !onlyActive || s.status === 'Đang sử dụng').map(s => ({ value: s.id, label: `${s.id} — ${s.name}` }))
-export const SYSTEM_SRC = S('catalog', 'Danh mục hệ thống & nguồn dữ liệu — menu 1.3', '/catalog/systems')
+export const SYSTEM_SRC = S('catalog', 'Danh mục hệ thống & nguồn dữ liệu — menu 1.2', '/catalog/systems')
 
 /** Bảng dữ liệu — suy từ danh mục bảng (ràng buộc RB2) */
 export const TABLE_OPTIONS = () => tables.map(t => ({ value: t.id, label: t.id }))
-export const TABLE_SRC = S('catalog', 'Danh mục bảng dữ liệu — menu 1.2 · ràng buộc RB2 chỉ chọn được bảng đã khai', '/catalog/tables')
+export const TABLE_SRC = S('catalog', 'Danh mục bảng dữ liệu — menu 1.1 · ràng buộc RB2 chỉ chọn được bảng đã khai', '/catalog/tables')
 
 /** Nhãn dữ liệu nhạy cảm — suy từ cây nhãn */
 export const TAG_OPTIONS = () => tags.filter(t => t.id !== 'DATA_GENERAL').map(t => ({ value: t.id, label: `${t.id} — ${t.name} (${t.columnCount} cột)` }))
@@ -66,7 +66,7 @@ export const TAG_SRC = S('catalog', 'Cây nhãn phân loại — menu 2.2', '/go
 
 /** Danh mục tham chiếu — dùng làm tập giá trị cho luật chất lượng */
 export const REFDATA_OPTIONS = () => refdata.map(r => ({ value: r.id, label: `${r.id} — ${r.name} (${r.recordCount} bản ghi)` }))
-export const REFDATA_SRC = S('catalog', 'Danh mục tham chiếu — menu 1.8', '/catalog/refdata')
+export const REFDATA_SRC = S('catalog', 'Danh mục tham chiếu — menu 1.5', '/catalog/refdata')
 
 /** Loại kiểm tra chất lượng — suy từ thư viện luật */
 export const RULE_TYPE_OPTIONS = () => ruleTypes.map(r => ({ value: r.id, label: `${r.name} (${r.code})`, dimension: r.dimension }))
@@ -136,7 +136,7 @@ export const DATA_FORMATS = ['JSON', 'Avro', 'CSV', 'XML', 'Parquet', 'Excel']
 export const DATA_FORMAT_SRC = S('const', 'Sáu định dạng dữ liệu trao đổi được hỗ trợ')
 
 export const BI_TOOLS = ['Power BI', 'Excel', 'SQLWF Dashboard', 'Superset']
-export const BI_TOOL_SRC = S('const', 'Bốn công cụ dựng báo cáo đang dùng trong tổ chức — khai tại menu 1.3 dưới dạng hệ thống loại Công cụ BI', '/catalog/systems')
+export const BI_TOOL_SRC = S('const', 'Bốn công cụ dựng báo cáo đang dùng trong tổ chức — khai tại menu 1.2 dưới dạng hệ thống loại Công cụ BI', '/catalog/systems')
 
 export const REPORT_OUTPUTS = ['Màn hình', 'Bảng dữ liệu', 'File']
 export const REPORT_OUTPUT_SRC = S('const', 'Ba hình thức đầu ra theo GĐ2 mục 5.5')
@@ -166,7 +166,7 @@ export const INGEST_KINDS = ['SFTP đối tác', 'Tải file thủ công', 'Đ�
 export const INGEST_KIND_SRC = S('const', 'Sáu loại cửa nạp — gộp từ 6 màn nạp dữ liệu rời rạc của SQLWF')
 
 export const JOB_GROUPS = ['Đối soát', 'Giao dịch', 'Kinh doanh', 'Khách hàng', 'Tài chính', 'Rủi ro', 'Vận hành']
-export const JOB_GROUP_SRC = S('const', 'Bảy nhóm job theo miền nghiệp vụ — khớp với danh mục miền dữ liệu ở menu 1.7', '/catalog/domains')
+export const JOB_GROUP_SRC = S('const', 'Bảy nhóm job theo miền nghiệp vụ — khớp với danh mục miền dữ liệu ở menu 1.4', '/catalog/domains')
 
 export const POLICY_CATEGORIES = ['Quản trị', 'Chất lượng', 'Bảo mật', 'Cấp quyền', 'Chia sẻ', 'Lưu trữ']
 export const POLICY_CAT_SRC = S('const', 'Sáu nhóm chính sách theo Phương án xây dựng hệ thống mục 5')

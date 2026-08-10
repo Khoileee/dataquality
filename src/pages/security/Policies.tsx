@@ -7,6 +7,7 @@ import {
 } from '@/components/common'
 import { policies, POLICY_PRECEDENCE, MASK_TYPES, tags, tagById, columns, tables, groups, users, STATS, fmt, CONFIDENTIALITY_LEVELS } from '@/data'
 import { match, useDemoSave } from '@/lib/demo'
+import { PermReport } from '@/pages/security/Audit'
 
 const KIND_BY_TAB: Record<string, string> = {
   data: 'Quyền dữ liệu',
@@ -62,6 +63,7 @@ export function Policies() {
             { label: 'Lọc theo dòng', to: `${base}/rowfilter`, badge: policies.filter(p => p.kind === 'Lọc theo dòng').length },
             { label: 'Hạn chế tải xuống', to: `${base}/download`, badge: policies.filter(p => p.kind === 'Hạn chế tải xuống').length },
             { label: 'Chính sách theo nhãn', to: `${base}/by-tag` },
+            { label: 'Báo cáo quyền', to: `${base}/report` },
           ]}
         />
       </div>
@@ -98,6 +100,7 @@ export function Policies() {
       {tab === 'rowfilter' && <RowFilterTab rows={rows} />}
       {tab === 'download' && <DownloadTab rows={rows} />}
       {tab === 'by-tag' && <ByTagTab activeTag={activeTag} setActiveTag={setActiveTag} />}
+      {tab === 'report' && <PermReport embedded />}
     </>
   )
 }
@@ -199,7 +202,7 @@ function RowFilterTab({ rows }: { rows: any[] }) {
           </CodeBlock>
           <Note tone="warn" title="Nối bằng AND nên càng nhiều chính sách càng chặt" className="mt-3">
             Người thuộc nhiều nhóm sẽ bị áp giao của mọi điều kiện. Nếu người dùng báo <i>"không thấy dữ liệu"</i>,
-            kiểm tra ở menu 5.5 xem có bao nhiêu điều kiện đang chồng lên nhau.
+            kiểm tra ở menu 5.2 xem có bao nhiêu điều kiện đang chồng lên nhau.
           </Note>
         </Panel>
 
@@ -295,7 +298,7 @@ function ByTagTab({ activeTag, setActiveTag }: { activeTag: string; setActiveTag
                 { p: 'Che dữ liệu', v: tag.defaultMask ?? '— không che', who: 'Mọi người trừ Người sở hữu dữ liệu', tone: tag.defaultMask ? 'g' : 'n' },
                 { p: 'Mức phân loại tối thiểu', v: tag.defaultConfidentiality, who: 'Bảng chứa cột được nâng lên mức này', tone: 'b' },
                 { p: 'Hạn chế tải xuống', v: tag.sensitivity === 'Cao' ? 'Cấm tải xuống' : 'Ghi nhật ký', who: 'Người dùng thường', tone: tag.sensitivity === 'Cao' ? 'r' : 'n' },
-                { p: 'Cảnh báo truy cập bất thường', v: tag.sensitivity === 'Cao' ? 'Bật — ngưỡng 50.000 dòng' : 'Tắt', who: 'Giám sát ở menu 5.5', tone: tag.sensitivity === 'Cao' ? 'o' : 'n' },
+                { p: 'Cảnh báo truy cập bất thường', v: tag.sensitivity === 'Cao' ? 'Bật — ngưỡng 50.000 dòng' : 'Tắt', who: 'Giám sát ở menu 5.2', tone: tag.sensitivity === 'Cao' ? 'o' : 'n' },
                 { p: 'Thời hạn quyền tối đa', v: tag.sensitivity === 'Cao' ? '3 tháng' : '6 tháng', who: 'Áp khi phê duyệt yêu cầu cấp quyền', tone: 'b' },
               ]}
               columns={[

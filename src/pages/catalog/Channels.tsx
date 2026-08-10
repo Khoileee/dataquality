@@ -11,7 +11,7 @@ import { match, useDemoSave } from '@/lib/demo'
 
 const dirTone = (d: string) => (d === 'Gửi đi' ? 'o' : d === 'Nhận về' ? 'b' : 'p')
 
-export function ChannelList() {
+export function ChannelList({ embedded }: { embedded?: boolean } = {}) {
   const [q, setQ] = useState('')
   const [kind, setKind] = useState('')
   const [dir, setDir] = useState('')
@@ -25,18 +25,20 @@ export function ChannelList() {
 
   return (
     <>
-      <PageHeader
-        code="1.4"
-        title="Kênh trao đổi dữ liệu"
-        desc="Giao diện lập trình ứng dụng (API), kênh Kafka, FTP/SFTP và các phương thức gửi — nhận dữ liệu giữa các hệ thống"
-        crumbs={[{ label: 'Data Catalog' }, { label: 'Kênh trao đổi dữ liệu' }]}
-        actions={
-          <>
-            <ActionButton variant="ghost" icon="import">Nạp từ file</ActionButton>
-            <ActionButton icon="plus" to="/catalog/channels/create">Thêm kênh</ActionButton>
-          </>
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          code="1.2"
+          title="Kênh trao đổi dữ liệu"
+          desc="Giao diện lập trình ứng dụng (API), kênh Kafka, FTP/SFTP và các phương thức gửi — nhận dữ liệu giữa các hệ thống"
+          crumbs={[{ label: 'Data Catalog' }, { label: 'Kênh trao đổi dữ liệu' }]}
+          actions={
+            <>
+              <ActionButton variant="ghost" icon="import">Nạp từ file</ActionButton>
+              <ActionButton icon="plus" to="/catalog/channels/create">Thêm kênh</ActionButton>
+            </>
+          }
+        />
+      )}
 
       <KpiRow
         items={[
@@ -109,7 +111,7 @@ export function ChannelDetail() {
   return (
     <>
       <PageHeader
-        code="1.4"
+        code="1.2"
         title={c.name}
         desc={`${c.id} · ${c.purpose}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Kênh trao đổi dữ liệu', href: '/catalog/channels' }, { label: c.id }]}
@@ -210,7 +212,7 @@ export function ChannelCreate() {
   return (
     <>
       <PageHeader
-        code="1.4"
+        code="1.2"
         title="Thêm kênh trao đổi dữ liệu"
         desc="Bộ trường theo tiêu chuẩn thông tin mô tả GĐ2 mục 5.4"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Kênh trao đổi dữ liệu', href: '/catalog/channels' }, { label: 'Thêm mới' }]}

@@ -22,7 +22,7 @@ export function GroupList() {
   return (
     <>
       <PageHeader
-        code="1.6"
+        code="1.1"
         title="Nhóm bảng"
         desc="Gom bảng thành bộ để phân quyền và theo dõi chung — một chính sách áp cho cả nhóm thay vì khai từng bảng"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Nhóm bảng' }]}
@@ -106,7 +106,7 @@ export function GroupCreate() {
   return (
     <>
       <PageHeader
-        code="1.6"
+        code="1.1"
         title="Thêm nhóm bảng"
         desc="Chọn các bảng đã có trong danh mục để gom thành một bộ dùng cho phân quyền và theo dõi"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Nhóm bảng', href: '/catalog/groups' }, { label: 'Thêm mới' }]}
@@ -204,7 +204,7 @@ export function DomainList() {
   return (
     <>
       <PageHeader
-        code="1.7"
+        code="1.4"
         title="Miền dữ liệu"
         desc="Khai miền nghiệp vụ phân cấp — mỗi bảng bắt buộc thuộc một miền, mỗi miền có người chịu trách nhiệm"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Miền dữ liệu' }]}
@@ -276,7 +276,7 @@ export function DomainCreate() {
   return (
     <>
       <PageHeader
-        code="1.7"
+        code="1.4"
         title="Thêm miền dữ liệu"
         desc="Miền dữ liệu là chiều phân loại nghiệp vụ dùng chung cho toàn hệ thống"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Miền dữ liệu', href: '/catalog/domains' }, { label: 'Thêm mới' }]}
@@ -326,7 +326,7 @@ export function RefdataList() {
   return (
     <>
       <PageHeader
-        code="1.8"
+        code="1.5"
         title="Danh mục tham chiếu"
         desc="Danh mục dùng chung (đối tác, tỉnh/thành, loại giao dịch…) — nguồn đối chiếu cho luật chất lượng ở menu 3.1"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Danh mục tham chiếu' }]}
@@ -386,7 +386,7 @@ export function RefdataDetail() {
   return (
     <>
       <PageHeader
-        code="1.8"
+        code="1.5"
         title={r.name}
         desc={`${r.id} · ${r.description} · ${fmt(r.recordCount)} bản ghi · phiên bản ${r.version}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Danh mục tham chiếu', href: '/catalog/refdata' }, { label: r.id }]}
@@ -535,7 +535,7 @@ export function RefdataCreate() {
   return (
     <>
       <PageHeader
-        code="1.8"
+        code="1.5"
         title="Thêm danh mục tham chiếu"
         desc="Định nghĩa cấu trúc trường trước, sau đó nạp dữ liệu bằng file hoặc nhập tay"
         crumbs={[{ label: 'Data Catalog' }, { label: 'Danh mục tham chiếu', href: '/catalog/refdata' }, { label: 'Thêm mới' }]}

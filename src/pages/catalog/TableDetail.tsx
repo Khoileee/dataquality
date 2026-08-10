@@ -10,6 +10,7 @@ import {
   lineageEdges, reportById, metricById, policies, auditLog, jobById, fmt, profilesOf,
 } from '@/data'
 import type { FlowNode, FlowEdge } from '@/components/common/Viz'
+import { Profiling } from '@/pages/quality/Misc'
 
 export function TableDetail() {
   const { id = '' } = useParams()
@@ -34,7 +35,7 @@ export function TableDetail() {
   return (
     <>
       <PageHeader
-        code="1.2"
+        code="1.1"
         title={<span className="mono">{tableId}</span>}
         desc={`${t.name} · Người sở hữu: ${t.dataOwner ?? '— chưa có'} · BDA: ${t.bda ?? '—'} · DE: ${t.de ?? '—'} · Miền: ${domainName(t.domain) ?? '— chưa gán'}`}
         crumbs={[{ label: 'Data Catalog' }, { label: 'Bảng dữ liệu', href: '/catalog/tables' }, { label: tableId }]}
@@ -280,6 +281,13 @@ function TabColumns({ t }: { t: any }) {
           </div>
         )}
       </Drawer>
+
+      <Panel
+        title="Phân tích dữ liệu — chỉ số đo của cột"
+        desc="Gộp từ menu cũ 3.3. Đây là nơi DUY NHẤT đo; bảng phía trên đọc lại kết quả, không đo lần thứ hai (nguyên tắc NT3)"
+      >
+        <Profiling embedded tableId={t.id} />
+      </Panel>
     </>
   )
 }

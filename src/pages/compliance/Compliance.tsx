@@ -391,7 +391,7 @@ export function Lifecycle() {
           />
           <Note tone="warn" title="CS3-02 sắp hết hạn ngày 30/09/2026" className="mt-4">
             Thoả thuận gửi báo cáo doanh số cho đối tác B qua kênh <b>KENH-05</b> — kênh này đang dùng
-            <b> FTP user/password không mã hoá</b> và đã bị trả về <i>Yêu cầu chỉnh sửa</i> ở menu 1.4.
+            <b> FTP user/password không mã hoá</b> và đã bị trả về <i>Yêu cầu chỉnh sửa</i> ở menu 1.2.
             Nên chuyển sang SFTP trước khi gia hạn.
           </Note>
         </>
