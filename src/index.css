@@ -6,54 +6,21 @@
 
 * { box-sizing: border-box; }
 
-:root {
-  /* ── Bảng màu DMP (theo DMP-Plan-Dung-Demo-FE.md mục 3) ── */
-  --navy:      #16233F;
-  --navy-2:    #1E2E4F;
-  --navy-3:    #2B3A5C;
-  --ac:        #2563EB;
-  --ac-2:      #0EA5A5;
-  --page:      #F1F5F9;
-  --line:      #E3E8EF;
-  --ink:       #0F172A;
-  --ink-2:     #344054;
-  --muted:     #667085;
-  --ok:        #12B76A;
-  --warn:      #F79009;
-  --bad:       #F04438;
-  --panel:     #0F1729;
-}
-
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--page);
-  color: var(--ink);
-  min-width: 1280px;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
-.mono { font-family: Consolas, 'Courier New', ui-monospace, monospace; }
-
-::-webkit-scrollbar { width: 7px; height: 7px; }
-::-webkit-scrollbar-track { background: #eef2f7; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* Sticky column backgrounds for horizontal scroll */
-thead th.sticky { background-color: #f8fafc; }
+thead th.sticky { background-color: #f9fafb; }
 tbody td.sticky { background-color: #ffffff; }
-tbody tr:hover td.sticky { background-color: #f8fafc; }
+tbody tr:hover td.sticky { background-color: #f9fafb; }
 th.sticky-left, td.sticky-left { box-shadow: 2px 0 4px -2px rgba(0,0,0,0.06); }
 th.sticky-right, td.sticky-right { box-shadow: -2px 0 4px -2px rgba(0,0,0,0.06); }
-
-@keyframes dmp-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-.dmp-in { animation: dmp-in .22s ease-out; }
-
-@keyframes dmp-toast { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
-.dmp-toast { animation: dmp-toast .2s ease-out; }
-
-@keyframes dmp-drawer { from { transform: translateX(100%); } to { transform: none; } }
-.dmp-drawer { animation: dmp-drawer .22s ease-out; }
-
-@keyframes dmp-pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
-.dmp-skeleton { animation: dmp-pulse 1.2s ease-in-out infinite; }

@@ -1,106 +1,194 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { MENU, MENU_COUNT, ROLE_META } from '@/app/menu'
-import { pendingApprovals, incidents, accessRequests, assessments, lifecycleRules, mdmDuplicates } from '@/data'
-import { APP } from '@/config'
-import { Database } from 'lucide-react'
+import {
+  LayoutDashboard, Database, BarChart2, BookOpen, Calendar, Sliders,
+  AlertTriangle, FileBarChart, Bell, Settings, Shield, ChevronRight, GitBranch,
+  Activity,
+} from 'lucide-react'
+import { useState } from 'react'
+
+interface NavChild {
+  label: string
+  href: string
+}
+
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  href: string
+  deprecated?: boolean
+  deprecatedTooltip?: string
+  children?: NavChild[]
+}
+
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const navSections: NavSection[] = [
+  {
+    title: 'TỔNG QUAN',
+    items: [{ icon: LayoutDashboard, label: 'Dashboard', href: '/' }]
+  },
+  {
+    title: 'QUẢN LÝ DỮ LIỆU',
+    items: [
+      { icon: Database, label: 'Danh mục dữ liệu', href: '/data-catalog' },
+      { icon: BarChart2, label: 'Phân tích dữ liệu', href: '/profiling' },
+      { icon: GitBranch, label: 'Quản lý Job', href: '/pipeline', deprecated: true, deprecatedTooltip: 'Chức năng sẽ gộp vào SQLWF — Chỉ giữ Giám sát Pipeline' },
+      { icon: Activity, label: 'Giám sát Pipeline', href: '/pipeline-monitor' },
+    ]
+  },
+  {
+    title: 'CHẤT LƯỢNG',
+    items: [
+      { icon: BookOpen, label: 'Quản lý quy tắc', href: '/rules' },
+      { icon: Calendar, label: 'Lịch chạy', href: '/schedules' },
+      { icon: Sliders, label: 'Ngưỡng cảnh báo', href: '/thresholds', deprecated: true, deprecatedTooltip: 'Đã gộp vào Danh mục dữ liệu — Ngưỡng mặc định xem tại Cài đặt' },
+    ]
+  },
+  {
+    title: 'GIÁM SÁT',
+    items: [
+      { icon: AlertTriangle, label: 'Vấn đề & Sự cố', href: '/issues' },
+      { icon: FileBarChart, label: 'Báo cáo chất lượng', href: '/reports' },
+    ]
+  },
+  {
+    title: 'CẤU HÌNH',
+    items: [
+      { icon: Bell, label: 'Quản lý thông báo', href: '/notifications' },
+      {
+        icon: Settings, label: 'Cài đặt', href: '/settings',
+        children: [
+          { label: 'Ngưỡng mặc định', href: '/settings/default-thresholds' },
+          { label: 'Quy tắc mặc định', href: '/settings/default-rules' },
+          { label: 'Lịch mặc định', href: '/settings/default-schedules' },
+          { label: 'Quản lý người dùng', href: '/settings/users' },
+        ]
+      },
+    ]
+  },
+]
 
 export function Sidebar() {
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const [expandedItems, setExpandedItems] = useState<string[]>(['/settings'])
 
-  // Số việc đang chờ người xử lý — hiện bên phải nhãn menu nhóm 🟪
-  const COUNTS: Record<string, number> = {
-    approvals: pendingApprovals.length,
-    incidents: incidents.filter(i => i.status !== 'Đã đóng').length,
-    requests: accessRequests.filter(r => r.status === 'Chờ phê duyệt').length,
-    assessments: assessments.filter(a => a.status === 'Đang đánh giá' || a.status === 'Chờ khắc phục').length,
-    duplicates: mdmDuplicates.filter(d => d.status === 'Chưa xem xét' || d.status === 'Đang xem xét').length,
-    lifecycle: lifecycleRules.filter(r => r.status === 'Chờ phê duyệt').length,
-  }
-
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string) => href === '/' ? location.pathname === '/' : location.pathname.startsWith(href)
+  const toggleExpand = (href: string) => setExpandedItems(prev =>
+    prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
+  )
 
   return (
-    <aside
-      className="fixed left-0 top-0 z-30 flex h-full w-[248px] flex-col overflow-y-auto"
-      style={{ background: 'linear-gradient(180deg,#16233F 0%,#131E36 100%)' }}
-    >
-      {/* Logo */}
-      <Link to="/" className="flex shrink-0 items-center gap-2.5 px-4 py-4" style={{ borderBottom: '1px solid #2B3A5C' }}>
-        <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-blue-600">
-          <Database className="h-4 w-4 text-white" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-[15px] font-extrabold leading-tight text-white">{APP.name}</div>
-          <div className="truncate text-[10px] text-[#8FA3C8]">{APP.tagline}</div>
-        </div>
-      </Link>
+    <aside className="fixed left-0 top-0 h-full w-60 flex flex-col overflow-y-auto z-30"
+      style={{ background: 'linear-gradient(180deg, #0f172a 0%, #111827 100%)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
 
-      <nav className="flex-1 py-1.5">
-        {MENU.map(section => (
-          <div key={section.id} className="mb-0.5">
-            <div className="flex items-center gap-1.5 px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.7px] text-[#6D81A8]">
-              <span className="text-[11px]">{section.no}</span>
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-4 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}>
+          <Shield className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <div className="font-bold text-white text-sm tracking-tight">Data Quality</div>
+          <div className="text-[11px]" style={{ color: '#64748b' }}>Management System</div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 py-2">
+        {navSections.map(section => (
+          <div key={section.title} className="mb-1">
+            <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: '#334155' }}>
               {section.title}
             </div>
 
             {section.items.map(item => {
               const Icon = item.icon
-              const active = isActive(item.href)
+              const active = isActive(item.href || '')
+              const hasChildren = 'children' in item && item.children
+              const expanded = hasChildren && expandedItems.includes(item.href || '')
+
+              const linkCls = cn(
+                'relative flex items-center gap-2.5 w-full px-4 py-2 text-sm font-medium transition-all duration-150',
+                active
+                  ? 'text-blue-300'
+                  : 'text-slate-400 hover:text-slate-100'
+              )
+              const iconCls = cn('h-4 w-4 shrink-0', active ? 'text-blue-400' : 'text-slate-500')
+
+              const isDeprecated = 'deprecated' in item && item.deprecated
+              const deprecatedStyle = isDeprecated ? { opacity: 0.45 } : {}
+              const deprecatedTip = isDeprecated ? (item as NavItem).deprecatedTooltip : undefined
+
               return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  title={`${item.code} · ${item.label}`}
-                  className={cn(
-                    'relative flex items-center gap-2.5 px-4 py-[7px] text-[12.5px] transition-colors',
-                    active ? 'bg-[#2B3A5C] font-semibold text-white' : 'text-[#C3CEE2] hover:bg-[#1E2E4F] hover:text-white'
-                  )}
-                >
-                  <span
-                    title={ROLE_META[item.role].label}
-                    className={cn('absolute left-0 top-0 h-full w-[3px]', active ? 'bg-[#0EA5A5]' : ROLE_META[item.role].bar, active ? '' : 'opacity-70')}
-                  />
-                  <Icon className={cn('h-[15px] w-[15px] shrink-0', active ? 'text-[#7FD8D8]' : 'text-[#7286AD]')} />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  {item.countKey && COUNTS[item.countKey] > 0 && (
-                    <span
-                      title={`${COUNTS[item.countKey]} việc đang chờ xử lý`}
-                      className={cn(
-                        'shrink-0 rounded-full px-1.5 text-[10px] font-bold tabular-nums',
-                        active ? 'bg-white/25 text-white' : 'bg-violet-400/25 text-violet-200'
+                <div key={item.label}>
+                  {/* Active background highlight */}
+                  {hasChildren ? (
+                    <button onClick={() => toggleExpand(item.href || '')}
+                      className={linkCls}
+                      style={active ? { background: 'rgba(59,130,246,0.12)' } : {}}>
+                      {active && (
+                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
+                          style={{ background: '#3b82f6' }} />
                       )}
-                    >
-                      {COUNTS[item.countKey]}
-                    </span>
+                      <Icon className={iconCls} />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      <ChevronRight className={cn('h-3.5 w-3.5 transition-transform shrink-0 text-slate-600',
+                        expanded && 'rotate-90')} />
+                    </button>
+                  ) : (
+                    <Link to={item.href!}
+                      className={linkCls}
+                      title={deprecatedTip}
+                      style={{
+                        ...(active ? { background: 'rgba(59,130,246,0.12)' } : {}),
+                        ...deprecatedStyle,
+                      }}>
+                      {active && (
+                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
+                          style={{ background: '#3b82f6' }} />
+                      )}
+                      <Icon className={iconCls} />
+                      <span className={isDeprecated ? 'line-through' : ''}>{item.label}</span>
+                    </Link>
                   )}
-                  {item.isNew && (
-                    <span
-                      title="Menu bổ sung sau khi review đối chiếu yêu cầu BDA"
-                      className="shrink-0 rounded-full bg-[#0EA5A5]/20 px-1.5 text-[9px] font-bold text-[#5EEAD4]"
-                    >
-                      MỚI
-                    </span>
+
+                  {hasChildren && expanded && item.children && (
+                    <div className="pb-1" style={{ paddingLeft: '2.75rem' }}>
+                      {item.children.map(child => (
+                        <Link key={child.href} to={child.href}
+                          className={cn('block px-2 py-1.5 text-sm rounded-md transition-colors',
+                            location.pathname === child.href
+                              ? 'text-blue-300 font-medium'
+                              : 'text-slate-500 hover:text-slate-300')}>
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
                   )}
-                </Link>
+                </div>
               )
             })}
           </div>
         ))}
       </nav>
 
-      <div className="shrink-0 px-4 py-3 text-[10px] leading-relaxed text-[#5B6D91]" style={{ borderTop: '1px solid #2B3A5C' }}>
-        <div className="mb-2 space-y-1">
-          {(Object.keys(ROLE_META) as (keyof typeof ROLE_META)[]).map(k => (
-            <div key={k} className="flex items-center gap-1.5">
-              <span className={cn('h-2 w-2 shrink-0 rounded-sm', ROLE_META[k].bar)} />
-              <span className="truncate text-[#8FA3C8]">{ROLE_META[k].label}</span>
-            </div>
-          ))}
+      {/* User footer */}
+      <div className="p-4 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold text-xs shrink-0"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}>
+            AD
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-medium truncate" style={{ color: '#cbd5e1' }}>Nguyễn Văn Admin</div>
+            <div className="text-xs" style={{ color: '#475569' }}>Quản trị viên</div>
+          </div>
         </div>
-        {APP.version} · 8 module · {MENU_COUNT} menu
-        <br />
-        Dữ liệu minh hoạ — không kết nối hệ thống thật
       </div>
     </aside>
   )
